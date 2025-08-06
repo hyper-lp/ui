@@ -41,6 +41,7 @@ export default function Authors(props: { className?: string }) {
                     </LinkWrapper>
                 </StyledTooltip>
             </p>
+            <p>- reach out to help</p>
         </div>
     )
 }

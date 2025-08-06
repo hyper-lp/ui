@@ -37,41 +37,52 @@ export function encodeReferralCode(twitterId: string): string {
  */
 export function decodeReferralCode(referralCode: string): string {
     try {
+        console.log(`[Decode] Input referral code: ${referralCode}`)
+
         // Validate input
         if (!referralCode || typeof referralCode !== 'string' || referralCode.length < 2) {
+            console.log(`[Decode] Invalid input: empty or too short`)
             return ''
         }
 
         // Sanitize input
         const sanitized = referralCode.toLowerCase().replace(/[^a-z0-9]/g, '')
+        console.log(`[Decode] Sanitized code: ${sanitized}`)
+
         if (sanitized.length < 2) {
+            console.log(`[Decode] Sanitized code too short`)
             return ''
         }
 
         // Extract checksum (last character)
         const checksumChar = sanitized[sanitized.length - 1]
         const encodedPart = sanitized.slice(0, -1)
+        console.log(`[Decode] Encoded part: ${encodedPart}, Checksum char: ${checksumChar}`)
 
         // Try to parse as base36
         const decoded = parseInt(encodedPart, 36).toString()
+        console.log(`[Decode] Decoded Twitter ID: ${decoded}`)
 
         // Validate it's a reasonable Twitter ID (numeric and reasonable length)
         if (!/^\d+$/.test(decoded) || decoded.length < 5 || decoded.length > 20) {
+            console.log(`[Decode] Invalid Twitter ID format: ${decoded}`)
             return ''
         }
 
         // Verify checksum
         const expectedChecksum = decoded.split('').reduce((sum, digit) => sum + parseInt(digit, 10), 0) % 36
         const actualChecksum = parseInt(checksumChar, 36)
+        console.log(`[Decode] Expected checksum: ${expectedChecksum}, Actual: ${actualChecksum}`)
 
         if (expectedChecksum !== actualChecksum) {
-            console.warn('Invalid referral code checksum')
+            console.warn('[Decode] Invalid referral code checksum')
             return ''
         }
 
+        console.log(`[Decode] Successfully decoded: ${decoded}`)
         return decoded
     } catch (error) {
-        console.error('Decoding error:', error)
+        console.error('[Decode] Decoding error:', error)
         return ''
     }
 }

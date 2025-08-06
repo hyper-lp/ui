@@ -130,35 +130,47 @@ async function handleWaitlistJoin(
         // Validate referrer if provided
         let referredBy = null
         if (referralCode && typeof referralCode === 'string' && referralCode.length > 0) {
+            console.log(`[Referral] Processing referral code: ${referralCode} for user: ${twitterHandle}`)
+
             // Sanitize referral code
             const sanitizedCode = referralCode.slice(0, 50).replace(/[^a-zA-Z0-9]/g, '')
+            console.log(`[Referral] Sanitized code: ${sanitizedCode}`)
 
             // Decode the referral code to get Twitter ID
             const referrerTwitterId = decodeReferralCode(sanitizedCode)
+            console.log(`[Referral] Decoded Twitter ID: ${referrerTwitterId || 'FAILED TO DECODE'}`)
 
             // Validate decoded Twitter ID
-            if (!/^\d+$/.test(referrerTwitterId) || referrerTwitterId.length < 5 || referrerTwitterId.length > 20) {
+            if (!referrerTwitterId || referrerTwitterId === '') {
+                console.warn(`[Referral] Failed to decode referral code: ${sanitizedCode}`)
+            } else if (!/^\d+$/.test(referrerTwitterId) || referrerTwitterId.length < 5 || referrerTwitterId.length > 20) {
                 // Invalid referral code, ignore but don't block registration
-                console.warn(`Invalid referral code attempted: ${sanitizedCode}`)
+                console.warn(`[Referral] Invalid Twitter ID format from referral code. Code: ${sanitizedCode}, Decoded ID: ${referrerTwitterId}`)
             } else if (referrerTwitterId === twitterId) {
                 // Log self-referral attempt
-                console.warn(`Self-referral attempt blocked for Twitter ID: ${twitterId}`)
+                console.warn(`[Referral] Self-referral attempt blocked for Twitter ID: ${twitterId}`)
             } else {
+                console.log(`[Referral] Looking up referrer with Twitter ID: ${referrerTwitterId}`)
+
                 // Check if referrer exists and hasn't hit referral limits
                 const referrer = await prisma.waitlist.findFirst({
                     where: { twitterId: referrerTwitterId },
                 })
 
                 if (referrer) {
+                    console.log(`[Referral] Found referrer: @${referrer.twitterHandle}`)
+
                     // Check referral limit (prevent gaming)
                     if (referrer.referralCount >= 100) {
-                        console.warn(`Referral limit reached for Twitter ID: ${referrerTwitterId}`)
+                        console.warn(`[Referral] Referral limit reached for Twitter ID: ${referrerTwitterId}`)
                     } else {
                         // Check for circular referrals
                         if (referrer.referredBy === sanitizedHandle) {
-                            console.warn(`Circular referral detected: ${twitterId} <-> ${referrerTwitterId}`)
+                            console.warn(`[Referral] Circular referral detected: ${twitterId} <-> ${referrerTwitterId}`)
                         } else {
                             referredBy = referrer.twitterHandle
+                            console.log(`[Referral] Setting referredBy to: @${referredBy}`)
+
                             // Use transaction to ensure atomicity
                             await prisma.$transaction([
                                 prisma.waitlist.update({
@@ -166,10 +178,15 @@ async function handleWaitlistJoin(
                                     data: { referralCount: { increment: 1 } },
                                 }),
                             ])
+                            console.log(`[Referral] Successfully incremented referral count for @${referrer.twitterHandle}`)
                         }
                     }
+                } else {
+                    console.warn(`[Referral] Referrer not found in database. Twitter ID: ${referrerTwitterId}`)
                 }
             }
+        } else {
+            console.log(`[Referral] No referral code provided for user: ${twitterHandle}`)
         }
 
         // Add to waitlist with sanitized data

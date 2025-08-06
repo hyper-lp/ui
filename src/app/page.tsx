@@ -47,8 +47,17 @@ export default function HomePage() {
                     transition={{ delay: 0.3, duration: 0.5 }}
                 >
                     <p>Delta-neutral APR</p>
-                    <p>= ⅔ × LP Fees (HyperEVM) + ⅓ × Short Perp Funding (HyperCore)</p>
+                    <p>= ⅔ × LP Fees + ⅓ × Short Perp Funding</p>
                 </motion.div>
+                {/* <motion.div
+                    className="flex flex-col gap-1 md:flex-row md:gap-2 items-center text-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                    <p>Delta-neutral APR</p>
+                    <p>= ⅔ × LP Fees (HyperEVM) + ⅓ × Short Perp Funding (HyperCore)</p>
+                </motion.div> */}
                 <Suspense fallback={<ChartSkeleton />}>
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}

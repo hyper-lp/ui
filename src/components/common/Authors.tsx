@@ -24,7 +24,7 @@ export default function Authors(props: { className?: string }) {
                 <LinkWrapper
                     href={AppUrls.KATALYSTER_TWITTER}
                     target="_blank"
-                    className="underline-offset-2 cursor-alias hover:underline hover:text-primary pl-1"
+                    className="underline-offset-2 cursor-alias hover:underline hover:text-primary"
                 >
                     Katalyster
                 </LinkWrapper>

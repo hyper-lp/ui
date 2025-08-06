@@ -131,7 +131,7 @@ export default function HeaderMobile() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
-                                className="mt-10"
+                                className="my-10"
                             >
                                 <ThemeSwitcher iconClassName="size-10" buttonClassName="p-4 py-2.5 rounded-2xl" />
                             </motion.div>

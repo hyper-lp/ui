@@ -47,7 +47,7 @@ export default function HomePage() {
                     transition={{ delay: 0.3, duration: 0.5 }}
                 >
                     <p>Delta-neutral APR</p>
-                    <p>= ⅔ × LP Fees + ⅓ × Short Perp Funding</p>
+                    <p>= ⅔ × LP Fees (HyperEVM) + ⅓ × Short Perp Funding (HyperCore)</p>
                 </motion.div>
                 <Suspense fallback={<ChartSkeleton />}>
                     <motion.div

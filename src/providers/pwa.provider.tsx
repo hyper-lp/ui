@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import PullToRefresh from '@/components/common/PullToRefresh'
-import { useRouter } from 'next/navigation'
-import IconWrapper from '@/components/icons/IconWrapper'
-import { IconIds } from '@/enums'
+import { IS_DEV } from '@/config/app.config'
 
 export default function PWAProvider({ children }: { children: React.ReactNode }) {
     const [isIOS, setIsIOS] = useState(false)
     const [isStandalone, setIsStandalone] = useState(false)
-    const router = useRouter()
+    if (IS_DEV) console.log('isIOS', isIOS)
 
     useEffect(() => {
         // Check if running on iOS
@@ -28,37 +26,23 @@ export default function PWAProvider({ children }: { children: React.ReactNode })
         }
     }, [])
 
-    const handleRefresh = async () => {
-        // Wait a bit to show the refresh animation
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        // Refresh the current route
-        router.refresh()
-    }
-
     // Enable pull-to-refresh in standalone PWA mode or development
     const enablePullToRefresh = isStandalone || process.env.NODE_ENV === 'development'
 
-    const CONTENT = (
-        <div className="fixed bottom-0 left-0 right-0 p-4 text-center">
-            <p className="text-xs max-w-[300px] mx-auto text-aquamarine flex items-center justify-center gap-1 flex-wrap">
-                Get the full app experience: tap
-                <span className="font-semibold flex items-center gap-1">
-                    Share
-                    <span className="inline-flex align-middle">
-                        <IconWrapper id={IconIds.SHARE} className="w-4 h-4" />
-                    </span>
-                </span>
-                and choose <span className="font-semibold">&quot;Add to Home Screen&quot;</span>
-                <span className="text-base">📲</span>
-            </p>
-        </div>
-    )
+    // const CONTENT = (
+    //     <div className="fixed bottom-0 left-0 right-0 p-4 text-center">
+    //         <p className="text-xs max-w-[300px] mx-auto text-primary flex items-center justify-center gap-1 flex-wrap">
+    //             <span className="font-semibold">Add to Home Screen</span>
+    //             <span className="text-base">📲</span>
+    //         </p>
+    //     </div>
+    // )
 
     if (enablePullToRefresh) {
         return (
-            <PullToRefresh onRefresh={handleRefresh}>
+            <PullToRefresh>
                 {children}
-                {!isStandalone && isIOS && CONTENT}
+                {/* {!isStandalone && isIOS && CONTENT} */}
             </PullToRefresh>
         )
     }
@@ -66,7 +50,7 @@ export default function PWAProvider({ children }: { children: React.ReactNode })
     return (
         <>
             {children}
-            {!isStandalone && isIOS && CONTENT}
+            {/* {!isStandalone && isIOS && CONTENT} */}
         </>
     )
 }

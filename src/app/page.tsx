@@ -1,67 +1,69 @@
 'use client'
 
-import HydratedPageWrapper from '@/components/stores/HydratedPageWrapper'
-import { ListToShow } from '@/enums'
-import { cn } from '@/utils'
-import Card from '@/components/figma/Card'
-import StrategiesList from '@/components/app/strategies/list/StrategiesList'
-import UsdAmount from '@/components/figma/UsdAmount'
-import { TradesList } from '@/components/app/trades/TradesList'
-import { useAggregatedAUM } from '@/hooks/useAggregatedAUM'
-import { useStrategies } from '@/hooks/fetchs/useStrategies'
-import Skeleton from '@/components/common/Skeleton'
-import { useTabFromUrl } from '@/hooks/useTabFromUrl'
-import { DEFAULT_PADDING_X } from '@/config'
+import { lazy, Suspense } from 'react'
+import { motion } from 'framer-motion'
+import PageWrapper from '@/components/common/PageWrapper'
 
-export default function Page() {
-    const { tab, setTab } = useTabFromUrl()
-    const { totalAUM, isLoading: totalAUMIsLoading, error: aumError } = useAggregatedAUM()
-    const { strategies } = useStrategies()
+// Lazy load the heavy chart component
+const HeatmapAprChart = lazy(() => import('@/components/charts/HeatmapAprChart'))
+
+// Loading fallback for chart with animation
+const ChartSkeleton = () => (
+    <motion.div
+        className="w-full h-[500px] bg-background/5 rounded-lg flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+    >
+        <motion.p
+            className="text-default/40 text-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+        >
+            Loading chart...
+        </motion.p>
+    </motion.div>
+)
+
+export default function HomePage() {
     return (
-        <HydratedPageWrapper paddingX="px-0">
-            {/* KPIs */}
-            {/* <div className={cn('grid gap-4 grid-cols-1 sm:grid-cols-3 mb-14 w-full', DEFAULT_PADDING_X)}> */}
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-14 w-full px-6 md:px-8 lg:px-10">
-                <Card>
-                    <p className="text-sm text-milk-400">Total PnL</p>
-                    <p className="text-milk-200 truncate">To be computed</p>
-                </Card>
-                <Card>
-                    <p className="text-sm text-milk-400">Total AUM</p>
-                    {totalAUMIsLoading ? (
-                        <Skeleton variant="text" />
-                    ) : aumError ? (
-                        <p className="text-sm text-folly">Failed to load</p>
-                    ) : (
-                        <UsdAmount amountUsd={totalAUM} variationPercentage={0} />
-                    )}
-                </Card>
-                <Card>
-                    <p className="text-sm text-milk-400">Total trades</p>
-                    {strategies.length ? (
-                        <p className="text-lg font-semibold">
-                            {strategies.reduce(
-                                (acc, strategy) => acc + strategy.instances.reduce((acc, instance) => acc + instance.value.trades.length, 0),
-                                0,
-                            )}
-                        </p>
-                    ) : (
-                        <Skeleton variant="text" />
-                    )}
-                </Card>
-            </div>
-
-            {/* list to show */}
-            <div className={cn('flex gap-6 mb-8', DEFAULT_PADDING_X)}>
-                {Object.values(ListToShow).map((list) => (
-                    <button key={list} className={cn('cursor-pointer')} onClick={() => setTab(list)}>
-                        <p className={cn('text-lg', { 'text-milk': list === tab, 'text-milk-400': list !== tab })}>{list}</p>
-                    </button>
-                ))}
-            </div>
-
-            {tab === ListToShow.STRATEGIES && <StrategiesList />}
-            {tab === ListToShow.TRADES && <TradesList />}
-        </HydratedPageWrapper>
+        <PageWrapper>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                    duration: 0.6,
+                    delay: 0.2,
+                    ease: [0.4, 0, 0.2, 1],
+                }}
+                className="flex flex-col gap-2 justify-center items-center"
+            >
+                {/* Explanation of APR calculation */}
+                <motion.div
+                    className="flex flex-col gap-1 md:flex-row md:gap-2 items-center text-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                    <p>Delta-neutral APR</p>
+                    <p>= ⅔ × LP Fees + ⅓ × Short Perp Funding</p>
+                </motion.div>
+                <Suspense fallback={<ChartSkeleton />}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                            duration: 0.8,
+                            delay: 0.4,
+                            ease: [0.4, 0, 0.2, 1],
+                        }}
+                        className="w-full mx-auto"
+                    >
+                        <HeatmapAprChart />
+                    </motion.div>
+                </Suspense>
+            </motion.div>
+        </PageWrapper>
     )
 }

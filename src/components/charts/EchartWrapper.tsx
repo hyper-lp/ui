@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, memo } from 'react'
 import * as echarts from 'echarts'
-import * as ecStat from 'echarts-stat'
 import { cn } from '@/utils'
 
 /**
@@ -38,33 +37,30 @@ interface InterfaceEchartWrapperProps {
     id?: string
     onPointClick?: (params: unknown) => void
     onDataZoomChange?: (start: number, end: number) => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onMouseOver?: (params: any) => void
+    onMouseOut?: () => void
     className?: string
 }
 
-export default function EchartWrapper(props: InterfaceEchartWrapperProps) {
+function EchartWrapper(props: InterfaceEchartWrapperProps) {
     const chartRef = useRef<HTMLDivElement>(null)
     const myChart = useRef<echarts.ECharts | null>(null)
     const handleChartResize = () => myChart.current?.resize()
     useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(echarts as any).registerTransform((ecStat as any).transform.regression)
-
         // only if ref mounted in dom
         if (chartRef?.current) {
             if (!myChart.current) myChart.current = echarts.init(chartRef.current)
             window.addEventListener('resize', handleChartResize, { passive: true })
-            myChart.current.setOption(
-                // @ts-expect-error: poorly typed
-                props.options,
-                {
-                    /**
+            myChart.current.setOption(props.options, {
+                /**
                      * lazyUpdate?: boolean
                         Default: true = ECharts merges the new options with the existing ones.
                         false = the new option object replaces the existing one completely.
                      */
-                    notMerge: true,
+                notMerge: true,
 
-                    /**
+                /**
                      * lazyUpdate?: boolean
                         Default: false
                         What it does:
@@ -72,29 +68,64 @@ export default function EchartWrapper(props: InterfaceEchartWrapperProps) {
                         - Instead, it waits until the next frame, allowing multiple setOption calls to be batched for better performance.
                         Use case: Useful when you're calling setOption multiple times in a row and want to avoid unnecessary renders.
                      */
-                    lazyUpdate: true,
+                lazyUpdate: true,
 
-                    /**
+                /**
                      * Default: false
                         What it does:
                         When true, calling setOption won't trigger any event dispatch (like rendered, finished, etc.).
                         Use case: Good for silent updates where you don't want side effects like re-triggering chart-related events.
                      */
-                    silent: false,
-                },
-            )
+                silent: true,
+            })
 
             // attach click event listener
             myChart.current.on('click', (params: unknown) => {
                 if (props.onPointClick) props.onPointClick(params)
             })
 
+            // Only attach hover event listeners if callbacks are provided
+            if (props.onMouseOver) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const mouseOverHandler = (params: any) => {
+                    try {
+                        // Validate params before calling the callback
+                        if (params && typeof params === 'object') {
+                            props.onMouseOver?.(params)
+                        }
+                    } catch (error) {
+                        // Silently handle errors to prevent console spam
+                        if (process.env.NODE_ENV === 'development') {
+                            console.warn('EchartWrapper mouseover error:', error)
+                        }
+                    }
+                }
+                myChart.current.on('mouseover', 'series', mouseOverHandler)
+            }
+
+            if (props.onMouseOut) {
+                const mouseOutHandler = () => {
+                    try {
+                        props.onMouseOut!()
+                    } catch (error) {
+                        // Silently handle errors to prevent console spam
+                        if (process.env.NODE_ENV === 'development') {
+                            console.warn('EchartWrapper mouseout error:', error)
+                        }
+                    }
+                }
+                myChart.current.on('mouseout', 'series', mouseOutHandler)
+            }
+
             // attach dataZoom event listener
             myChart.current.on('dataZoom', () => {
-                const option = myChart.current?.getOption()
-                const zoom = option?.dataZoom?.[0]
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const option = myChart.current?.getOption() as any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const zoom = option?.dataZoom?.[0] as any
                 if (!zoom) return
-                const xAxisArray = option?.xAxis as echarts.EChartOption.XAxis[] | undefined
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const xAxisArray = option?.xAxis as any[] | undefined
                 let startValue = zoom?.startValue
                 let endValue = zoom?.endValue
                 if ((startValue === undefined || endValue === undefined) && xAxisArray && Array.isArray(xAxisArray)) {
@@ -115,10 +146,15 @@ export default function EchartWrapper(props: InterfaceEchartWrapperProps) {
 
         return () => {
             if (myChart?.current) {
-                // cleanup events listeners
+                // cleanup all event listeners
                 window.removeEventListener('resize', handleChartResize)
                 myChart.current.off('click')
                 myChart.current.off('dataZoom')
+                myChart.current.off('mouseover')
+                myChart.current.off('mouseout')
+                // Dispose the chart instance to prevent memory leaks
+                myChart.current.dispose()
+                myChart.current = null
             }
         }
 
@@ -127,3 +163,5 @@ export default function EchartWrapper(props: InterfaceEchartWrapperProps) {
 
     return <div ref={chartRef} className={cn('m-0 p-0', props.className)} style={{ width: '100%', height: '100%' }}></div>
 }
+
+export default memo(EchartWrapper)

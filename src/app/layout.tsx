@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { APP_METADATA } from '../config/app.config'
+import { APP_METADATA, LATO_FONT, PVP_TRADE_FONT, TEODOR_LIGHT_FONT } from '../config/app.config'
 import { cn } from '../utils'
 import { Suspense } from 'react'
 import DefaultFallback from '@/components/layouts/DefaultFallback'
@@ -11,18 +11,17 @@ import Footer from '@/components/layouts/Footer'
 import HeaderDesktop from '@/components/layouts/HeaderDesktop'
 import HeaderMobile from '@/components/layouts/HeaderMobile'
 import { ThemeProvider } from 'next-themes'
-import { AppThemes, Authors } from '@/enums'
+import { AppThemes, AppUrls } from '@/enums'
 import { ReactQueryProvider } from '@/providers/react-query.providers'
 import PWAProvider from '@/providers/pwa.provider'
-import { INTER_FONT, INTER_TIGHT_FONT } from '@/config/theme.config'
-import { AppUrls } from '@/enums'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { PrivyProvider } from '@/providers/privy.provider'
 
 const image = {
-    url: '/market-maker.png',
-    width: 1494,
-    height: 444,
-    alt: 'Tycho Market Maker — minimal lovable market maker that showcases how to build a market maker with Tycho.',
+    url: '/og-image.png',
+    width: 1200,
+    height: 630,
+    alt: `${APP_METADATA.SITE_NAME} - ${APP_METADATA.SITE_DESCRIPTION}`,
     type: 'image/png',
 }
 
@@ -37,8 +36,8 @@ export const metadata: Metadata = {
 
     // Icons
     icons: {
-        icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/favicon.ico' }],
-        shortcut: '/favicon.ico',
+        icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/favicon.svg' }],
+        shortcut: '/favicon.svg',
         apple: '/apple-touch-icon.png',
     },
 
@@ -47,7 +46,7 @@ export const metadata: Metadata = {
         title: APP_METADATA.SHORT_NAME,
         capable: true,
         statusBarStyle: 'black-translucent',
-        startupImage: '/figma/logo/tap-5-logo.svg',
+        startupImage: '/apple-touch-icon.png',
     },
 
     // OpenGraph
@@ -72,13 +71,8 @@ export const metadata: Metadata = {
     },
 
     // Additional metadata
-    keywords: ['tycho', 'market maker', 'defi', 'trading', 'automated market maker', 'amm'],
-    authors: [
-        { name: APP_METADATA.AUTHOR.name, url: APP_METADATA.AUTHOR.url },
-        { name: 'xMerso', url: 'https://x.com/xMerso' },
-        { name: 'hugoschrng', url: 'https://x.com/hugoschrng' },
-        { name: 'PropellerHeads', url: 'https://www.propellerheads.xyz/' },
-    ],
+    keywords: ['nextjs', 'react', 'typescript', 'tailwind', 'prisma', 'boilerplate'],
+    authors: [{ name: APP_METADATA.AUTHOR.name, url: APP_METADATA.AUTHOR.url }],
     category: 'finance',
     robots: {
         index: true,
@@ -94,17 +88,13 @@ export const metadata: Metadata = {
 }
 
 const Providers = ({ children }: { children: React.ReactNode }) => (
-    <ThemeProvider
-        attribute="class"
-        defaultTheme={AppThemes.DARK}
-        forcedTheme={AppThemes.DARK}
-        disableTransitionOnChange
-        themes={Object.values(AppThemes)}
-    >
-        <ReactQueryProvider>
-            <NuqsAdapter>{children}</NuqsAdapter>
-        </ReactQueryProvider>
-    </ThemeProvider>
+    <PrivyProvider>
+        <ThemeProvider attribute="class" defaultTheme={AppThemes.LIGHT} disableTransitionOnChange themes={Object.values(AppThemes)}>
+            <ReactQueryProvider>
+                <NuqsAdapter>{children}</NuqsAdapter>
+            </ReactQueryProvider>
+        </ThemeProvider>
+    </PrivyProvider>
 )
 
 export default async function RootLayout({
@@ -121,23 +111,23 @@ export default async function RootLayout({
         applicationCategory: APP_METADATA.STRUCTURED_DATA.applicationCategory,
         operatingSystem: APP_METADATA.STRUCTURED_DATA.operatingSystem,
         author: {
-            '@type': Authors.PROPELLER_HEADS,
+            '@type': 'Person',
             name: APP_METADATA.AUTHOR.name,
-            url: AppUrls.PROPELLERHEADS_WEBSITE,
+            url: AppUrls.TAIKAI,
         },
     }
 
     return (
-        <html lang="en" suppressHydrationWarning className="h-screen w-screen bg-background">
+        <html lang="en" suppressHydrationWarning className="h-screen w-screen bg-background text-default">
             <head>
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
             </head>
             <body
                 className={cn(
-                    INTER_FONT.className,
-                    INTER_FONT.variable,
-                    INTER_TIGHT_FONT.variable,
-                    'min-h-screen w-full overflow-x-auto overflow-y-auto text-base text-milk',
+                    PVP_TRADE_FONT.className,
+                    LATO_FONT.className,
+                    TEODOR_LIGHT_FONT.variable,
+                    'min-h-screen w-full overflow-x-auto overflow-y-auto text-base',
                 )}
             >
                 <PWAProvider>
@@ -157,8 +147,6 @@ export default async function RootLayout({
                         </main>
                     </Providers>
                 </PWAProvider>
-                {/* <Hotjar /> */}
-                {/* <Analytics /> */}
             </body>
         </html>
     )

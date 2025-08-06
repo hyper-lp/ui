@@ -11,25 +11,8 @@ const config: Config = {
             },
             colors: {
                 background: 'hsl(var(--color-background) / <alpha-value>)',
-                jagger: {
-                    DEFAULT: 'hsl(var(--color-jagger) / <alpha-value>)',
-                    800: 'hsl(var(--color-jagger-800) / <alpha-value>)',
-                    500: 'hsl(var(--color-jagger-500) / <alpha-value>)',
-                    400: 'hsl(var(--color-jagger-400) / <alpha-value>)',
-                    300: 'hsl(var(--color-jagger-300) / <alpha-value>)',
-                    200: 'hsl(var(--color-jagger-200) / <alpha-value>)',
-                },
-                folly: 'hsl(var(--color-folly) / <alpha-value>)',
-                aquamarine: 'hsl(var(--color-aquamarine) / <alpha-value>)',
-                milk: {
-                    DEFAULT: 'hsl(var(--color-milk) / <alpha-value>)',
-                    600: 'hsl(var(--color-milk-600))',
-                    400: 'hsl(var(--color-milk-400))',
-                    200: 'hsl(var(--color-milk-200))',
-                    150: 'hsl(var(--color-milk-150))',
-                    100: 'hsl(var(--color-milk-100))',
-                    50: 'hsl(var(--color-milk-50))',
-                },
+                primary: 'hsl(var(--color-primary) / <alpha-value>)',
+                default: 'hsl(var(--color-default) / <alpha-value>)',
             },
             animation: {
                 'skeleton-move': 'skeleton-move 2s infinite',

@@ -8,13 +8,19 @@ import { IconIds } from '@/enums/icons.enum'
 
 interface PullToRefreshProps {
     children: ReactNode
-    onRefresh: () => Promise<void>
     className?: string
 }
 
-export default function PullToRefresh({ children, onRefresh, className }: PullToRefreshProps) {
+export default function PullToRefresh({ children, className }: PullToRefreshProps) {
+    // Override onRefresh to reload the whole page
+    const handlePageReload = async () => {
+        window.location.reload()
+        // Return a promise that never resolves to keep the loading state
+        return new Promise<void>(() => {})
+    }
+
     const { isPulling, pullDistance, isRefreshing, isReady } = usePullToRefresh({
-        onRefresh,
+        onRefresh: handlePageReload,
         threshold: 60,
         resistance: 2.5,
     })
@@ -47,7 +53,7 @@ export default function PullToRefresh({ children, onRefresh, className }: PullTo
                         <div
                             className={cn(
                                 'size-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center',
-                                isRefreshing || isReady ? 'border-aquamarine bg-aquamarine/20' : 'border-milk-300 bg-milk-100',
+                                isRefreshing || isReady ? 'border-primary bg-primary/20' : '',
                             )}
                             style={{
                                 transform: isRefreshing
@@ -57,13 +63,13 @@ export default function PullToRefresh({ children, onRefresh, className }: PullTo
                         >
                             <IconWrapper
                                 id={IconIds.REFRESH}
-                                className={cn('size-6', showSpinner && 'animate-spin', isRefreshing || isReady ? 'text-aquamarine' : 'text-milk-400')}
+                                className={cn('size-6', showSpinner && 'animate-spin', isRefreshing || isReady ? 'text-primary' : '')}
                                 style={{
                                     transform: isRefreshing ? undefined : `rotate(${-Math.min(pullDistance * 2, 180)}deg)`,
                                 }}
                             />
                         </div>
-                        <p className="text-xs text-aquamarine mt-2">Reload</p>
+                        <p className="text-xs text-primary mt-2">Reload</p>
                     </div>
                 </div>
             )}

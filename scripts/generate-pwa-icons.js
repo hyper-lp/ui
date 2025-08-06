@@ -5,11 +5,11 @@ const path = require('path');
 // Icon sizes needed for PWA
 const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
 
-// Path to TAP-5 logo SVG
-const tap5LogoPath = path.join(__dirname, '../public/figma/logo/tap-5-logo.svg');
+// Path to new logo SVG
+const logoPath = path.join(__dirname, 'new-logo-to-replace-others.svg');
 
-// Read the TAP-5 logo SVG
-const tap5LogoSvg = fs.readFileSync(tap5LogoPath, 'utf8');
+// Read the logo SVG
+const logoSvg = fs.readFileSync(logoPath, 'utf8');
 
 // Ensure icons directory exists
 const iconsDir = path.join(__dirname, '../public/icons');
@@ -19,14 +19,14 @@ if (!fs.existsSync(iconsDir)) {
 
 // Generate icons
 async function generateIcons() {
-    console.log('Generating PWA icons from TAP-5 logo...\n');
+    console.log('Generating PWA icons from new logo...\n');
     
     for (const size of sizes) {
         const filename = `icon-${size}x${size}.png`;
         const filepath = path.join(iconsDir, filename);
         
         try {
-            await sharp(Buffer.from(tap5LogoSvg))
+            await sharp(Buffer.from(logoSvg))
                 .resize(size, size)
                 .png()
                 .toFile(filepath);
@@ -40,7 +40,7 @@ async function generateIcons() {
     // Create maskable icon (with padding for safe area)
     const maskableSize = 512;
     try {
-        await sharp(Buffer.from(tap5LogoSvg))
+        await sharp(Buffer.from(logoSvg))
             .resize(maskableSize, maskableSize)
             .png()
             .toFile(path.join(iconsDir, 'icon-maskable.png'));
@@ -52,7 +52,7 @@ async function generateIcons() {
     
     // Create apple-touch-icon (180x180)
     try {
-        await sharp(Buffer.from(tap5LogoSvg))
+        await sharp(Buffer.from(logoSvg))
             .resize(180, 180)
             .png()
             .toFile(path.join(__dirname, '../public/apple-touch-icon.png'));

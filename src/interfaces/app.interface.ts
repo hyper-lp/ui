@@ -1,32 +1,33 @@
-import { AppSupportedChainIds, AppUrls } from '../enums'
+import { AppUrls } from '../enums'
 
 export interface InterfaceAppLink {
     name: string
-    path: AppUrls
+    path: AppUrls | string
 }
 
 export interface StructuredOutput<Data> {
     success: boolean
     data?: Data
-    error: string
+    error?: string
 }
 
-export interface ChainConfig {
-    id: AppSupportedChainIds
-    name: string
-    oneInchId: string
-    supported: boolean
-    explorerRoot: string
-    nativeToken?: {
-        symbol: string
-        decimals: number
-    }
-    debankId: string // https://docs.cloud.debank.com/en/readme/api-pro-reference/chain
-    chainlinkFeeds?: Record<string, string> // Price feed addresses for this chain
+export interface ApiResponse<T> {
+    data?: T
+    error?: string
+    status: number
 }
 
-export interface TokenConfig {
-    address: string
-    decimals: number
-    symbol: string
+export interface PaginationParams {
+    page?: number
+    limit?: number
+    orderBy?: string
+    order?: 'asc' | 'desc'
+}
+
+export interface PaginatedResponse<T> {
+    items: T[]
+    total: number
+    page: number
+    limit: number
+    totalPages: number
 }

@@ -11,15 +11,12 @@ export const env = createEnv({
         // Database
         DATABASE_URL: z.string().url(),
 
-        // OneInch
-        ONEINCH_API_KEY: z.string().min(1),
+        // Privy Server-side
+        PRIVY_APP_SECRET: z.string().optional(),
 
-        // rpc
-        INFURA_API_KEY: z.string().optional(),
-        ALCHEMY_API_KEY: z.string().optional(),
-
-        // debank
-        DEBANK_ACCESS_KEY: z.string().min(1),
+        // API Security
+        API_SECRET_KEY: z.string().optional(),
+        RATE_LIMIT_ENABLED: z.string().optional().default('true'),
     },
 
     /**
@@ -31,6 +28,7 @@ export const env = createEnv({
         NEXT_PUBLIC_APP_URL: z.string().min(1),
         NEXT_PUBLIC_COMMIT_TIMESTAMP: z.string().optional(),
         NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: z.string().optional(),
+        NEXT_PUBLIC_PRIVY_APP_ID: z.string().min(1),
     },
 
     /**
@@ -40,15 +38,15 @@ export const env = createEnv({
     runtimeEnv: {
         // Server
         DATABASE_URL: process.env.DATABASE_URL,
-        ONEINCH_API_KEY: process.env.ONEINCH_API_KEY,
-        INFURA_API_KEY: process.env.INFURA_API_KEY,
-        ALCHEMY_API_KEY: process.env.ALCHEMY_API_KEY,
-        DEBANK_ACCESS_KEY: process.env.DEBANK_ACCESS_KEY,
+        PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET,
+        API_SECRET_KEY: process.env.API_SECRET_KEY,
+        RATE_LIMIT_ENABLED: process.env.RATE_LIMIT_ENABLED,
 
         // Client
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
         NEXT_PUBLIC_COMMIT_TIMESTAMP: process.env.NEXT_PUBLIC_COMMIT_TIMESTAMP,
         NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID,
+        NEXT_PUBLIC_PRIVY_APP_ID: process.env.NEXT_PUBLIC_PRIVY_APP_ID,
     },
 
     emptyStringAsUndefined: true,

@@ -7,49 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Trade {
-  id         String   @id
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime
-  instanceId String
-  values     Json
-  Instance   Instance @relation(fields: [instanceId], references: [id])
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Price {
-  id         String   @id
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime
-  instanceId String
-  value      Json
-  Instance   Instance @relation(fields: [instanceId], references: [id])
-}
-
-model Configuration {
-  id                String     @id
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime
-  values            Json
-  hash              String
-  chainId           Int
-  baseTokenAddress  String
-  quoteTokenAddress String
-  baseTokenSymbol   String
-  quoteTokenSymbol  String
-  Instance          Instance[]
-}
-
-model Instance {
-  id              String         @id
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime
-  config          Json
-  configurationId String?
-  startedAt       DateTime       @default(now())
-  endedAt         DateTime?
-  commit          String
-  identifier      String
-  Configuration   Configuration? @relation(fields: [configurationId], references: [id])
-  Price           Price[]
-  Trade           Trade[]
+model Waitlist {
+  id              String   @id @default(cuid())
+  twitterId       String   @unique
+  twitterHandle   String
+  twitterName     String?
+  twitterAvatar   String?
+  email           String?
+  createdAt       DateTime @default(now())
+  approved        Boolean  @default(false)
+  position        Int      @default(autoincrement())
+  referredBy      String?  // Twitter handle of the referrer
+  referralCount   Int      @default(0)
 }

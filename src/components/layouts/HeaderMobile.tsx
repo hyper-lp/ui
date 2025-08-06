@@ -2,33 +2,27 @@
 
 import { APP_PAGES } from '@/config/app.config'
 import { useAppStore } from '@/stores/app.store'
-import { cn, isCurrentPath } from '@/utils'
+import { cn } from '@/utils'
 import { useRef, useEffect } from 'react'
 import { useKeyboardShortcut } from '@/hooks/helpers/useKeyboardShortcutArgs'
 import Image from 'next/image'
 import { AppUrls, IconIds, FileIds } from '@/enums'
 import IconWrapper from '../icons/IconWrapper'
 import LinkWrapper from '../common/LinkWrapper'
-import { usePathname } from 'next/navigation'
-import GridDropdownButton from './GridDropdownButton'
 import { AnimatePresence, motion } from 'framer-motion'
-import Authors from './Authors'
+import Authors from '../common/Authors'
+import { WaitlistButton } from '../app/WaitlistButton'
+import { WaitlistForm } from '../app/WaitlistForm'
+import { usePrivy } from '@privy-io/react-auth'
+import ThemeSwitcher from '../common/ThemeSwitcher'
 
 export default function HeaderMobile() {
     const { showMobileMenu, setShowMobileMenu } = useAppStore()
-
-    const pathname = usePathname()
-    const isStrategyPage = pathname.includes('/strategies/')
+    const { authenticated, ready } = usePrivy()
 
     // menu
     const menuDropdown = useRef<HTMLButtonElement>(null)
     useKeyboardShortcut({ key: 'Escape', onKeyPressed: () => setShowMobileMenu(false) })
-
-    const handleLinkClick = () => {
-        setTimeout(() => {
-            setShowMobileMenu(false)
-        }, 400)
-    }
 
     // Lock body scroll when menu is open
     useEffect(() => {
@@ -48,17 +42,18 @@ export default function HeaderMobile() {
     }, [showMobileMenu])
 
     return (
-        <div className="flex justify-center z-50 w-full">
-            <div className="w-full lg:hidden flex justify-between px-5 py-4 ">
+        <header className="flex justify-center z-50 w-full">
+            <div className="w-full md:hidden flex justify-between px-5 py-4 ">
                 {/* left */}
-                <div className="flex gap-4 items-center z-30">
-                    <GridDropdownButton />
-
+                <div className="flex gap-4 items-center z-30 grow">
                     {/* logo */}
-                    {/* <Image src={FileIds.APP_LOGO_MOBILE_WINTERCUTE} alt={FileIds.APP_LOGO_MOBILE_WINTERCUTE} width={160} height={24} /> */}
-                    {/* <Image src={FileIds.APP_LOGO_MOBILE_TYCHO} alt={FileIds.APP_LOGO_MOBILE_TYCHO} width={160} height={24} /> */}
-                    <LinkWrapper href={AppUrls.STRATEGIES} className="cursor-pointer">
-                        <Image src={FileIds.APP_LOGO_DOUBLE_M} alt={FileIds.APP_LOGO_DOUBLE_M} width={151} height={24} />
+                    <LinkWrapper href={AppUrls.HOME} className="cursor-pointer flex items-center gap-2">
+                        <Image src={FileIds.APP_LOGO} alt="Logo" width={40} height={40} />
+                        {/* <p className="text-2xl font-bold">{SITE_NAME}</p> */}
+                        <p className="text-2xl font-light">
+                            Hyper
+                            <span className="italic -ml-0.5">LP</span>
+                        </p>
                     </LinkWrapper>
                 </div>
 
@@ -68,9 +63,9 @@ export default function HeaderMobile() {
                     <button
                         ref={menuDropdown}
                         onClick={() => setShowMobileMenu(!showMobileMenu)}
-                        className="flex items-center gap-1 bg-milk-100 transition-colors duration-300 hover:bg-milk-100 rounded-xl h-9 px-2.5"
+                        className="flex items-center gap-1 transition-colors duration-300 rounded-xl h-9 px-2.5"
                     >
-                        <IconWrapper id={showMobileMenu ? IconIds.CLOSE : IconIds.MENU} className="size-5" />
+                        <IconWrapper id={showMobileMenu ? IconIds.CLOSE : IconIds.MENU} className="size-8" />
                     </button>
                 </div>
             </div>
@@ -96,57 +91,65 @@ export default function HeaderMobile() {
                             transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
                             className="absolute inset-2 z-30 flex items-center justify-center h-fit flex-col gap-4 pt-28"
                         >
-                            {APP_PAGES.map((page, index) => (
-                                <motion.div
-                                    key={page.path}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * index }}
-                                >
-                                    <LinkWrapper href={page.path} className={cn('rounded-lg', { 'bg-milk-100': isCurrentPath(pathname, page.path) })}>
-                                        <p
-                                            className={cn('text-base text-milk px-2.5 py-2 hover:bg-milk-100 rounded-xl cursor-pointer', {
-                                                'bg-milk-100':
-                                                    isCurrentPath(pathname, page.path) || (isStrategyPage && page.path === AppUrls.STRATEGIES),
-                                            })}
-                                            onClick={handleLinkClick}
-                                        >
-                                            {page.name}
-                                        </p>
-                                    </LinkWrapper>
-                                </motion.div>
-                            ))}
+                            {/* Waitlist Button/Form at the top */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="mb-4"
+                            >
+                                <LinkWrapper href={AppUrls.TAIKAI} className="flex items-center gap-1" target="_blank">
+                                    <p className="text-lg truncate hover:underline hover:text-primary cursor-alias">
+                                        Hyperliquid Community Hackathon
+                                    </p>
+                                    <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-4" />
+                                </LinkWrapper>
+                            </motion.div>
                             <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
-                                transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * APP_PAGES.length }}
+                                transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
+                                className="mt-10"
                             >
-                                <LinkWrapper
-                                    href={AppUrls.DOCUMENTATION}
-                                    target="_blank"
-                                    className="flex items-center gap-1 cursor-alias p-2.5 group"
-                                >
-                                    <p className="text-base group-hover:underline">Docs (Run locally)</p>
-                                    <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-4" />
-                                </LinkWrapper>
+                                {!ready ? (
+                                    <div className="h-10 w-40 skeleton-loading" />
+                                ) : authenticated ? (
+                                    <WaitlistForm />
+                                ) : (
+                                    <div className="flex flex-col gap-2 items-center">
+                                        <WaitlistButton />
+                                        <LinkWrapper href={AppUrls.PRIVY}>
+                                            <p className="text-xs italic">Powered by Privy</p>
+                                        </LinkWrapper>
+                                    </div>
+                                )}
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
+                                className="mt-10"
+                            >
+                                <ThemeSwitcher iconClassName="size-10" buttonClassName="p-4 py-2.5 rounded-2xl" />
                             </motion.div>
                         </motion.nav>
 
-                        {/* Authors - at bottom */}
+                        {/* Footer info - at bottom */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            transition={{ duration: 0.4, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
+                            transition={{ duration: 0.4, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 2) }}
                             className="absolute bottom-32 text-center max-w-[300px]"
                         >
-                            <Authors className="text-sm text-milk-200 mx-auto justify-center" />
+                            <Authors />
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </header>
     )
 }

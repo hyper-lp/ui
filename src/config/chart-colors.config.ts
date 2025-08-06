@@ -1,60 +1,38 @@
 export const ChartColors = {
     light: {
-        // Background
-        background: '#190A35',
-
-        // Jagger colors
-        jagger: '#380a53',
-        jaggerOpacity: {
-            800: 'rgba(56, 10, 83, 0.8)',
-            500: 'rgba(56, 10, 83, 0.56)',
-            400: 'rgba(56, 10, 83, 0.4)',
-            300: 'rgba(56, 10, 83, 0.27)',
-            200: 'rgba(56, 10, 83, 0.1)',
-        },
-
-        // Other colors
-        folly: '#ff3366',
-        aquamarine: '#00ffbb',
-
-        // Milk colors
-        milk: '#fff4e0',
-        milkOpacity: {
-            600: 'rgba(255, 244, 224, 0.64)',
-            400: 'rgba(255, 244, 224, 0.4)',
-            200: 'rgba(255, 244, 224, 0.2)',
-            150: 'rgba(255, 244, 224, 0.1)',
-            100: 'rgba(255, 244, 224, 0.07)',
-            50: 'rgba(255, 244, 224, 0.02)',
-        },
+        primary: '#26a69a',
+        background: '#ffffff',
+        tooltipBackground: 'rgba(255, 255, 255, 0.98)', // Slightly transparent white
+        default: '#000000',
+        heatmapGradient: [
+            // Light mode colors - from light to dark for contrast
+            '#f6fefd', // Off-White (lowest)
+            '#d1d4dc', // Light Gray
+            '#949e9c', // Pale Gray
+            '#868993', // Warm Gray
+            '#50d2c1', // Teal
+            '#22ab94', // primary (Hyperliquid signature)
+            '#089891', // Sea Green
+            '#142e61', // Deep Blue
+            '#0f1a1f', // Oil Black (highest - maximum contrast)
+        ],
     },
     dark: {
-        // Background - deeper purple/black
-        background: '#0a0515',
-
-        // Jagger colors - lighter/more vibrant purples
-        jagger: '#6b1a8c',
-        jaggerOpacity: {
-            800: 'rgba(107, 26, 140, 0.8)',
-            500: 'rgba(107, 26, 140, 0.56)',
-            400: 'rgba(107, 26, 140, 0.4)',
-            300: 'rgba(107, 26, 140, 0.27)',
-            200: 'rgba(107, 26, 140, 0.1)',
-        },
-
-        // Other colors - slightly adjusted for dark mode
-        folly: '#ff4d7a',
-        aquamarine: '#00ffc4',
-
-        // Milk colors - adjusted for dark theme
-        milk: '#fff9f0',
-        milkOpacity: {
-            600: 'rgba(255, 249, 240, 0.64)',
-            400: 'rgba(255, 249, 240, 0.4)',
-            200: 'rgba(255, 249, 240, 0.2)',
-            150: 'rgba(255, 249, 240, 0.1)',
-            100: 'rgba(255, 249, 240, 0.07)',
-            50: 'rgba(255, 249, 240, 0.02)',
-        },
+        primary: '#4db6ac',
+        background: '#000000',
+        tooltipBackground: 'rgba(20, 30, 45, 0.99)', // Dark blue-gray with slight transparency
+        default: '#ffffff',
+        heatmapGradient: [
+            // Dark mode colors - from dark to bright for contrast
+            '#0f1a1f', // Oil Black (lowest)
+            '#142e61', // Deep Blue
+            '#2e313c', // Charcoal Blue
+            '#434651', // Dark Gray
+            '#089891', // Sea Green
+            '#22ab94', // primary (Hyperliquid signature)
+            '#50d2c1', // Teal
+            '#26a69a', // Muted Turquoise
+            '#bbd9fb', // Soft Blue (highest - bright for contrast)
+        ],
     },
 }

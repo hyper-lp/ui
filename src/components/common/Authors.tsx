@@ -1,10 +1,11 @@
 'use client'
 
 import StyledTooltip from '../common/StyledTooltip'
-import { AppUrls } from '@/enums'
+import { AppUrls, IconIds } from '@/enums'
 import LinkWrapper from '../common/LinkWrapper'
 import { cn } from '@/utils'
 import IframeWrapper from './IframeWrapper'
+import IconWrapper from '../icons/IconWrapper'
 
 export default function Authors(props: { className?: string }) {
     return (
@@ -21,13 +22,50 @@ export default function Authors(props: { className?: string }) {
                 </StyledTooltip>
             </p>
             <p className="text-wrap">
-                <LinkWrapper
-                    href={AppUrls.KATALYSTER_TWITTER}
-                    target="_blank"
-                    className="underline-offset-2 cursor-alias hover:underline hover:text-primary"
+                <StyledTooltip
+                    placement="top"
+                    closeDelay={500}
+                    content={
+                        <div className="flex flex-col gap-4 bg-background p-2 rounded-lg">
+                            {[
+                                {
+                                    name: 'Telegram',
+                                    iconIds: IconIds.TELEGRAM,
+                                    description: 'https://t.me/katalyster',
+                                },
+                                {
+                                    name: 'Twitter',
+                                    iconIds: IconIds.X,
+                                    description: 'https://x.com/Katalyster',
+                                },
+                                {
+                                    name: 'Linkedin',
+                                    iconIds: IconIds.LINKEDIN,
+                                    description: 'https://www.linkedin.com/in/msaubin/',
+                                },
+                            ].map((social) => (
+                                <div key={social.name}>
+                                    <LinkWrapper
+                                        href={social.description}
+                                        target="_blank"
+                                        className="underline-offset-2 cursor-alias hover:underline hover:text-primary flex items-center gap-1"
+                                    >
+                                        <IconWrapper id={social.iconIds} className="w-4 h-4 mr-1" />
+                                        {social.name}
+                                    </LinkWrapper>
+                                </div>
+                            ))}
+                        </div>
+                    }
                 >
-                    Katalyster
-                </LinkWrapper>
+                    <LinkWrapper
+                        href={AppUrls.KATALYSTER_TWITTER}
+                        target="_blank"
+                        className="underline-offset-2 cursor-alias hover:underline hover:text-primary"
+                    >
+                        Katalyster
+                    </LinkWrapper>
+                </StyledTooltip>
             </p>
             <p className="text-wrap">and</p>
             <p className="text-wrap">

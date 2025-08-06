@@ -74,11 +74,18 @@ export function calculateNetApr(lpApr: number, fundingApr: number): number {
  * @param fundingApr - Funding APR value
  * @param netApr - Net APR value
  * @returns Formatted data for tooltip display
+ *
+ * Note: The "years to Nx" calculation assumes simple interest, not compounding.
+ * For compounding, the formula should be: years = log(N) / log(1 + netApr/100)
+ * The current code uses: years = (N - 1) * 100 / netApr
+ * If you want compounding, use Math.log(N) / Math.log(1 + netApr/100)
  */
 export function formatTooltipData(lpApr: number, fundingApr: number, netApr: number) {
-    const yearsTo2x = netApr > 0 ? numeral(100 / netApr).format('0.0.[0]') : null
-    const yearsTo5x = netApr > 0 ? numeral(400 / netApr).format('0.0.[0]') : null
-    const yearsTo10x = netApr > 0 ? numeral(900 / netApr).format('0.0.[0]') : null
+    // Use compounding formula for years to Nx
+    const aprDecimal = netApr / 100
+    const yearsTo2x = aprDecimal > 0 ? numeral(Math.log(2) / Math.log(1 + aprDecimal)).format('0.0.[0]') : null
+    const yearsTo5x = aprDecimal > 0 ? numeral(Math.log(5) / Math.log(1 + aprDecimal)).format('0.0.[0]') : null
+    const yearsTo10x = aprDecimal > 0 ? numeral(Math.log(10) / Math.log(1 + aprDecimal)).format('0.0.[0]') : null
 
     return {
         lpApr: `${lpApr}%`,

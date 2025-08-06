@@ -1,45 +1,14 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { decodeReferralCode } from '@/utils/referral.util'
-import { headers } from 'next/headers'
-import { env } from '@/env/t3-env'
+import { checkRateLimit } from '@/utils/rate-limit.util'
+import { getClientIp, isValidTwitterId, isValidTwitterHandle, sanitizeInput } from '@/utils/validation.util'
 import { requireTwitterAuth } from '@/lib/privy-server'
-
-// Rate limiting map (in production, use Redis or similar)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
-
-function checkRateLimit(identifier: string, maxRequests = 5, windowMs = 60000): boolean {
-    // Skip rate limiting in development if disabled
-    if (env.RATE_LIMIT_ENABLED !== 'true') {
-        return true
-    }
-
-    const now = Date.now()
-    const limit = rateLimitMap.get(identifier)
-
-    if (!limit || now > limit.resetTime) {
-        rateLimitMap.set(identifier, {
-            count: 1,
-            resetTime: now + windowMs,
-        })
-        return true
-    }
-
-    if (limit.count >= maxRequests) {
-        return false
-    }
-
-    limit.count++
-    return true
-}
 
 export async function POST(request: NextRequest) {
     try {
         // Get IP for rate limiting
-        const headersList = await headers()
-        const forwardedFor = headersList.get('x-forwarded-for')
-        const realIp = headersList.get('x-real-ip')
-        const clientIp = forwardedFor?.split(',')[0] || realIp || 'unknown'
+        const clientIp = getClientIp(request)
 
         // Rate limit by IP
         if (!checkRateLimit(`ip:${clientIp}`, 10, 300000)) {
@@ -60,12 +29,20 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
             }
 
+            // Validate inputs
+            if (!isValidTwitterId(twitterId)) {
+                return NextResponse.json({ error: 'Invalid Twitter ID format' }, { status: 400 })
+            }
+            if (!isValidTwitterHandle(twitterHandle)) {
+                return NextResponse.json({ error: 'Invalid Twitter handle format' }, { status: 400 })
+            }
+
             // Use body data if no auth token (development mode)
             const account = {
                 id: twitterId,
                 username: twitterHandle,
-                name: twitterName,
-                profilePictureUrl: twitterAvatar,
+                name: sanitizeInput(twitterName, 100),
+                profilePictureUrl: sanitizeInput(twitterAvatar, 500),
             }
 
             return handleWaitlistJoin(request, account, email, referralCode)

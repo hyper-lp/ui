@@ -74,6 +74,7 @@ export async function GET() {
             approved: waitlistEntry.approved,
             joinedAt: waitlistEntry.createdAt,
             referralCount: waitlistEntry.referralCount,
+            referredBy: waitlistEntry.referredBy,
         })
     } catch (error) {
         // Log error securely

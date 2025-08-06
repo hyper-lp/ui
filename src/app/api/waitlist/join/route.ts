@@ -209,6 +209,7 @@ async function handleWaitlistJoin(
                 message: 'Successfully joined waitlist',
                 position: newEntry.position,
                 referralCount: 0,
+                referredBy: newEntry.referredBy,
                 totalCount,
             },
             { status: 201 },

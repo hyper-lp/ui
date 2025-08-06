@@ -22,6 +22,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
     const [referralUrl, setReferralUrl] = useState<string | null>(null)
     const [copySuccess, setCopySuccess] = useState(false)
     const [isAutoJoining, setIsAutoJoining] = useState(false)
+    const [referredBy, setReferredBy] = useState<string | null>(null)
 
     const checkWaitlistStatus = useCallback(async () => {
         try {
@@ -36,6 +37,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                     setIsSubmitted(true)
                     setPosition(data.position)
                     setReferralCount(data.referralCount)
+                    setReferredBy(data.referredBy || null)
                     if (user?.twitter?.subject) {
                         const url = generateReferralUrl(user.twitter.subject, window.location.origin)
                         setReferralUrl(url)
@@ -79,6 +81,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                 setIsSubmitted(true)
                 setPosition(data.position)
                 setReferralCount(data.referralCount || 0)
+                setReferredBy(data.referredBy || null)
                 if (user?.twitter?.subject) {
                     const url = generateReferralUrl(user.twitter.subject, window.location.origin)
                     setReferralUrl(url)
@@ -137,6 +140,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
             setIsSubmitted(true)
             setPosition(data.position)
             setReferralCount(data.referralCount || 0)
+            setReferredBy(data.referredBy || null)
             if (user?.twitter?.subject) {
                 const url = generateReferralUrl(user.twitter.subject, window.location.origin)
                 setReferralUrl(url)
@@ -161,9 +165,16 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                     {/* Left: Checkmark and waitlist confirmation */}
                     <div className="flex items-center gap-2">
                         <IconWrapper id={IconIds.CHECKMARK} className="h-5 w-5 text-primary flex-shrink-0" />
-                        <p className="text-sm font-medium text-default">
-                            {user.twitter.name} #{position || '...'} on the waitlist
-                        </p>
+                        <div className="flex flex-col">
+                            <p className="text-sm font-medium text-default">
+                                {user.twitter.name} #{position || '...'} on the waitlist
+                            </p>
+                            {referredBy && (
+                                <p className="text-xs text-default/60">
+                                    Referred by @{referredBy}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Right: Actions */}

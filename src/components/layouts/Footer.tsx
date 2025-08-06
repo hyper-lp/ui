@@ -36,6 +36,9 @@ export default function Footer(props: { className?: string }) {
                 <LinkWrapper href={AppUrls.TAIKAI} target="_blank" className="hidden md:flex">
                     <p className="truncate hover:underline hover:text-primary cursor-alias">Hyperliquid Community Hackathon</p>
                 </LinkWrapper>
+                <LinkWrapper href={AppUrls.DOCS} target="_blank">
+                    <p className="truncate hover:underline hover:text-primary cursor-alias">Docs</p>
+                </LinkWrapper>
             </div>
 
             {/* right */}

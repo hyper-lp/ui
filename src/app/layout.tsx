@@ -18,11 +18,11 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { PrivyProvider } from '@/providers/privy.provider'
 
 const image = {
-    url: '/og-image.png',
-    width: 1200,
-    height: 630,
+    url: '/1500x500.jpeg',
+    width: 1500,
+    height: 500,
     alt: `${APP_METADATA.SITE_NAME} - ${APP_METADATA.SITE_DESCRIPTION}`,
-    type: 'image/png',
+    type: 'image/jpeg',
 }
 
 export const metadata: Metadata = {

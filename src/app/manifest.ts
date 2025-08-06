@@ -13,6 +13,15 @@ export default function manifest(): MetadataRoute.Manifest {
         theme_color: '#111111',
         lang: 'en',
         categories: ['productivity', 'developer', 'tools'],
+        screenshots: [
+            {
+                src: '/1500x500.jpeg',
+                sizes: '1500x500',
+                type: 'image/jpeg',
+                form_factor: 'wide',
+                label: 'HyperLP - Delta-neutral LP vault on Hyperliquid',
+            },
+        ],
         icons: [
             {
                 src: '/favicon.svg',

@@ -16,6 +16,7 @@ import { ReactQueryProvider } from '@/providers/react-query.providers'
 import PWAProvider from '@/providers/pwa.provider'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { PrivyProvider } from '@/providers/privy.provider'
+import { Analytics } from '@vercel/analytics/next'
 
 const image = {
     url: '/1500x500.jpeg',
@@ -147,6 +148,7 @@ export default async function RootLayout({
                         </main>
                     </Providers>
                 </PWAProvider>
+                <Analytics />
             </body>
         </html>
     )

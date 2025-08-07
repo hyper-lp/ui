@@ -9,7 +9,7 @@ import IconWrapper from '../icons/IconWrapper'
 
 export default function Authors(props: { className?: string }) {
     return (
-        <div className={cn('flex flex-wrap gap-x-1', props.className)}>
+        <div className={cn('flex flex-wrap gap-x-1 items-center', props.className)}>
             <p className="text-wrap">
                 <StyledTooltip placement="top" closeDelay={500} content={<IframeWrapper src={AppUrls.MERSO_WEBSITE} />}>
                     <LinkWrapper
@@ -79,7 +79,10 @@ export default function Authors(props: { className?: string }) {
                     </LinkWrapper>
                 </StyledTooltip>
             </p>
-            <p>- reach out to help</p>
+            <span>|</span>
+            <LinkWrapper href={AppUrls.CONTACT_US} className="underline-offset-2 cursor-alias hover:underline hover:text-primary">
+                contact
+            </LinkWrapper>
         </div>
     )
 }

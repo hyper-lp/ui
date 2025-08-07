@@ -10,6 +10,7 @@ export enum AppUrls {
     GITHUB = 'https://github.com/hyperlp',
     PRIVY = 'https://www.privy.io/',
     DOCS = 'https://arxiv.org/pdf/2407.05146',
+    CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
 
     // Authors
     MERSO_WEBSITE = 'https://merso.xyz',

@@ -85,6 +85,12 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                 if (user?.twitter?.subject) {
                     const url = generateReferralUrl(user.twitter.subject, window.location.origin)
                     setReferralUrl(url)
+                    console.log('Your referral URL:', url)
+                    console.log('Your Twitter ID:', user.twitter.subject)
+                }
+                if (referralCode) {
+                    console.log('You were referred with code:', referralCode)
+                    console.log('Referred by:', data.referredBy || 'NOT SET - CHECK LOGS')
                 }
                 toast.success('Successfully joined the waitlist!')
             }
@@ -182,11 +188,12 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                                     referralUrl || (user.twitter?.subject ? generateReferralUrl(user.twitter.subject, window.location.origin) : '')
                                 navigator.clipboard.writeText(url)
                                 setCopySuccess(true)
-                                toast.success('Referral link copied')
+                                toast.success(`Referral link copied: ${url}`)
+                                console.log('Referral URL copied:', url)
                                 setTimeout(() => setCopySuccess(false), 2000)
                             }}
                             className="flex items-center gap-1.5 text-xs text-default/60 hover:text-default transition-colors group"
-                            title={`${referralCount} referrals`}
+                            title={`${referralCount} referrals | Click to copy your referral link`}
                         >
                             <span>Referral</span>
                             {referralCount > 0 && <span className="text-primary">({referralCount})</span>}

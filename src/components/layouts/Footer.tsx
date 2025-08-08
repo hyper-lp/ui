@@ -6,10 +6,9 @@ import { env } from '@/env/t3-env'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import Authors from '../common/Authors'
-import { SITE_NAME } from '@/config/app.config'
 import LinkWrapper from '../common/LinkWrapper'
 import { AppUrls } from '@/enums'
+import StyledTooltip from '../common/StyledTooltip'
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
 
@@ -24,15 +23,15 @@ export default function Footer(props: { className?: string }) {
     }, [])
     if (!commitDate) return null
     return (
-        <footer
-            className={cn('w-full flex flex-col md:flex-row md:justify-between md:items-end px-8 font-light text-xs gap-2 md:gap-0', props.className)}
-        >
+        <footer className={cn('w-full flex justify-between px-6 font-light text-xs gap-2 md:gap-0', props.className)}>
             {/* left */}
             <div className="flex gap-8 flex-row">
-                <p className="truncate hidden md:flex">August 2025 © {SITE_NAME}</p>
-                {/* <StyledTooltip closeDelay={500} content={<p>Deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</p>}>
-                    <p className="truncate hover:underline hover:text-primary">Alpha version</p>
-                </StyledTooltip> */}
+                <div className="hidden md:flex">
+                    <StyledTooltip closeDelay={500} content={<p>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</p>}>
+                        <p className="truncate">Aug. 2025</p>
+                    </StyledTooltip>
+                </div>
+
                 <LinkWrapper href={AppUrls.TAIKAI} target="_blank" className="hidden md:flex">
                     <p className="truncate hover:underline hover:text-primary cursor-alias">Hyperliquid Community Hackathon</p>
                 </LinkWrapper>
@@ -42,7 +41,10 @@ export default function Footer(props: { className?: string }) {
             </div>
 
             {/* right */}
-            <Authors className="justify-start md:justify-end" />
+            <LinkWrapper href={AppUrls.CONTACT_US} className="underline-offset-2 cursor-alias hover:underline hover:text-primary">
+                Contact
+            </LinkWrapper>
+            {/* <Authors className="justify-start md:justify-end" /> */}
         </footer>
     )
 }

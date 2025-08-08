@@ -79,10 +79,6 @@ export default function Authors(props: { className?: string }) {
                     </LinkWrapper>
                 </StyledTooltip>
             </p>
-            <span>|</span>
-            <LinkWrapper href={AppUrls.CONTACT_US} className="underline-offset-2 cursor-alias hover:underline hover:text-primary">
-                contact
-            </LinkWrapper>
         </div>
     )
 }

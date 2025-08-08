@@ -11,7 +11,7 @@ const HeatmapAprChart = lazy(() => import('@/components/charts/HeatmapAprChart')
 // Loading fallback for chart with animation
 const ChartSkeleton = () => (
     <motion.div
-        className="w-full h-[500px] bg-background/5 rounded-lg flex items-center justify-center"
+        className="w-full h-[500px] bg-background/20 rounded-lg flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}

@@ -38,7 +38,7 @@ export function WaitlistButton({ className, onSuccess }: WaitlistButtonProps) {
             <button
                 disabled
                 className={cn(
-                    'flex items-center justify-center gap-3 rounded-lg bg-background/50 px-6 py-3 text-sm font-medium text-default opacity-50',
+                    'flex items-center justify-center gap-3 rounded-lg bg-background/200 px-6 py-3 text-sm font-medium text-default opacity-50',
                     className,
                 )}
             >

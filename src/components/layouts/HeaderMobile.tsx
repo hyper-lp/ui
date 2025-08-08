@@ -10,7 +10,6 @@ import { AppUrls, IconIds, FileIds } from '@/enums'
 import IconWrapper from '../icons/IconWrapper'
 import LinkWrapper from '../common/LinkWrapper'
 import { AnimatePresence, motion } from 'framer-motion'
-import Authors from '../common/Authors'
 import { WaitlistButton } from '../app/WaitlistButton'
 import { WaitlistForm } from '../app/WaitlistForm'
 import { usePrivy } from '@privy-io/react-auth'
@@ -133,7 +132,7 @@ export default function HeaderMobile() {
                                 transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
                                 className="my-10"
                             >
-                                <ThemeSwitcher iconClassName="size-10" buttonClassName="p-4 py-2.5 rounded-2xl" />
+                                <ThemeSwitcher iconClassName="size-10" buttonClassName="p-4 py-3 rounded-2xl" containerClassName="gap-4" />
                             </motion.div>
                         </motion.nav>
 
@@ -145,7 +144,10 @@ export default function HeaderMobile() {
                             transition={{ duration: 0.4, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 2) }}
                             className="absolute bottom-32 text-center max-w-[300px]"
                         >
-                            <Authors />
+                            {/* <Authors /> */}
+                            <LinkWrapper href={AppUrls.CONTACT_US} className="underline-offset-2 cursor-alias hover:underline hover:text-primary">
+                                Contact
+                            </LinkWrapper>
                         </motion.div>
                     </motion.div>
                 )}

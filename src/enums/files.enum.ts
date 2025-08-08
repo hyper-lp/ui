@@ -4,5 +4,5 @@ export enum FileIds {
     THEME_DARK = 'THEME_DARK',
 
     // logos
-    APP_LOGO = '/favicon.svg',
+    APP_LOGO = '/favicon.png',
 }

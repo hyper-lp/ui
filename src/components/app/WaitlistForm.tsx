@@ -15,7 +15,7 @@ interface WaitlistFormProps {
 
 function WaitlistFormComponent({ className }: WaitlistFormProps) {
     const { ready, authenticated, user, logout } = usePrivy()
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
     // const [position, setPosition] = useState<number | null>(null) // Not used in UI
     const [referralCount, setReferralCount] = useState(0)
@@ -114,52 +114,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
         }
     }, [authenticated, user, checkWaitlistStatus, autoJoinWaitlist])
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!user?.twitter) return
-
-        setIsSubmitting(true)
-        try {
-            // Get referral code from URL if present
-            const urlParams = new URLSearchParams(window.location.search)
-            const referralCode = urlParams.get('ref')
-            console.log('[WaitlistForm] Referral code from URL:', referralCode)
-            console.log('[WaitlistForm] Full URL:', window.location.href)
-
-            const response = await fetch('/api/waitlist/join', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    twitterId: user.twitter.subject,
-                    twitterHandle: user.twitter.username || '',
-                    twitterName: user.twitter.name || null,
-                    twitterAvatar: user.twitter.profilePictureUrl || null,
-                    email: null,
-                    referralCode,
-                }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to join waitlist')
-            }
-
-            const data = await response.json()
-            setIsSubmitted(true)
-            // setPosition(data.position)
-            setReferralCount(data.referralCount || 0)
-            setReferredBy(data.referredBy || null)
-            if (user?.twitter?.subject) {
-                const url = generateReferralUrl(user.twitter.subject, window.location.origin)
-                setReferralUrl(url)
-            }
-            toast.success('Successfully joined the waitlist!')
-        } catch (error) {
-            toast.error('Failed to join waitlist. Please try again.')
-            console.error('Waitlist submission failed:', error)
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
+    // Remove handleSubmit since we're using auto-join only
 
     if (!ready || !authenticated || !user?.twitter) {
         return <div className="h-10 w-40 skeleton-loading" />
@@ -167,8 +122,8 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
 
     if (isSubmitted) {
         return (
-            <div className={cn('rounded-xl border border-default/20 bg-background/5 px-3 py-2.5', className)}>
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-8">
+            <div className={cn('rounded-xl bg-background/20 px-3 py-2.5', className)}>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-6">
                     {/* Left: Checkmark and waitlist confirmation */}
                     <div className="flex items-center gap-2">
                         <IconWrapper id={IconIds.CHECKMARK} className="h-5 w-5 text-primary flex-shrink-0" />
@@ -218,10 +173,10 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
         )
     }
 
-    // Show loading state while auto-joining
-    if (isAutoJoining) {
+    // Show loading state while auto-joining or checking status
+    if (isAutoJoining || isSubmitting) {
         return (
-            <div className={cn('rounded-xl border border-default/20 bg-background/5 px-3 py-2.5', className)}>
+            <div className={cn('rounded-xl bg-background/20 px-3 py-2.5', className)}>
                 <div className="flex items-center gap-3">
                     {user.twitter.profilePictureUrl ? (
                         <Image
@@ -246,48 +201,8 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
         )
     }
 
-    // Fallback form (should rarely be shown due to auto-join)
-    return (
-        <form
-            onSubmit={handleSubmit}
-            className={cn('rounded-xl border border-default/20 bg-background/5 px-2 py-1.5 flex gap-10 items-center', className)}
-        >
-            <div className="flex items-center gap-3">
-                {user.twitter.profilePictureUrl ? (
-                    <Image
-                        src={user.twitter.profilePictureUrl}
-                        alt={user.twitter.username || 'Profile'}
-                        className="h-10 w-10 rounded-full"
-                        width={40}
-                        height={40}
-                    />
-                ) : (
-                    <div className="h-12 w-12 rounded-full bg-background/20" />
-                )}
-                <div className="flex flex-col gap-0">
-                    <p className="font-sm truncate max-w-[90px] text-default">{user.twitter.name}</p>
-                    <p className="text-xs text-default/60 truncate max-w-[90px]">@{user.twitter.username}</p>
-                </div>
-            </div>
-
-            <div className="flex gap-3">
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-background transition-colors hover:bg-primary/80 disabled:opacity-50"
-                >
-                    {isSubmitting ? 'Joining...' : 'Join Waitlist'}
-                </button>
-                <button
-                    type="button"
-                    onClick={logout}
-                    className="rounded-lg border border-default/20 px-4 py-1.5 text-sm text-default hover:bg-background/10"
-                >
-                    Cancel
-                </button>
-            </div>
-        </form>
-    )
+    // This shouldn't normally render due to auto-join, but return loading state as fallback
+    return <div className="h-10 w-40 skeleton-loading" />
 }
 
 export const WaitlistForm = memo(WaitlistFormComponent)

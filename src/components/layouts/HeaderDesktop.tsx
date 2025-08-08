@@ -19,7 +19,7 @@ export default function HeaderDesktop(props: { className?: string }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className={cn('hidden md:flex justify-between items-start w-full px-8 pb-4 pt-7', props.className)}
+            className={cn('hidden md:flex justify-between items-start w-full px-6 pb-4 pt-6', props.className)}
         >
             <motion.div
                 className="flex gap-4 items-center"

@@ -1,5 +1,15 @@
--- AlterTable
-ALTER TABLE "LPPosition" ADD COLUMN "walletId" TEXT;
+-- AlterTable (conditionally add walletId if it doesn't exist)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'LPPosition' 
+        AND column_name = 'walletId'
+    ) THEN
+        ALTER TABLE "LPPosition" ADD COLUMN "walletId" TEXT;
+    END IF;
+END $$;
 
 -- CreateTable
 CREATE TABLE "MonitoredWallet" (

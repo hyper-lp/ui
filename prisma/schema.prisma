@@ -7,10 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/**
- * Waitlist
- */
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -20,46 +16,38 @@ model User {
 }
 
 model Waitlist {
-  id              String   @id @default(cuid())
-  twitterId       String   @unique
-  twitterHandle   String
-  twitterName     String?
-  twitterAvatar   String?
-  email           String?
-  createdAt       DateTime @default(now())
-  approved        Boolean  @default(false)
-  position        Int      @default(autoincrement())
-  referredBy      String?  // Twitter handle of the referrer
-  referralCount   Int      @default(0)
+  id            String   @id @default(cuid())
+  twitterId     String   @unique
+  twitterHandle String
+  twitterName   String?
+  twitterAvatar String?
+  email         String?
+  createdAt     DateTime @default(now())
+  approved      Boolean  @default(false)
+  position      Int      @default(autoincrement())
+  referredBy    String?
+  referralCount Int      @default(0)
 }
 
-/**
- * Delta Neutral Metrics
- */
-
-
-// LP Position tracking - represents an NFT position on a DEX
 model LPPosition {
-  id                    String              @id @default(cuid())
-  tokenId              String              // NFT token ID
-  dex                  String              // hyperswap, prjtx, hybra
-  ownerAddress         String              // EOA that owns this position
-  walletId             String?             // Link to MonitoredWallet
-  poolAddress          String?             // Pool contract address (if known)
-  positionManagerAddress String            // Position manager contract
-  token0Address        String              // First token address
-  token1Address        String              // Second token address
-  feeTier              Int                 // Fee tier in basis points (100 = 0.01%, 500 = 0.05%, etc)
-  tickLower            Int                 // Lower tick boundary
-  tickUpper            Int                 // Upper tick boundary
-  isActive             Boolean             @default(true) // Whether position still exists
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  
-  // Relations
-  snapshots            PositionSnapshot[]
-  wallet               MonitoredWallet?    @relation("WalletPositions", fields: [walletId], references: [id])
-  
+  id                     String             @id @default(cuid())
+  tokenId                String
+  dex                    String
+  ownerAddress           String
+  walletId               String?
+  poolAddress            String?
+  positionManagerAddress String
+  token0Address          String
+  token1Address          String
+  feeTier                Int
+  tickLower              Int
+  tickUpper              Int
+  isActive               Boolean            @default(true)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  wallet                 MonitoredWallet?   @relation("WalletPositions", fields: [walletId], references: [id])
+  snapshots              PositionSnapshot[]
+
   @@unique([tokenId, dex, positionManagerAddress])
   @@index([ownerAddress])
   @@index([walletId])
@@ -68,119 +56,87 @@ model LPPosition {
   @@index([isActive])
 }
 
-// Snapshot of position metrics at a point in time
 model PositionSnapshot {
-  id                String              @id @default(cuid())
-  positionId        String
-  timestamp         DateTime            @default(now())
-  
-  // Liquidity and value metrics
-  liquidity         String              // BigInt as string
-  token0Amount      Float               // Actual token0 amount
-  token1Amount      Float               // Actual token1 amount
-  token0Symbol      String              // Token0 symbol (e.g., "HYPE")
-  token1Symbol      String              // Token1 symbol (e.g., "USDT0")
-  token0Price       Float               // USD price of token0
-  token1Price       Float               // USD price of token1
-  totalValueUSD     Float               // Total position value in USD
-  
-  // Fee metrics
-  unclaimedFees0    Float               // Unclaimed fees in token0
-  unclaimedFees1    Float               // Unclaimed fees in token1
-  unclaimedFeesUSD  Float               // Total unclaimed fees in USD
-  feeAPR            Float               // Annualized fee return
-  
-  // Pool state
-  poolTick          Int                 // Current pool tick
-  poolSqrtPriceX96  String              // Pool sqrt price (BigInt as string)
-  inRange           Boolean             // Whether position is in range
-  
-  // Relations
-  position          LPPosition          @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  
+  id               String     @id @default(cuid())
+  positionId       String
+  timestamp        DateTime   @default(now())
+  liquidity        String
+  token0Amount     Float
+  token1Amount     Float
+  token0Symbol     String
+  token1Symbol     String
+  token0Price      Float
+  token1Price      Float
+  totalValueUSD    Float
+  unclaimedFees0   Float
+  unclaimedFees1   Float
+  unclaimedFeesUSD Float
+  feeAPR           Float
+  poolTick         Int
+  poolSqrtPriceX96 String
+  inRange          Boolean
+  position         LPPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
   @@index([positionId])
   @@index([timestamp])
 }
 
-// Monitored wallet for automated tracking
 model MonitoredWallet {
-  id                String              @id @default(cuid())
-  address           String              @unique
-  name              String?             // Optional label for the wallet
-  isActive          Boolean             @default(true)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  
-  // Relations
-  lpPositions       LPPosition[]        @relation("WalletPositions")
-  hedgePositions    HedgePosition[]
-  
+  id             String          @id @default(cuid())
+  address        String          @unique
+  name           String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  hedgePositions HedgePosition[]
+  lpPositions    LPPosition[]    @relation("WalletPositions")
+
   @@index([isActive])
   @@index([address])
 }
 
-// Hedge position on HyperCore (short perpetual)
 model HedgePosition {
-  id                String              @id @default(cuid())
-  walletAddress     String              // EOA that owns this position
-  walletId          String?             // Link to MonitoredWallet
-  
-  // Position details
-  asset             String              // Asset being shorted (e.g., "HYPE")
-  size              Float               // Position size in asset units
-  notionalValue     Float               // Notional value in USD
-  entryPrice        Float               // Average entry price
-  markPrice         Float               // Current mark price
-  margin            Float               // Margin posted for position
-  leverage          Float               // Effective leverage
-  
-  // PnL metrics
-  unrealizedPnl     Float               // Current unrealized PnL
-  realizedPnl       Float               @default(0) // Realized PnL from partial closes
-  fundingPaid       Float               @default(0) // Cumulative funding paid/received
-  currentFundingRate Float              // Current funding rate (per hour)
-  
-  // Status
-  isActive          Boolean             @default(true)
-  openedAt          DateTime            @default(now())
-  closedAt          DateTime?
-  updatedAt         DateTime            @updatedAt
-  
-  // Relations
-  wallet            MonitoredWallet?    @relation(fields: [walletId], references: [id])
-  snapshots         HedgeSnapshot[]
-  
+  id                 String           @id @default(cuid())
+  walletAddress      String
+  walletId           String?
+  asset              String
+  size               Float
+  notionalValue      Float
+  entryPrice         Float
+  markPrice          Float
+  margin             Float
+  leverage           Float
+  unrealizedPnl      Float
+  realizedPnl        Float            @default(0)
+  fundingPaid        Float            @default(0)
+  currentFundingRate Float
+  isActive           Boolean          @default(true)
+  openedAt           DateTime         @default(now())
+  closedAt           DateTime?
+  updatedAt          DateTime         @updatedAt
+  wallet             MonitoredWallet? @relation(fields: [walletId], references: [id])
+  snapshots          HedgeSnapshot[]
+
   @@index([walletAddress])
   @@index([walletId])
   @@index([asset])
   @@index([isActive])
 }
 
-// Snapshot of hedge position at a point in time
 model HedgeSnapshot {
-  id                String              @id @default(cuid())
-  hedgePositionId   String
-  timestamp         DateTime            @default(now())
-  
-  // Position state
-  size              Float
-  markPrice         Float
-  notionalValue     Float
-  margin            Float
-  
-  // PnL at snapshot
-  unrealizedPnl     Float
-  fundingRate       Float               // Funding rate at time of snapshot
-  fundingPaid       Float               // Funding paid since last snapshot
-  
-  // Delta metrics
-  deltaExposure     Float               // Delta exposure of this hedge
-  
-  // Relations
-  hedgePosition     HedgePosition       @relation(fields: [hedgePositionId], references: [id], onDelete: Cascade)
-  
+  id              String        @id @default(cuid())
+  hedgePositionId String
+  timestamp       DateTime      @default(now())
+  size            Float
+  markPrice       Float
+  notionalValue   Float
+  margin          Float
+  unrealizedPnl   Float
+  fundingRate     Float
+  fundingPaid     Float
+  deltaExposure   Float
+  hedgePosition   HedgePosition @relation(fields: [hedgePositionId], references: [id], onDelete: Cascade)
+
   @@index([hedgePositionId])
   @@index([timestamp])
 }
-
-

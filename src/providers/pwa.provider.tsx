@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import PullToRefresh from '@/components/common/PullToRefresh'
-import { IS_DEV } from '@/config/app.config'
 
 export default function PWAProvider({ children }: { children: React.ReactNode }) {
-    const [isIOS, setIsIOS] = useState(false)
+    const [, setIsIOS] = useState(false)
     const [isStandalone, setIsStandalone] = useState(false)
-    if (IS_DEV) console.log('isIOS', isIOS)
 
     useEffect(() => {
         // Check if running on iOS

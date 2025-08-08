@@ -32,11 +32,11 @@ module.exports = {
                 'tailwindcss/no-contradicting-classname': 'error',
                 'tailwindcss/classnames-order': 'warn',
             },
-            files: ['src/**/*.ts', 'src/**/*.tsx', './tailwind.config.ts', './src/app/global.css'],
+            files: ['src/**/*.ts', 'src/**/*.tsx', 'scripts/**/*.ts', './tailwind.config.ts', './src/app/global.css'],
         },
         {
             extends: ['prettier'],
-            files: '*.js',
+            files: ['*.js', 'scripts/**/*.js'],
             rules: {},
         },
         {

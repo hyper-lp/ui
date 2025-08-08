@@ -5,6 +5,8 @@ import { env } from '@/env/t3-env'
 import { APP_METADATA } from '@/config/app.config'
 
 export function PrivyProvider({ children }: { children: React.ReactNode }) {
+    // Note: WalletConnect initialization warning in dev is expected due to React StrictMode
+    // and Privy's internal initialization. It doesn't affect functionality.
     return (
         <BasePrivyProvider
             appId={env.NEXT_PUBLIC_PRIVY_APP_ID}
@@ -16,6 +18,11 @@ export function PrivyProvider({ children }: { children: React.ReactNode }) {
                 },
                 embeddedWallets: {
                     createOnLogin: 'off',
+                },
+                externalWallets: {
+                    walletConnect: {
+                        enabled: false,
+                    },
                 },
             }}
         >

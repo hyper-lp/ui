@@ -3,6 +3,7 @@
 import { lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import PageWrapper from '@/components/common/PageWrapper'
+import ReferralModal from '@/components/modals/ReferralModal'
 
 // Lazy load the heavy chart component
 const HeatmapAprChart = lazy(() => import('@/components/charts/HeatmapAprChart'))
@@ -29,6 +30,7 @@ const ChartSkeleton = () => (
 export default function HomePage() {
     return (
         <PageWrapper>
+            <ReferralModal />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -41,12 +43,12 @@ export default function HomePage() {
             >
                 {/* Explanation of APR calculation */}
                 <motion.div
-                    className="flex flex-col gap-1 md:flex-row md:gap-2 items-center text-sm"
+                    className="flex flex-col gap-1 md:flex-row md:gap-2 items-center text-sm text-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3, duration: 0.5 }}
                 >
-                    <p>Delta-neutral APR</p>
+                    <p>Gross Delta-neutral APR</p>
                     <p>= ⅔ × LP Fees + ⅓ × Short Perp Funding</p>
                 </motion.div>
                 {/* <motion.div

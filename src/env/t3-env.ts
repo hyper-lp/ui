@@ -17,6 +17,9 @@ export const env = createEnv({
         // API Security
         API_SECRET_KEY: z.string().optional(),
         RATE_LIMIT_ENABLED: z.string().optional().default('true'),
+
+        // Monitoring Configuration
+        MONITORED_WALLETS: z.string().optional(), // Comma-separated list of wallet addresses
     },
 
     /**
@@ -41,6 +44,7 @@ export const env = createEnv({
         PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET,
         API_SECRET_KEY: process.env.API_SECRET_KEY,
         RATE_LIMIT_ENABLED: process.env.RATE_LIMIT_ENABLED,
+        MONITORED_WALLETS: process.env.MONITORED_WALLETS,
 
         // Client
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

@@ -5,6 +5,7 @@
 :root {
     /* Light theme - Hyperliquid colors */
     --color-background: 160 66% 99%; /* #f6fefd - Off-White */
+    --color-background-opposite: 202 33% 9%; /* #0f1a1f - Oil Black */
     --color-primary: 168 65% 41%; /* #22ab94 - primary */
     --color-default: 214 17% 21%; /* #2e313c - Charcoal Blue */
 }
@@ -12,6 +13,7 @@
 .dark {
     /* Dark theme - Hyperliquid colors */
     --color-background: 202 33% 9%; /* #0f1a1f - Oil Black */
+    --color-background-opposite: 160 66% 99%; /* #f6fefd - Off-White */
     --color-primary: 168 65% 41%; /* #22ab94 - primary */
     --color-default: 214 10% 84%; /* #d1d4dc - Light Gray */
 }

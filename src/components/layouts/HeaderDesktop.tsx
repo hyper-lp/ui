@@ -29,7 +29,7 @@ export default function HeaderDesktop(props: { className?: string }) {
             >
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: 'spring', stiffness: 400, damping: 10 }}>
                     <LinkWrapper href={AppUrls.HOME} className="cursor-pointer flex items-center gap-2">
-                        <Image src={FileIds.APP_LOGO} alt="Logo" width={50} height={50} />
+                        <Image src={FileIds.APP_LOGO} alt="Logo" width={50} height={50} priority />
                         {/* <p className="text-2xl font-bold">{SITE_NAME}</p> */}
                         <p className="text-2xl font-light">
                             Hyper
@@ -60,7 +60,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                     ) : (
                         <motion.div
                             key="waitlist-button"
-                            className="flex flex-col gap-2 items-center group w-full"
+                            className="flex flex-col gap-1 items-center group w-full"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}

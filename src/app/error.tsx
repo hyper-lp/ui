@@ -11,7 +11,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
     useEffect(() => console.error(error), [error])
     return (
         <PageWrapper>
-            <div className="mx-auto mt-10 flex flex-col items-center gap-4 max-w-lg">
+            <div className="mx-auto mt-10 flex flex-col items-center gap-4 w-full max-w-lg">
                 <p className="font-semibold text-lg">
                     Sorry, something went <span className="text-primary">wrong</span>
                 </p>
@@ -31,7 +31,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
                     <p className="text-sm text-default">
                         Please try again or
-                        <LinkWrapper href={AppUrls.FBERGER_WEBSITE} target="_blank" className="underline hover:text-primary px-1">
+                        <LinkWrapper href={AppUrls.CONTACT_US} target="_blank" className="underline hover:text-primary px-1">
                             contact us
                         </LinkWrapper>
                         if the problem persists.

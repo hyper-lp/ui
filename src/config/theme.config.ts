@@ -14,66 +14,72 @@ export const APP_THEMES = {
 export const DEFAULT_PADDING_X = 'px-2 md:px-8 lg:px-10'
 
 /**
- * chart
+ * Unified color configuration for the entire application
+ * This consolidates colors from multiple config files to follow DRY principle
  */
 
-export const ChartColors = {
+export const COLORS = {
     light: {
-        // Background
-        background: '#190A35',
+        // Primary brand colors
+        primary: '#26a69a', // Hyperliquid signature teal
+        secondary: '#00ffbb',
 
-        // Jagger colors
-        jagger: '#380a53',
-        jaggerOpacity: {
-            800: 'rgba(56, 10, 83, 0.8)',
-            500: 'rgba(56, 10, 83, 0.56)',
-            400: 'rgba(56, 10, 83, 0.4)',
-            300: 'rgba(56, 10, 83, 0.27)',
-            200: 'rgba(56, 10, 83, 0.1)',
-        },
+        // Base colors
+        background: '#ffffff',
+        foreground: '#000000',
 
-        // Other colors
-        folly: '#ff3366',
-        primary: '#00ffbb',
+        // Chart specific
+        tooltipBackground: 'rgba(255, 255, 255, 0.98)',
+        folly: '#ff3366', // Red/pink for negative values
+        aquamarine: '#00ffbb', // Green for positive values
 
-        // Milk colors
-        milk: '#fff4e0',
-        milkOpacity: {
-            600: 'rgba(255, 244, 224, 0.64)',
-            400: 'rgba(255, 244, 224, 0.4)',
-            200: 'rgba(255, 244, 224, 0.2)',
-            150: 'rgba(255, 244, 224, 0.1)',
-            100: 'rgba(255, 244, 224, 0.07)',
-            50: 'rgba(255, 244, 224, 0.02)',
-        },
+        // Heatmap gradient (from light to dark for contrast)
+        heatmapGradient: [
+            '#f6fefd', // Off-White (lowest)
+            '#d1d4dc', // Light Gray
+            '#949e9c', // Pale Gray
+            '#868993', // Warm Gray
+            '#50d2c1', // Teal
+            '#22ab94', // Primary teal
+            '#089891', // Sea Green
+            '#142e61', // Deep Blue
+            '#0f1a1f', // Oil Black (highest)
+        ],
     },
     dark: {
-        // Background - deeper purple/black
-        background: '#0a0515',
+        // Primary brand colors
+        primary: '#4db6ac', // Lighter teal for dark mode
+        secondary: '#00ffc4',
 
-        // Jagger colors - lighter/more vibrant purples
-        jagger: '#6b1a8c',
-        jaggerOpacity: {
-            800: 'rgba(107, 26, 140, 0.8)',
-            500: 'rgba(107, 26, 140, 0.56)',
-            400: 'rgba(107, 26, 140, 0.4)',
-            300: 'rgba(107, 26, 140, 0.27)',
-            200: 'rgba(107, 26, 140, 0.1)',
-        },
+        // Base colors
+        background: '#000000',
+        foreground: '#ffffff',
 
-        // Other colors - slightly adjusted for dark mode
-        folly: '#ff4d7a',
-        primary: '#00ffc4',
+        // Chart specific
+        tooltipBackground: 'rgba(20, 30, 45, 0.99)',
+        folly: '#ff4d7a', // Brighter red/pink for dark mode
+        aquamarine: '#00ffc4', // Brighter green for dark mode
 
-        // Milk colors - adjusted for dark theme
-        milk: '#fff9f0',
-        milkOpacity: {
-            600: 'rgba(255, 249, 240, 0.64)',
-            400: 'rgba(255, 249, 240, 0.4)',
-            200: 'rgba(255, 249, 240, 0.2)',
-            150: 'rgba(255, 249, 240, 0.1)',
-            100: 'rgba(255, 249, 240, 0.07)',
-            50: 'rgba(255, 249, 240, 0.02)',
-        },
+        // Heatmap gradient (from dark to bright for contrast)
+        heatmapGradient: [
+            '#0f1a1f', // Oil Black (lowest)
+            '#142e61', // Deep Blue
+            '#2e313c', // Charcoal Blue
+            '#434651', // Dark Gray
+            '#089891', // Sea Green
+            '#22ab94', // Primary teal
+            '#50d2c1', // Teal
+            '#26a69a', // Muted Turquoise
+            '#bbd9fb', // Soft Blue (highest)
+        ],
     },
+} as const
+
+/**
+ * Get colors based on current theme
+ * @param isDarkMode - Whether dark mode is active
+ * @returns Color configuration for the theme
+ */
+export function getThemeColors(isDarkMode: boolean) {
+    return isDarkMode ? COLORS.dark : COLORS.light
 }

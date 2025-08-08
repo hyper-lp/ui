@@ -48,7 +48,7 @@ export default function HeaderMobile() {
                 <div className="flex gap-4 items-center z-30 grow">
                     {/* logo */}
                     <LinkWrapper href={AppUrls.HOME} className="cursor-pointer flex items-center gap-2">
-                        <Image src={FileIds.APP_LOGO} alt="Logo" width={40} height={40} />
+                        <Image src={FileIds.APP_LOGO} alt="Logo" width={40} height={40} priority />
                         {/* <p className="text-2xl font-bold">{SITE_NAME}</p> */}
                         <p className="text-2xl font-light">
                             Hyper
@@ -118,7 +118,7 @@ export default function HeaderMobile() {
                                 ) : authenticated ? (
                                     <WaitlistForm />
                                 ) : (
-                                    <div className="flex flex-col gap-2 items-center">
+                                    <div className="flex flex-col gap-1 items-center">
                                         <WaitlistButton />
                                         <LinkWrapper href={AppUrls.PRIVY}>
                                             <p className="text-xs italic">Powered by Privy</p>

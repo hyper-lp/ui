@@ -1,0 +1,212 @@
+import type { Address } from 'viem'
+import { getViemClient } from '@/lib/viem'
+import { UNISWAP_V3_POOL_ABI, NONFUNGIBLE_POSITION_MANAGER_ABI, UNISWAP_V3_FACTORY_ABI, ERC20_ABI } from '@/contracts/uniswap-v3-abis'
+
+const Q96 = 2n ** 96n
+
+export function tickToPrice(tick: number): number {
+    return Math.pow(1.0001, tick)
+}
+
+export function sqrtPriceX96ToPrice(sqrtPriceX96: bigint): number {
+    const price = (Number(sqrtPriceX96) / Number(Q96)) ** 2
+    return price
+}
+
+export function calculateTokenAmounts(
+    liquidity: bigint,
+    sqrtPriceX96: bigint,
+    tickLower: number,
+    tickUpper: number,
+    currentTick: number,
+): { amount0: bigint; amount1: bigint } {
+    const sqrtRatioA = BigInt(Math.floor(Math.sqrt(1.0001 ** tickLower) * Number(Q96)))
+    const sqrtRatioB = BigInt(Math.floor(Math.sqrt(1.0001 ** tickUpper) * Number(Q96)))
+
+    let amount0 = 0n
+    let amount1 = 0n
+
+    if (currentTick < tickLower) {
+        amount0 = (liquidity * Q96 * (sqrtRatioB - sqrtRatioA)) / (sqrtRatioB * sqrtRatioA)
+        amount1 = 0n
+    } else if (currentTick >= tickUpper) {
+        amount0 = 0n
+        amount1 = (liquidity * (sqrtRatioB - sqrtRatioA)) / Q96
+    } else {
+        amount0 = (liquidity * Q96 * (sqrtRatioB - sqrtPriceX96)) / (sqrtRatioB * sqrtPriceX96)
+        amount1 = (liquidity * (sqrtPriceX96 - sqrtRatioA)) / Q96
+    }
+
+    return { amount0, amount1 }
+}
+
+export function calculateImpermanentLoss(
+    currentPrice: number,
+    entryPrice: number,
+    tickLower: number,
+    tickUpper: number,
+    currentTick: number,
+): number {
+    if (currentTick < tickLower || currentTick >= tickUpper) {
+        return 0
+    }
+
+    const priceRatio = currentPrice / entryPrice
+    const il = (2 * Math.sqrt(priceRatio)) / (1 + priceRatio) - 1
+    return Math.abs(il) * 100
+}
+
+export async function fetchPoolState(
+    poolAddress: Address,
+    chainId: number = 998,
+): Promise<{
+    sqrtPriceX96: bigint
+    tick: number
+    liquidity: bigint
+    token0: Address
+    token1: Address
+    fee: number
+}> {
+    try {
+        const client = getViemClient(chainId)
+
+        const [slot0, liquidity, fee, token0, token1] = await Promise.all([
+            client.readContract({
+                address: poolAddress,
+                abi: UNISWAP_V3_POOL_ABI,
+                functionName: 'slot0',
+            }),
+            client.readContract({
+                address: poolAddress,
+                abi: UNISWAP_V3_POOL_ABI,
+                functionName: 'liquidity',
+            }),
+            client.readContract({
+                address: poolAddress,
+                abi: UNISWAP_V3_POOL_ABI,
+                functionName: 'fee',
+            }),
+            client.readContract({
+                address: poolAddress,
+                abi: UNISWAP_V3_POOL_ABI,
+                functionName: 'token0',
+            }),
+            client.readContract({
+                address: poolAddress,
+                abi: UNISWAP_V3_POOL_ABI,
+                functionName: 'token1',
+            }),
+        ])
+
+        return {
+            sqrtPriceX96: slot0[0],
+            tick: slot0[1],
+            liquidity,
+            fee,
+            token0,
+            token1,
+        }
+    } catch (error) {
+        const err = error as Error & { code?: string; shortMessage?: string }
+
+        // Enhance error with context
+        const enhancedError = new Error(`Failed to fetch pool state for ${poolAddress.slice(0, 10)}...`) as Error & {
+            code?: string
+            details?: string
+            cause?: unknown
+        }
+
+        enhancedError.code = err.code
+        enhancedError.cause = error
+
+        if (err.code === 'CALL_EXCEPTION') {
+            enhancedError.details = 'Pool contract does not exist or is not a valid Uniswap V3 pool'
+        } else if (err.code === 'NETWORK_ERROR' || err.code === 'SERVER_ERROR') {
+            enhancedError.details = 'RPC endpoint is not responding or network issue'
+        } else if (err.code === 'TIMEOUT') {
+            enhancedError.details = 'RPC request timed out - endpoint may be overloaded'
+        }
+
+        throw enhancedError
+    }
+}
+
+export async function fetchPosition(
+    tokenId: bigint,
+    positionManagerAddress: Address,
+    chainId: number = 998,
+): Promise<{
+    token0: Address
+    token1: Address
+    fee: number
+    tickLower: number
+    tickUpper: number
+    liquidity: bigint
+    tokensOwed0: bigint
+    tokensOwed1: bigint
+}> {
+    const client = getViemClient(chainId)
+
+    const position = await client.readContract({
+        address: positionManagerAddress,
+        abi: NONFUNGIBLE_POSITION_MANAGER_ABI,
+        functionName: 'positions',
+        args: [tokenId],
+    })
+
+    return {
+        token0: position[2],
+        token1: position[3],
+        fee: position[4],
+        tickLower: position[5],
+        tickUpper: position[6],
+        liquidity: position[7],
+        tokensOwed0: position[10],
+        tokensOwed1: position[11],
+    }
+}
+
+export async function getPoolAddress(
+    token0: Address,
+    token1: Address,
+    fee: number,
+    factoryAddress: Address,
+    chainId: number = 998,
+): Promise<Address> {
+    const client = getViemClient(chainId)
+
+    return await client.readContract({
+        address: factoryAddress,
+        abi: UNISWAP_V3_FACTORY_ABI,
+        functionName: 'getPool',
+        args: [token0, token1, fee],
+    })
+}
+
+export async function getTokenMetadata(tokenAddress: Address, chainId: number = 998): Promise<{ symbol: string; decimals: number }> {
+    const client = getViemClient(chainId)
+
+    try {
+        const [symbol, decimals] = await Promise.all([
+            client.readContract({
+                address: tokenAddress,
+                abi: ERC20_ABI,
+                functionName: 'symbol',
+            }),
+            client.readContract({
+                address: tokenAddress,
+                abi: ERC20_ABI,
+                functionName: 'decimals',
+            }),
+        ])
+
+        return { symbol, decimals }
+    } catch {
+        const knownHyperEvmTokens: Record<string, { symbol: string; decimals: number }> = {
+            '0x5555555555555555555555555555555555555555': { symbol: 'WHYPE', decimals: 18 },
+            '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb': { symbol: 'USDT0', decimals: 6 },
+        }
+
+        return knownHyperEvmTokens[tokenAddress.toLowerCase()] || { symbol: 'UNKNOWN', decimals: 18 }
+    }
+}

@@ -17,7 +17,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
     const { ready, authenticated, user, logout } = usePrivy()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
-    const [position, setPosition] = useState<number | null>(null)
+    // const [position, setPosition] = useState<number | null>(null) // Not used in UI
     const [referralCount, setReferralCount] = useState(0)
     const [referralUrl, setReferralUrl] = useState<string | null>(null)
     const [copySuccess, setCopySuccess] = useState(false)
@@ -35,7 +35,8 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                 const data = await response.json()
                 if (data.isOnWaitlist) {
                     setIsSubmitted(true)
-                    setPosition(data.position)
+                    // setPosition(data.position)
+                    console.log('[WaitlistForm] User position:', data.position)
                     setReferralCount(data.referralCount)
                     setReferredBy(data.referredBy || null)
                     if (user?.twitter?.subject) {
@@ -79,7 +80,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
             if (response.ok) {
                 const data = await response.json()
                 setIsSubmitted(true)
-                setPosition(data.position)
+                // setPosition(data.position)
                 setReferralCount(data.referralCount || 0)
                 setReferredBy(data.referredBy || null)
                 if (user?.twitter?.subject) {
@@ -144,7 +145,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
 
             const data = await response.json()
             setIsSubmitted(true)
-            setPosition(data.position)
+            // setPosition(data.position)
             setReferralCount(data.referralCount || 0)
             setReferredBy(data.referredBy || null)
             if (user?.twitter?.subject) {
@@ -167,14 +168,15 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
     if (isSubmitted) {
         return (
             <div className={cn('rounded-xl border border-default/20 bg-background/5 px-3 py-2.5', className)}>
-                <div className="flex items-center justify-between gap-8">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-8">
                     {/* Left: Checkmark and waitlist confirmation */}
                     <div className="flex items-center gap-2">
                         <IconWrapper id={IconIds.CHECKMARK} className="h-5 w-5 text-primary flex-shrink-0" />
-                        <div className="flex flex-col">
-                            <p className="text-sm font-medium text-default">
+                        <div className="flex flex-col items-center">
+                            {/* <p className="text-sm font-medium text-default">
                                 {user.twitter.name} #{position || '...'} on the waitlist
-                            </p>
+                            </p> */}
+                            <p className="text-sm font-medium text-default">On the waitlist as {user.twitter.name}</p>
                             {referredBy && <p className="text-xs text-default/60">Referred by @{referredBy}</p>}
                         </div>
                     </div>

@@ -50,7 +50,16 @@ function EchartWrapper(props: InterfaceEchartWrapperProps) {
     useEffect(() => {
         // only if ref mounted in dom
         if (chartRef?.current) {
-            if (!myChart.current) myChart.current = echarts.init(chartRef.current)
+            if (!myChart.current) {
+                // Note: ECharts internally adds non-passive event listeners for mousewheel/wheel events.
+                // This triggers Chrome DevTools warnings but is a known ECharts behavior that doesn't
+                // impact performance for our use case. The library handles these events appropriately.
+                myChart.current = echarts.init(chartRef.current, null, {
+                    // Use passive event listeners for better scroll performance
+                    useCoarsePointer: true,
+                    pointerSize: 40,
+                })
+            }
             window.addEventListener('resize', handleChartResize, { passive: true })
             myChart.current.setOption(props.options, {
                 /**

@@ -50,7 +50,12 @@ export function WaitlistButton({ className, onSuccess }: WaitlistButtonProps) {
 
     if (authenticated && user) {
         return (
-            <div className={cn('flex items-center gap-3 rounded-lg bg-primary/20 px-6 py-3 text-sm text-default', className)}>
+            <div
+                className={cn(
+                    'flex justify-center items-center gap-3 rounded-lg bg-primary/20 px-6 py-3 text-sm text-default text-center',
+                    className,
+                )}
+            >
                 <IconWrapper id={IconIds.CHECKMARK} className="h-5 w-5 text-primary" />
                 <span>Joined as @{user.twitter?.username || 'User'}</span>
             </div>

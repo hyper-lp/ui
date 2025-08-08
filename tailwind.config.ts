@@ -11,6 +11,7 @@ const config: Config = {
             },
             colors: {
                 background: 'hsl(var(--color-background) / <alpha-value>)',
+                'background-opposite': 'hsl(var(--color-background-opposite) / <alpha-value>)',
                 primary: 'hsl(var(--color-primary) / <alpha-value>)',
                 default: 'hsl(var(--color-default) / <alpha-value>)',
             },

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
-import { positionFetcher } from '@/utils/position-fetcher.util'
+import { positionFetcher } from '@/utils'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ account: string }> }) {
     try {

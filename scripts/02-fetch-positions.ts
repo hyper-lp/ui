@@ -2,7 +2,7 @@
 
 import { analyticsOrchestrator } from '@/services/06-analytics-orchestrator.service'
 import { lpMonitorService } from '@/services/02-lp-monitor.service'
-import { prisma } from '@/lib/prisma'
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import {
     printSectionHeader,
     printSuccess,
@@ -29,31 +29,31 @@ async function main() {
     
     try {
         if (fetchAll) {
-            // Fetch positions for all monitored wallets
-            printInfo('Fetching positions for all monitored wallets...')
+            // Fetch positions for all monitored accounts
+            printInfo('Fetching positions for all monitored accounts...')
             
-            const wallets = await lpMonitorService.getMonitoredWallets()
-            if (wallets.length === 0) {
-                printError('No monitored wallets found')
+            const accounts = await lpMonitorService.getMonitoredAccounts()
+            if (accounts.length === 0) {
+                printError('No monitored accounts found')
                 process.exit(1)
             }
             
-            const results = await analyticsOrchestrator.fetchPositionsForWallets(wallets)
+            const results = await analyticsOrchestrator.fetchPositionsForAccounts(accounts)
             
-            printSuccess(`Checked ${wallets.length} wallets`)
+            printSuccess(`Checked ${accounts.length} accounts`)
             console.log(`\n📊 Results:`)
             console.log(`  Total positions: ${results.totalPositions}`)
             
-            for (const [wallet, count] of Object.entries(results.byWallet)) {
+            for (const [account, count] of Object.entries(results.byAccount)) {
                 if (count > 0) {
-                    console.log(`  ${formatAddress(wallet)}: ${count} positions`)
+                    console.log(`  ${formatAddress(account)}: ${count} positions`)
                 }
             }
             
             // Show detailed position info
             for (const result of results.results) {
                 if (result.positionsFound > 0) {
-                    console.log(`\n📍 ${formatAddress(result.wallet.address)} positions:`)
+                    console.log(`\n📍 ${formatAddress(result.account.address)} positions:`)
                     for (const position of result.positions) {
                         console.log(`  - ${position.dex} Token #${position.tokenId}`)
                     }
@@ -61,24 +61,26 @@ async function main() {
             }
             
         } else if (walletAddress) {
-            // Add wallet to monitored list if using --save
+            // Add account to monitored list if using --save
             if (shouldSave) {
-                const wallet = await prisma.monitoredWallet.upsert({
-                    where: { address: walletAddress },
+                const account = await prismaMonitoring.monitoredAccount.upsert({
+                    where: { 
+                        address: walletAddress,
+                    },
                     update: { isActive: true },
                     create: {
                         address: walletAddress,
-                        name: `Wallet ${formatAddress(walletAddress)}`,
+                        name: `Account ${formatAddress(walletAddress)}`,
                         isActive: true,
                     },
                 })
-                printSuccess(`Wallet added to monitoring: ${wallet.name}`)
+                printSuccess(`Account added to monitoring: ${account.name}`)
             }
             
-            // Fetch positions for specific wallet
+            // Fetch positions for specific account
             printInfo(`Fetching positions for ${formatAddress(walletAddress)}...`)
             
-            const result = await lpMonitorService.discoverPositionsForWallet(walletAddress)
+            const result = await lpMonitorService.discoverPositionsForAccount(walletAddress)
             
             console.log(`\n📊 Results:`)
             console.log(`  Pools checked: ${result.poolsChecked}`)
@@ -98,7 +100,7 @@ async function main() {
                     printSuccess('Positions saved to database')
                 }
             } else {
-                printInfo('No HYPE/USDT0 positions found for this wallet')
+                printInfo('No HYPE/USDT0 positions found for this account')
             }
         }
         

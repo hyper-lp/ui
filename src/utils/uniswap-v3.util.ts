@@ -1,5 +1,5 @@
 import type { Address } from 'viem'
-import { getViemClient } from '@/lib/viem'
+import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { UNISWAP_V3_POOL_ABI, NONFUNGIBLE_POSITION_MANAGER_ABI, UNISWAP_V3_FACTORY_ABI, ERC20_ABI } from '@/contracts/uniswap-v3-abis'
 
 const Q96 = 2n ** 96n
@@ -58,7 +58,7 @@ export function calculateImpermanentLoss(
 
 export async function fetchPoolState(
     poolAddress: Address,
-    chainId: number = 998,
+    chainId: number = HYPEREVM_CHAIN_ID,
 ): Promise<{
     sqrtPriceX96: bigint
     tick: number
@@ -134,7 +134,7 @@ export async function fetchPoolState(
 export async function fetchPosition(
     tokenId: bigint,
     positionManagerAddress: Address,
-    chainId: number = 998,
+    chainId: number = HYPEREVM_CHAIN_ID,
 ): Promise<{
     token0: Address
     token1: Address
@@ -171,7 +171,7 @@ export async function getPoolAddress(
     token1: Address,
     fee: number,
     factoryAddress: Address,
-    chainId: number = 998,
+    chainId: number = HYPEREVM_CHAIN_ID,
 ): Promise<Address> {
     const client = getViemClient(chainId)
 
@@ -183,7 +183,7 @@ export async function getPoolAddress(
     })
 }
 
-export async function getTokenMetadata(tokenAddress: Address, chainId: number = 998): Promise<{ symbol: string; decimals: number }> {
+export async function getTokenMetadata(tokenAddress: Address, chainId: number = HYPEREVM_CHAIN_ID): Promise<{ symbol: string; decimals: number }> {
     const client = getViemClient(chainId)
 
     try {

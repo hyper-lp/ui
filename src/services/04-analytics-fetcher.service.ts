@@ -2,10 +2,9 @@ import { formatUnits } from 'viem'
 import { calculateTokenAmounts, fetchPoolState, fetchPosition, getTokenMetadata } from '@/utils/uniswap-v3.util'
 import { getTokenPrice } from '@/utils/token-prices.util'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
+import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import type { LPPosition, LPMetrics } from '@/interfaces/dex.interface'
 import type { IAnalyticsPullService, AnalyticsResult, DexSummary } from '@/interfaces/analytics.interface'
-
-const HYPEREVM_CHAIN_ID = 998
 
 export class AnalyticsPullService implements IAnalyticsPullService {
     private readonly chainId: number

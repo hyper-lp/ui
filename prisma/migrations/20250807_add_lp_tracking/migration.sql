@@ -47,7 +47,7 @@ CREATE TABLE "PositionSnapshot" (
 CREATE TABLE "AnalyticsRun" (
     "id" TEXT NOT NULL,
     "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "chainId" INTEGER NOT NULL DEFAULT 998,
+    "chainId" INTEGER NOT NULL DEFAULT 999finis,
     "totalPositions" INTEGER NOT NULL,
     "totalValueUSD" DOUBLE PRECISION NOT NULL,
     "totalUnclaimedFeesUSD" DOUBLE PRECISION NOT NULL,

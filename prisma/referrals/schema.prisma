@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/client-referrals"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_REFERRALS")
+}
+
+// User model for authentication and profile
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Waitlist for early access with referral tracking
+model Waitlist {
+  id            String   @id @default(cuid())
+  twitterId     String   @unique
+  twitterHandle String
+  twitterName   String?
+  twitterAvatar String?
+  email         String?
+  createdAt     DateTime @default(now())
+  approved      Boolean  @default(false)
+  position      Int      @default(autoincrement())
+  referredBy    String?  // Twitter handle of referrer
+  referralCount Int      @default(0)
+}

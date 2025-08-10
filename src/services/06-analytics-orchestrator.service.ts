@@ -1,19 +1,19 @@
-import { prisma } from '@/lib/prisma'
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import { poolDiscoveryService } from './01-pool-discovery.service'
 import { lpMonitorService } from './02-lp-monitor.service'
-import { hedgeMonitorService } from './03-hedge-monitor.service'
+import { perpMonitorService } from './03-perp-monitor.service'
 import { analyticsPullService } from './04-analytics-fetcher.service'
-import { lpDatabaseService } from './05-analytics-store.service'
+import { analyticsStoreService } from './05-analytics-store.service'
 import type { PoolInfo } from './01-pool-discovery.service'
 import type { LPPosition } from '@/interfaces/dex.interface'
-import type { MonitoredWallet } from '@prisma/client'
+import type { MonitoredAccount } from '@prisma/client-monitoring'
 
 export interface AnalyticsRunResult {
     success: boolean
     error?: string
-    walletsMonitored?: number
+    accountsMonitored?: number
     positionsUpdated?: number
-    hedgePositions?: number
+    perpPositions?: number
     totalValueUSD?: number
     averageFeeAPR?: number
     oldRunsDeleted?: number
@@ -22,15 +22,15 @@ export interface AnalyticsRunResult {
         activePools: number
         byDex: Record<string, { count: number; active: number; liquidity: bigint }>
     }
-    deltaDrift?: {
+    netDelta?: {
         needsRebalance: boolean
-        wallets: string[]
+        accounts: string[]
         totalDriftUSD: number
     }
 }
 
 export interface PositionDiscoveryResult {
-    wallet: MonitoredWallet
+    account: MonitoredAccount
     positions: LPPosition[]
     poolsChecked: number
     positionsFound: number
@@ -44,9 +44,9 @@ export interface PositionMetricsResult {
     feeAPR: number
     inRange: boolean
     lpDelta: number
-    hedgeDelta: number
+    perpDelta: number
     netDelta: number
-    hedgeEffectiveness: number
+    perpEffectiveness: number
 }
 
 /**
@@ -72,42 +72,42 @@ class AnalyticsOrchestrator {
     }
 
     /**
-     * Step 2: Fetch positions for all monitored wallets
+     * Step 2: Fetch positions for all monitored accounts
      */
-    async fetchPositionsForWallets(wallets?: MonitoredWallet[]): Promise<{
+    async fetchPositionsForAccounts(accounts?: MonitoredAccount[]): Promise<{
         results: PositionDiscoveryResult[]
         totalPositions: number
-        byWallet: Record<string, number>
+        byAccount: Record<string, number>
     }> {
-        // Get wallets from parameter or database
-        const walletsToMonitor = wallets || (await lpMonitorService.getMonitoredWallets())
+        // Get accounts from parameter or database
+        const accountsToMonitor = accounts || (await lpMonitorService.getMonitoredAccounts())
 
         const results: PositionDiscoveryResult[] = []
-        const byWallet: Record<string, number> = {}
+        const byAccount: Record<string, number> = {}
         let totalPositions = 0
 
-        for (const wallet of walletsToMonitor) {
-            const result = await lpMonitorService.discoverPositionsForWallet(wallet.address, wallet.id)
+        for (const account of accountsToMonitor) {
+            const result = await lpMonitorService.discoverPositionsForAccount(account.address, account.id)
 
             results.push({
-                wallet,
+                account,
                 positions: result.positions,
                 poolsChecked: result.poolsChecked,
                 positionsFound: result.positionsFound,
             })
 
-            byWallet[wallet.address] = result.positionsFound
+            byAccount[account.address] = result.positionsFound
             totalPositions += result.positionsFound
 
             if (result.positionsFound > 0) {
-                console.log(`📍 Wallet ${wallet.address}: ${result.positionsFound} positions found`)
+                console.log(`📍 Account ${account.address}: ${result.positionsFound} positions found`)
             }
         }
 
         return {
             results,
             totalPositions,
-            byWallet,
+            byAccount,
         }
     }
 
@@ -122,7 +122,7 @@ class AnalyticsOrchestrator {
             averageFeeAPR: number
             positionsInRange: number
             totalLpDelta: number
-            totalHedgeDelta: number
+            totalPerpDelta: number
             totalNetDelta: number
         }
     }> {
@@ -135,7 +135,7 @@ class AnalyticsOrchestrator {
                     averageFeeAPR: 0,
                     positionsInRange: 0,
                     totalLpDelta: 0,
-                    totalHedgeDelta: 0,
+                    totalPerpDelta: 0,
                     totalNetDelta: 0,
                 },
             }
@@ -145,36 +145,27 @@ class AnalyticsOrchestrator {
         const pullResult = await analyticsPullService.pullAllPositionsMetrics(positions)
 
         // Get LP positions from database for additional data
-        const dbPositions = await prisma.lPPosition.findMany({
+        const dbPositions = await prismaMonitoring.lpPosition.findMany({
             where: {
                 tokenId: { in: positions.map((p) => p.tokenId || '') },
-                isActive: true,
-            },
-            include: {
-                wallet: true,
-                snapshots: {
-                    orderBy: { timestamp: 'desc' },
-                    take: 1,
-                },
             },
         })
 
         // Calculate enhanced metrics with delta exposure
         const enhancedMetrics: PositionMetricsResult[] = []
         let totalLpDelta = 0
-        let totalHedgeDelta = 0
+        let totalPerpDelta = 0
 
         for (const metric of pullResult.metrics) {
             const dbPosition = dbPositions.find((p) => p.id === metric.positionId)
 
             if (!dbPosition) continue
 
-            // Get hedge position for this wallet
-            const hedgePosition = await prisma.hedgePosition.findFirst({
+            // Get perp position for this account
+            const perpPosition = await prismaMonitoring.perpPosition.findFirst({
                 where: {
-                    walletAddress: dbPosition.ownerAddress,
+                    accountId: dbPosition.accountId,
                     asset: 'HYPE',
-                    isActive: true,
                 },
             })
 
@@ -193,12 +184,12 @@ class AnalyticsOrchestrator {
                 metricsWithAmounts.token0Symbol === 'HYPE',
             )
 
-            const hedgeDelta = hedgePosition ? -hedgePosition.notionalValue : 0
-            const netDelta = lpDelta + hedgeDelta
-            const hedgeEffectiveness = hedgeMonitorService.calculateHedgeEffectiveness(lpDelta, hedgeDelta)
+            const perpDelta = perpPosition ? perpPosition.szi.toNumber() * perpPosition.markPx.toNumber() : 0
+            const netDelta = lpDelta + perpDelta
+            const perpEffectiveness = perpMonitorService.calculatePerpEffectiveness(lpDelta, perpDelta)
 
             totalLpDelta += lpDelta
-            totalHedgeDelta += hedgeDelta
+            totalPerpDelta += perpDelta
 
             enhancedMetrics.push({
                 positionId: metric.positionId,
@@ -208,9 +199,9 @@ class AnalyticsOrchestrator {
                 feeAPR: metric.feeAPR,
                 inRange: metric.inRange,
                 lpDelta,
-                hedgeDelta,
+                perpDelta,
                 netDelta,
-                hedgeEffectiveness,
+                perpEffectiveness,
             })
         }
 
@@ -219,8 +210,8 @@ class AnalyticsOrchestrator {
             summary: {
                 ...pullResult.summary,
                 totalLpDelta,
-                totalHedgeDelta,
-                totalNetDelta: totalLpDelta + totalHedgeDelta,
+                totalPerpDelta,
+                totalNetDelta: totalLpDelta + totalPerpDelta,
             },
         }
     }
@@ -230,7 +221,8 @@ class AnalyticsOrchestrator {
      */
     async storeSnapshots(metrics: PositionMetricsResult[]): Promise<number> {
         // Transform metrics for storage
-        const positions = metrics.map((m) => {
+        // Transform metrics for storage
+        /* const positions = metrics.map((m) => {
             const metricsWithDetails = m as unknown as Record<string, unknown>
             return {
                 tokenId: String(metricsWithDetails.tokenId || ''),
@@ -252,40 +244,76 @@ class AnalyticsOrchestrator {
                 poolSqrtPriceX96: '0',
                 inRange: m.inRange,
             }
-        })
+        }) */
 
-        await lpDatabaseService.createPositionSnapshots(positions)
+        // Position snapshots now handled at account level
+        // await analyticsStoreService.createAccountSnapshot(...)
+
+        // Store account snapshots instead of individual position snapshots
+        let snapshotsCreated = 0
+        const accountMetrics = new Map<string, { lpValue: number; perpValue: number; netDelta: number; lpFeeAPR: number }>()
+
+        // Aggregate metrics by account
+        for (const metric of metrics) {
+            // Need to get account ID from position
+            // This is simplified - in reality you'd need to track account per position
+            const accountId = 'default' // TODO: Get from position data
+
+            if (!accountMetrics.has(accountId)) {
+                accountMetrics.set(accountId, { lpValue: 0, perpValue: 0, netDelta: 0, lpFeeAPR: 0 })
+            }
+
+            const current = accountMetrics.get(accountId)!
+            current.lpValue += metric.totalValueUSD
+            current.netDelta += metric.netDelta
+            current.lpFeeAPR = metric.feeAPR // Simplified - should be weighted average
+        }
+
+        // Create snapshots for each account
+        for (const [accountId, metrics] of accountMetrics) {
+            await analyticsStoreService.createAccountSnapshot({
+                accountId,
+                lpValue: metrics.lpValue,
+                perpValue: metrics.perpValue,
+                spotValue: 0, // TODO: Add spot tracking
+                netDelta: metrics.netDelta,
+                lpFeeAPR: metrics.lpFeeAPR,
+                fundingAPR: 0, // TODO: Get from perp positions
+                netAPR: metrics.lpFeeAPR, // Simplified
+            })
+            snapshotsCreated++
+        }
 
         // Clean up old snapshots (keep 30 days)
-        const deleted = await lpDatabaseService.cleanupOldSnapshots(30)
+        await analyticsStoreService.cleanupOldSnapshots(30)
 
-        return deleted
+        return snapshotsCreated
     }
 
     /**
      * Step 5: Check for rebalance needs
      */
-    async checkRebalanceNeeds(wallets: MonitoredWallet[]): Promise<{
+    async checkRebalanceNeeds(accounts: MonitoredAccount[]): Promise<{
         needsRebalance: boolean
-        wallets: string[]
+        accounts: string[]
         totalDriftUSD: number
     }> {
-        const walletsNeedingRebalance: string[] = []
+        const accountsNeedingRebalance: string[] = []
         let totalDriftUSD = 0
 
-        for (const wallet of wallets) {
-            const rebalanceCheck = await hedgeMonitorService.checkRebalanceNeeded(wallet.address)
+        for (const account of accounts) {
+            const rebalanceCheck = await perpMonitorService.checkRebalanceNeeded(account.id)
 
             if (rebalanceCheck.needed) {
-                walletsNeedingRebalance.push(wallet.address)
+                accountsNeedingRebalance.push(account.address)
                 totalDriftUSD += Math.abs(rebalanceCheck.currentDrift || 0)
-                console.log(`⚠️ Rebalance needed for wallet ${wallet.address}: $${rebalanceCheck.currentDrift.toFixed(2)} drift`)
+                console.log(`⚠️ Rebalance needed for account ${account.address}: $${rebalanceCheck.currentDrift.toFixed(2)} drift`)
             }
         }
 
         return {
-            needsRebalance: walletsNeedingRebalance.length > 0,
-            wallets: walletsNeedingRebalance,
+            needsRebalance: accountsNeedingRebalance.length > 0,
+            accounts: accountsNeedingRebalance,
             totalDriftUSD,
         }
     }
@@ -312,12 +340,12 @@ class AnalyticsOrchestrator {
             if (process.env.NODE_ENV === 'development') {
                 console.log('\n📍 Step 2: Fetching LP Positions')
             }
-            const wallets = await lpMonitorService.getMonitoredWallets()
+            const accounts = await lpMonitorService.getMonitoredAccounts()
             if (process.env.NODE_ENV === 'development') {
-                console.log(`  👛 Monitoring ${wallets.length} wallet(s)`)
-                wallets.forEach((w) => console.log(`    - ${w.address} (${w.name || 'no label'})`))
+                console.log(`  👛 Monitoring ${accounts.length} account(s)`)
+                accounts.forEach((w) => console.log(`    - ${w.address} (${w.name || 'no label'})`))
             }
-            const positionResults = await this.fetchPositionsForWallets(wallets)
+            const positionResults = await this.fetchPositionsForAccounts(accounts)
 
             // Collect all positions
             const allPositions = positionResults.results.flatMap((r) => r.positions)
@@ -332,9 +360,9 @@ class AnalyticsOrchestrator {
                 }
                 return {
                     success: true,
-                    walletsMonitored: wallets.length,
+                    accountsMonitored: accounts.length,
                     positionsUpdated: 0,
-                    hedgePositions: 0,
+                    perpPositions: 0,
                     totalValueUSD: 0,
                     averageFeeAPR: 0,
                     oldRunsDeleted: 0,
@@ -346,13 +374,13 @@ class AnalyticsOrchestrator {
                 }
             }
 
-            // Step 3: Fetch hedge positions
+            // Step 3: Fetch perp positions
             if (process.env.NODE_ENV === 'development') {
-                console.log('\n📍 Step 3: Fetching Hedge Positions')
+                console.log('\n📍 Step 3: Fetching Perp Positions')
             }
-            const hedgeResult = await hedgeMonitorService.monitorAllWallets()
+            const perpResult = await perpMonitorService.monitorAllAccounts()
             if (process.env.NODE_ENV === 'development') {
-                console.log(`  🛡️ Found ${hedgeResult.hedgePositions} hedge position(s)`)
+                console.log(`  🛡️ Found ${perpResult.perpPositions} perp position(s)`)
             }
 
             // Step 4: Compute metrics
@@ -380,11 +408,11 @@ class AnalyticsOrchestrator {
             if (process.env.NODE_ENV === 'development') {
                 console.log('\n📍 Step 6: Checking Rebalance Needs')
             }
-            const deltaDrift = await this.checkRebalanceNeeds(wallets)
+            const netDelta = await this.checkRebalanceNeeds(accounts)
             if (process.env.NODE_ENV === 'development') {
-                if (deltaDrift.needsRebalance) {
-                    console.log(`  ⚠️ Rebalance needed for ${deltaDrift.wallets.length} wallet(s)`)
-                    console.log(`  💸 Total drift: $${deltaDrift.totalDriftUSD.toFixed(2)}`)
+                if (netDelta.needsRebalance) {
+                    console.log(`  ⚠️ Rebalance needed for ${netDelta.accounts.length} account(s)`)
+                    console.log(`  💸 Total drift: $${netDelta.totalDriftUSD.toFixed(2)}`)
                 } else {
                     console.log(`  ✅ All positions within acceptable delta range`)
                 }
@@ -396,9 +424,9 @@ class AnalyticsOrchestrator {
 
             return {
                 success: true,
-                walletsMonitored: wallets.length,
+                accountsMonitored: accounts.length,
                 positionsUpdated: metrics.length,
-                hedgePositions: hedgeResult.hedgePositions,
+                perpPositions: perpResult.perpPositions,
                 totalValueUSD: summary.totalValueUSD,
                 averageFeeAPR: summary.averageFeeAPR,
                 oldRunsDeleted: deleted,
@@ -407,7 +435,7 @@ class AnalyticsOrchestrator {
                     activePools: poolStats.activePools,
                     byDex: poolStats.byDex,
                 },
-                deltaDrift,
+                netDelta,
             }
         } catch (error) {
             console.error('❌ Analytics run failed:', error)

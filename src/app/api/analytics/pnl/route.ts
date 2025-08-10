@@ -1,127 +1,138 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
 
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams
-        const walletAddress = searchParams.get('wallet')
+        const accountAddress = searchParams.get('account') || searchParams.get('wallet')
+        const days = parseInt(searchParams.get('days') || '30')
 
-        if (!walletAddress) {
-            return NextResponse.json({ error: 'Wallet address required' }, { status: 400 })
+        const startDate = new Date()
+        startDate.setDate(startDate.getDate() - days)
+
+        // Get account if specified
+        let accountId: string | undefined
+        if (accountAddress) {
+            const account = await prismaMonitoring.monitoredAccount.findUnique({
+                where: { address: accountAddress },
+            })
+            if (!account) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: 'Account not found',
+                    },
+                    { status: 404 },
+                )
+            }
+            accountId = account.id
         }
 
-        // Get LP positions with latest snapshots
-        const lpPositions = await prisma.lPPosition.findMany({
-            where: {
-                ownerAddress: {
-                    equals: walletAddress,
-                    mode: 'insensitive',
-                },
-                isActive: true,
-            },
-            include: {
-                snapshots: {
-                    orderBy: { timestamp: 'desc' },
-                    take: 2, // Get last 2 snapshots for comparison
-                },
-            },
+        // Get LP positions with current value
+        const lpPositions = await prismaMonitoring.lpPosition.findMany({
+            where: accountId ? { accountId } : {},
         })
 
-        // Get hedge positions
-        const hedgePositions = await prisma.hedgePosition.findMany({
-            where: {
-                walletAddress: {
-                    equals: walletAddress,
-                    mode: 'insensitive',
-                },
-            },
-            include: {
-                snapshots: {
-                    orderBy: { timestamp: 'desc' },
-                    take: 1,
-                },
-            },
+        // Get perp positions
+        const perpPositions = await prismaMonitoring.perpPosition.findMany({
+            where: accountId ? { accountId } : {},
         })
 
-        // Rebalance history removed - costs now tracked differently
-        // For now, return empty array for backwards compatibility
-        const rebalances: { totalCostUSD: number; timestamp: Date }[] = []
+        // Get account snapshots for historical data
+        const snapshots = await prismaMonitoring.accountSnapshot.findMany({
+            where: {
+                ...(accountId ? { accountId } : {}),
+                timestamp: {
+                    gte: startDate,
+                },
+            },
+            orderBy: { timestamp: 'asc' },
+        })
 
-        // Calculate PnL components
-        let lpFeesEarned = 0
-        let impermanentLoss = 0
-        let lpValue = 0
+        // Calculate PnL metrics
+        let totalUnrealizedPnl = 0
+        const totalRealizedPnl = 0
+        let totalFundingPaid = 0
 
-        for (const position of lpPositions) {
-            const latestSnapshot = position.snapshots[0]
-            if (latestSnapshot) {
-                lpValue += latestSnapshot.totalValueUSD
-                lpFeesEarned += latestSnapshot.unclaimedFeesUSD
+        // Sum up perp PnL
+        for (const perp of perpPositions) {
+            totalUnrealizedPnl += perp.unrealizedPnl.toNumber()
+            totalFundingPaid += perp.fundingPaid.toNumber()
+        }
 
-                // TODO: Calculate actual IL based on entry vs current composition
-                // For now, estimate IL as 2% of position value if out of range
-                if (!latestSnapshot.inRange) {
-                    impermanentLoss -= latestSnapshot.totalValueUSD * 0.02
-                }
+        // Calculate LP fees earned (simplified - using snapshots)
+        let totalLpFeesEarned = 0
+        if (snapshots.length > 0) {
+            // Estimate fees based on APR and time period
+            for (let i = 1; i < snapshots.length; i++) {
+                const prevSnapshot = snapshots[i - 1]
+                const currSnapshot = snapshots[i]
+                const timeDiffHours = (currSnapshot.timestamp.getTime() - prevSnapshot.timestamp.getTime()) / (1000 * 60 * 60)
+                const avgLpValue = (prevSnapshot.lpValue.toNumber() + currSnapshot.lpValue.toNumber()) / 2
+                const avgFeeAPR = (prevSnapshot.lpFeeAPR.toNumber() + currSnapshot.lpFeeAPR.toNumber()) / 2
+
+                // Convert APR to hourly rate and calculate fees
+                const feesEarned = avgLpValue * avgFeeAPR * (timeDiffHours / (365 * 24))
+                totalLpFeesEarned += feesEarned
             }
         }
 
-        // Calculate hedge PnL
-        let hedgeUnrealizedPnl = 0
-        let hedgeRealizedPnl = 0
-        let fundingEarned = 0
+        // Get current total values
+        const currentLpValue = lpPositions.reduce((sum, p) => sum + p.valueUSD.toNumber(), 0)
+        const currentPerpValue = perpPositions.reduce((sum, p) => {
+            return sum + p.marginUsed.toNumber() + p.unrealizedPnl.toNumber()
+        }, 0)
 
-        for (const hedge of hedgePositions) {
-            hedgeUnrealizedPnl += hedge.unrealizedPnl
-            hedgeRealizedPnl += hedge.realizedPnl
-            fundingEarned += hedge.fundingPaid // Negative means we received funding
-        }
+        // Calculate returns
+        const totalValue = currentLpValue + currentPerpValue
+        const totalPnl = totalUnrealizedPnl + totalRealizedPnl + totalLpFeesEarned - totalFundingPaid
+        const returnPercentage = totalValue > 0 ? (totalPnl / totalValue) * 100 : 0
 
-        // Calculate rebalance costs
-        const rebalanceCosts = rebalances.reduce((sum, r) => sum + r.totalCostUSD, 0)
-
-        // Calculate total PnL
-        const totalPnl = lpFeesEarned + impermanentLoss + hedgeUnrealizedPnl + hedgeRealizedPnl + fundingEarned - rebalanceCosts
+        // Prepare time series data
+        const timeSeriesData = snapshots.map((snapshot) => ({
+            timestamp: snapshot.timestamp,
+            lpValue: snapshot.lpValue.toNumber(),
+            perpValue: snapshot.perpValue.toNumber(),
+            totalValue: snapshot.lpValue.toNumber() + snapshot.perpValue.toNumber() + snapshot.spotValue.toNumber(),
+            netDelta: snapshot.netDelta.toNumber(),
+            netAPR: snapshot.netAPR.toNumber(),
+        }))
 
         return NextResponse.json({
-            wallet: walletAddress,
+            success: true,
             pnl: {
-                total: totalPnl,
-                components: {
-                    lpFees: lpFeesEarned,
-                    impermanentLoss,
-                    hedgeUnrealized: hedgeUnrealizedPnl,
-                    hedgeRealized: hedgeRealizedPnl,
-                    funding: fundingEarned,
-                    rebalanceCosts: -rebalanceCosts,
-                },
-                percentages: {
-                    lpFees: lpValue > 0 ? (lpFeesEarned / lpValue) * 100 : 0,
-                    impermanentLoss: lpValue > 0 ? (impermanentLoss / lpValue) * 100 : 0,
-                    totalReturn: lpValue > 0 ? (totalPnl / lpValue) * 100 : 0,
-                },
+                unrealizedPnl: totalUnrealizedPnl,
+                realizedPnl: totalRealizedPnl,
+                lpFeesEarned: totalLpFeesEarned,
+                fundingPaid: totalFundingPaid,
+                totalPnl,
+                returnPercentage,
+            },
+            currentValues: {
+                lpValue: currentLpValue,
+                perpValue: currentPerpValue,
+                totalValue,
             },
             positions: {
-                lp: {
-                    count: lpPositions.length,
-                    totalValue: lpValue,
-                    feesEarned: lpFeesEarned,
-                },
-                hedge: {
-                    count: hedgePositions.filter((h) => h.isActive).length,
-                    unrealizedPnl: hedgeUnrealizedPnl,
-                    realizedPnl: hedgeRealizedPnl,
-                    fundingEarned,
-                },
+                lpCount: lpPositions.length,
+                perpCount: perpPositions.length,
+                activePerps: perpPositions.length,
             },
-            rebalances: {
-                count: rebalances.length,
-                totalCost: rebalanceCosts,
-                lastRebalance: rebalances[0]?.timestamp || null,
+            timeSeries: timeSeriesData,
+            period: {
+                days,
+                startDate,
+                endDate: new Date(),
             },
         })
     } catch (error) {
         console.error('Error calculating PnL:', error)
-        return NextResponse.json({ error: 'Failed to calculate PnL' }, { status: 500 })
+        return NextResponse.json(
+            {
+                success: false,
+                error: 'Failed to calculate PnL',
+            },
+            { status: 500 },
+        )
     }
 }

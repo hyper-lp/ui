@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prismaReferrals } from '@/lib/prisma-referrals'
 import { decodeReferralCode } from '@/utils/referral.util'
 import { checkRateLimit } from '@/utils/rate-limit.util'
 import { getClientIp, isValidTwitterId, isValidTwitterHandle, sanitizeInput } from '@/utils/validation.util'
@@ -105,7 +105,7 @@ async function handleWaitlistJoin(
         }
 
         // Check if user is already on waitlist
-        const existingEntry = await prisma.waitlist.findUnique({
+        const existingEntry = await prismaReferrals.waitlist.findUnique({
             where: { twitterId },
         })
 
@@ -119,7 +119,7 @@ async function handleWaitlistJoin(
 
         // Additional check: prevent multiple accounts with same email
         if (sanitizedEmail) {
-            const emailExists = await prisma.waitlist.findFirst({
+            const emailExists = await prismaReferrals.waitlist.findFirst({
                 where: { email: sanitizedEmail },
             })
             if (emailExists) {
@@ -153,7 +153,7 @@ async function handleWaitlistJoin(
                 console.log(`[Referral] Looking up referrer with Twitter ID: ${referrerTwitterId}`)
 
                 // Check if referrer exists and hasn't hit referral limits
-                const referrer = await prisma.waitlist.findFirst({
+                const referrer = await prismaReferrals.waitlist.findFirst({
                     where: { twitterId: referrerTwitterId },
                 })
 
@@ -172,8 +172,8 @@ async function handleWaitlistJoin(
                             console.log(`[Referral] Setting referredBy to: @${referredBy}`)
 
                             // Use transaction to ensure atomicity
-                            await prisma.$transaction([
-                                prisma.waitlist.update({
+                            await prismaReferrals.$transaction([
+                                prismaReferrals.waitlist.update({
                                     where: { twitterId: referrer.twitterId },
                                     data: { referralCount: { increment: 1 } },
                                 }),
@@ -190,7 +190,7 @@ async function handleWaitlistJoin(
         }
 
         // Add to waitlist with sanitized data
-        const newEntry = await prisma.waitlist.create({
+        const newEntry = await prismaReferrals.waitlist.create({
             data: {
                 twitterId,
                 twitterHandle: sanitizedHandle,
@@ -202,7 +202,7 @@ async function handleWaitlistJoin(
         })
 
         // Get total count to show position
-        const totalCount = await prisma.waitlist.count()
+        const totalCount = await prismaReferrals.waitlist.count()
 
         return NextResponse.json(
             {

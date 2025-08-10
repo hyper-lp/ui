@@ -36,6 +36,7 @@ export const APP_METADATA = {
         },
     },
 }
+export const SHOW_WAITLIST = false
 
 /**
  * pages

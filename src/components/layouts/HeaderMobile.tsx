@@ -1,6 +1,6 @@
 'use client'
 
-import { APP_PAGES } from '@/config/app.config'
+import { APP_PAGES, SHOW_WAITLIST } from '@/config/app.config'
 import { useAppStore } from '@/stores/app.store'
 import { cn } from '@/utils'
 import { useRef, useEffect } from 'react'
@@ -105,26 +105,28 @@ export default function HeaderMobile() {
                                     <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-4" />
                                 </LinkWrapper>
                             </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
-                                className="mt-10"
-                            >
-                                {!ready ? (
-                                    <div className="h-10 w-40 skeleton-loading" />
-                                ) : authenticated ? (
-                                    <WaitlistForm />
-                                ) : (
-                                    <div className="flex flex-col gap-1 items-center">
-                                        <WaitlistButton />
-                                        <LinkWrapper href={AppUrls.PRIVY}>
-                                            <p className="text-xs italic">Powered by Privy</p>
-                                        </LinkWrapper>
-                                    </div>
-                                )}
-                            </motion.div>
+                            {SHOW_WAITLIST && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
+                                    className="mt-10"
+                                >
+                                    {!ready ? (
+                                        <div className="h-10 w-40 skeleton-loading" />
+                                    ) : authenticated ? (
+                                        <WaitlistForm />
+                                    ) : (
+                                        <div className="flex flex-col gap-1 items-center">
+                                            <WaitlistButton />
+                                            <LinkWrapper href={AppUrls.PRIVY}>
+                                                <p className="text-xs italic">Powered by Privy</p>
+                                            </LinkWrapper>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
                             <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}

@@ -1,5 +1,6 @@
 import type { LPPosition } from '@/interfaces/dex.interface'
 import type { Address } from 'viem'
+import { DexProtocol } from '@/enums'
 
 /**
  * Mock HYPE/USDT0 positions for testing
@@ -7,21 +8,21 @@ import type { Address } from 'viem'
 export const MOCK_POSITIONS: LPPosition[] = [
     {
         id: 'test-hyperswap-hype-usdt-1',
-        dex: 'hyperswap',
+        dex: DexProtocol.HYPERSWAP,
         poolAddress: '0x56aBfaf40F5B7464e9cC8cFF1af13863D6914508',
         tokenId: '1',
         positionManagerAddress: '0x6eDA206207c09e5428F281761DdC0D300851fBC8',
     },
     {
         id: 'test-prjtx-hype-usdc-1',
-        dex: 'prjtx',
+        dex: DexProtocol.PRJTX,
         poolAddress: '0x161fB7d6c764f81DAE581E8a4981772750416727',
         tokenId: '2',
         positionManagerAddress: '0xeaD19AE861c29bBb2101E834922B2FEee69B9091',
     },
     {
         id: 'test-hybra-usdc-usdt-1',
-        dex: 'hybra',
+        dex: DexProtocol.HYBRA,
         poolAddress: '0x3603ffEbB994CC110b4186040CaC3005B2cf4465',
         tokenId: '3',
         positionManagerAddress: '0x934C4f47B2D3FfcA0156A45DEb3A436202aF1efa',

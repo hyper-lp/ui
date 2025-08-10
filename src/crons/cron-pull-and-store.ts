@@ -1,5 +1,6 @@
 import { inngest } from '@/lib/inngest'
-import { analyticsOrchestrator } from '@/services/06-analytics-orchestrator.service'
+import { orchestratorService } from '@/services/orchestrator.service'
+import { env } from '@/env/t3-env'
 
 /**
  * Main cron job that pulls analytics data and stores it to database
@@ -8,10 +9,10 @@ import { analyticsOrchestrator } from '@/services/06-analytics-orchestrator.serv
 export const pullAndStoreAnalyticsCron = inngest.createFunction(
     {
         id: 'pull-and-store-analytics-cron',
-        name: 'Pull and Store LP & Hedge Analytics (Cron)',
+        name: 'Pull and Store LP & Perp Analytics (Cron)',
     },
     {
-        cron: process.env.ANALYTICS_CRON || '*/30 * * * *', // Every 30 minutes
+        cron: env.ANALYTICS_CRON || '*/30 * * * *', // Every 30 minutes
     },
     async ({ step, logger }) => {
         return await step.run('fetch-and-store-analytics', async () => {
@@ -22,11 +23,11 @@ export const pullAndStoreAnalyticsCron = inngest.createFunction(
                 logger.info('🚀 Starting analytics cron job', {
                     timestamp: new Date().toISOString(),
                     environment: process.env.NODE_ENV,
-                    cron: process.env.ANALYTICS_CRON || '*/30 * * * *',
+                    cron: env.ANALYTICS_CRON || '*/30 * * * *',
                 })
 
                 // Delegate to orchestrator for the actual analytics logic
-                const result = await analyticsOrchestrator.runFullAnalytics()
+                const result = await orchestratorService.runFullAnalytics()
 
                 const duration = Date.now() - startTime
 
@@ -34,14 +35,12 @@ export const pullAndStoreAnalyticsCron = inngest.createFunction(
                     // Log successful completion with metrics
                     logger.info('✅ Analytics cron job completed successfully', {
                         duration: `${duration}ms`,
-                        walletsMonitored: result.walletsMonitored,
-                        positionsUpdated: result.positionsUpdated,
-                        hedgePositions: result.hedgePositions,
-                        totalValueUSD: result.totalValueUSD?.toFixed(2),
-                        averageFeeAPR: result.averageFeeAPR ? `${(result.averageFeeAPR * 100).toFixed(2)}%` : '0%',
-                        oldRunsDeleted: result.oldRunsDeleted,
-                        poolStats: result.poolStats,
-                        deltaDrift: result.deltaDrift,
+                        accountsProcessed: result.accountsProcessed,
+                        positionsFound: result.positionsFound,
+                        metricsCalculated: result.metricsCalculated,
+                        snapshotsStored: result.snapshotsStored,
+                        oldSnapshotsDeleted: result.oldSnapshotsDeleted,
+                        aggregatedMetrics: result.aggregatedMetrics,
                     })
                 } else {
                     // Log failure with error details
@@ -52,9 +51,9 @@ export const pullAndStoreAnalyticsCron = inngest.createFunction(
                     })
 
                     // Optionally, you can re-throw to trigger retry logic
-                    if (process.env.RETRY_ON_ERROR === 'true') {
-                        throw new Error(`Analytics cron failed: ${result.error}`)
-                    }
+                    // Retry logic can be configured here if needed
+                    // Uncomment to enable retry on error:
+                    // throw new Error(`Analytics cron failed: ${result.error}`)
                 }
 
                 return result
@@ -73,9 +72,9 @@ export const pullAndStoreAnalyticsCron = inngest.createFunction(
                 return {
                     success: false,
                     error: error instanceof Error ? error.message : 'Unknown error occurred',
-                    walletsMonitored: 0,
+                    accountsMonitored: 0,
                     positionsUpdated: 0,
-                    hedgePositions: 0,
+                    perpPositions: 0,
                     totalValueUSD: 0,
                     averageFeeAPR: 0,
                     oldRunsDeleted: 0,

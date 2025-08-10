@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prismaReferrals } from '@/lib/prisma-referrals'
 
 export async function GET() {
     try {
-        const users = await prisma.user.findMany()
+        const users = await prismaReferrals.user.findMany()
         return NextResponse.json(users)
     } catch {
         return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
@@ -13,7 +13,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const user = await prisma.user.create({
+        const user = await prismaReferrals.user.create({
             data: {
                 email: body.email,
                 name: body.name,

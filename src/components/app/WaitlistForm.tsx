@@ -131,7 +131,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                             {/* <p className="text-sm font-medium text-default">
                                 {user.twitter.name} #{position || '...'} on the waitlist
                             </p> */}
-                            <p className="text-sm font-medium text-default">On the waitlist as {user.twitter.name}</p>
+                            {/* <p className="text-sm font-medium text-default">On the waitlist as {user.twitter.name}</p> */}
                             {referredBy && <p className="text-xs text-default/60">Referred by @{referredBy}</p>}
                         </div>
                     </div>

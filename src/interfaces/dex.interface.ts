@@ -1,6 +1,7 @@
 import type { Address } from 'viem'
+import { DexProtocol } from '@/enums'
 
-export type DexProtocol = 'hyperswap' | 'prjtx' | 'hybra'
+export { DexProtocol }
 
 export interface LPPosition {
     id: string

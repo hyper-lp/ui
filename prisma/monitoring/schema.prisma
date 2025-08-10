@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/client-monitoring"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_MONITORING")
+}
+
+// Enums for constrained values
+enum Dex {
+  HYPERSWAP  // Hyperswap V3 - Official Uniswap V3 fork on HyperEVM
+  PRJTX      // Project X - Uniswap V3 fork with fee switch enabled
+  HYBRA      // Hybra Finance - Audited by Peckshield
+  OTHER      // Fallback for unknown DEXs
+}
+
+enum Asset {
+  HYPE
+  USDT0
+  USDC
+  BTC
+  ETH
+  OTHER
+}
+
+// Core: monitored accounts (vaults, test accounts, etc)
+model MonitoredAccount {
+  id            String            @id @default(cuid())
+  address       String            @unique
+  name          String?
+  isActive      Boolean           @default(true)
+  
+  // Platform flags - track where account has activity
+  hasHyperEvm   Boolean           @default(true)  // Has LP positions on HyperEVM
+  hasHyperCore  Boolean           @default(true)  // Has perp/spot positions on HyperCore
+  
+  // Optional: Different addresses per platform (if needed in future)
+  hyperEvmAddress  String?        // Override address for HyperEVM if different
+  hyperCoreAddress String?        // Override address for HyperCore if different
+  
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  // Relations
+  snapshots     AccountSnapshot[]
+  lpPositions   LpPosition[]
+  perpPositions PerpPosition[]
+  spotBalances  SpotBalance[]
+
+  @@index([isActive])
+  @@index([hasHyperEvm])
+  @@index([hasHyperCore])
+}
+
+// Time-series: account-level 5m snapshots for charts
+model AccountSnapshot {
+  id         String           @id @default(cuid())
+  accountId  String
+  timestamp  DateTime         // Floor to 5m on insert
+  // Values at snapshot time (USD)
+  lpValue    Decimal          @db.Decimal(38, 18)
+  perpValue  Decimal          @db.Decimal(38, 18)
+  spotValue  Decimal          @db.Decimal(38, 18)
+  netDelta   Decimal          @db.Decimal(38, 18) // Combined delta exposure
+  // APRs as fractions (0.15 = 15%)
+  lpFeeAPR   Decimal          @db.Decimal(20, 10)
+  fundingAPR Decimal          @db.Decimal(20, 10)
+  netAPR     Decimal          @db.Decimal(20, 10) // Pre-computed for frontend
+  createdAt  DateTime         @default(now())
+  // Relations
+  account    MonitoredAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, timestamp])
+  @@index([timestamp])
+  @@index([accountId, timestamp])
+}
+
+// Current LP positions on HyperEVM
+model LpPosition {
+  id           String           @id @default(cuid())
+  accountId    String
+  tokenId      String           @unique // NFT token ID from position manager
+  dex          Dex
+  token0Symbol String           // "HYPE"
+  token1Symbol String           // "USDT0"
+  liquidity    Decimal          @db.Decimal(38, 18)
+  tickLower    Int
+  tickUpper    Int
+  inRange      Boolean
+  poolAddress  String?
+  feeTier      Int?             // Fee in basis points
+  valueUSD     Decimal          @db.Decimal(38, 18)
+  updatedAt    DateTime         @updatedAt
+  createdAt    DateTime         @default(now())
+  // Relations
+  account      MonitoredAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([inRange])
+}
+
+// Current perp positions on HyperCore
+model PerpPosition {
+  id            String           @id @default(cuid())
+  accountId     String
+  asset         String           // "HYPE", "BTC", etc
+  szi           Decimal          @db.Decimal(38, 18) // Signed size (negative = short)
+  entryPx       Decimal          @db.Decimal(38, 18) // Entry price
+  markPx        Decimal          @db.Decimal(38, 18) // Current mark price
+  marginUsed    Decimal          @db.Decimal(38, 18)
+  unrealizedPnl Decimal          @db.Decimal(38, 18)
+  fundingPaid   Decimal          @db.Decimal(38, 18) @default(0)
+  updatedAt     DateTime         @updatedAt
+  createdAt     DateTime         @default(now())
+  // Relations
+  account       MonitoredAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, asset])
+  @@index([accountId, asset])
+}
+
+// Current spot balances
+model SpotBalance {
+  id        String           @id @default(cuid())
+  accountId String
+  asset     Asset
+  balance   Decimal          @db.Decimal(38, 18)
+  valueUSD  Decimal          @db.Decimal(38, 18)
+  updatedAt DateTime         @updatedAt
+  createdAt DateTime         @default(now())
+  // Relations
+  account   MonitoredAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, asset])
+  @@index([accountId, asset])
+}

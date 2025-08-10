@@ -3,13 +3,16 @@ import { createPublicClient, http, type PublicClient, defineChain, fallback } fr
 // HyperEVM public RPC endpoints with fallbacks
 const HYPEREVM_RPC_URLS = [
     'https://api.hyperliquid.xyz/evm', // Primary official RPC
-    'https://hyperliquid.drpc.org', // DRPC fallback
     'https://rpc.hyperliquid.xyz/evm', // Alternative official RPC
     'https://rpc.hyperlend.finance', // HyperLend RPC fallback
+    'https://hyperliquid-json-rpc.stakely.io', // Stakely RPC fallback
+    'https://hyperliquid.drpc.org', // DRPC RPC fallback
+    'https://rpc.hypurrscan.io', // Hypurrscan RPC fallback
 ]
 
+export const HYPEREVM_CHAIN_ID = 999
 export const hyperEvm = defineChain({
-    id: 998,
+    id: HYPEREVM_CHAIN_ID,
     name: 'HyperEVM',
     nativeCurrency: {
         decimals: 18,
@@ -31,9 +34,9 @@ export const hyperEvm = defineChain({
 
 let client: PublicClient | null = null
 
-export function getViemClient(chainId: number = 998): PublicClient {
-    if (chainId !== 998) {
-        throw new Error(`Only HyperEVM (chain ID 998) is supported`)
+export function getViemClient(chainId: number = HYPEREVM_CHAIN_ID): PublicClient {
+    if (chainId !== HYPEREVM_CHAIN_ID) {
+        throw new Error(`Only HyperEVM (chain ID ${HYPEREVM_CHAIN_ID}) is supported`)
     }
 
     if (!client) {

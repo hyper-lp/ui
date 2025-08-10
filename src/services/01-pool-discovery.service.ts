@@ -1,5 +1,6 @@
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import { getPoolAddress, fetchPoolState } from '@/utils/uniswap-v3.util'
+import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import type { Address } from 'viem'
 import type { DexProtocol } from '@/interfaces/dex.interface'
 
@@ -90,7 +91,7 @@ class PoolDiscoveryService {
                         if (poolAddress && poolAddress !== '0x0000000000000000000000000000000000000000') {
                             // Fetch pool state to check if active
                             try {
-                                const state = await fetchPoolState(poolAddress, 998)
+                                const state = await fetchPoolState(poolAddress, HYPEREVM_CHAIN_ID)
 
                                 if (process.env.NODE_ENV === 'development' && state.liquidity > 0n) {
                                     console.log(`  ✅ Found active pool on ${dex}: ${poolAddress.slice(0, 10)}... (${hypeType}, ${label})`)
@@ -168,13 +169,13 @@ class PoolDiscoveryService {
         const pools: Address[] = []
 
         // Order 1: token0/token1
-        const pool1 = await getPoolAddress(token0, token1, fee, factoryAddress, 998)
+        const pool1 = await getPoolAddress(token0, token1, fee, factoryAddress, HYPEREVM_CHAIN_ID)
         if (pool1 && pool1 !== '0x0000000000000000000000000000000000000000') {
             pools.push(pool1)
         }
 
         // Order 2: token1/token0 (only if different from pool1)
-        const pool2 = await getPoolAddress(token1, token0, fee, factoryAddress, 998)
+        const pool2 = await getPoolAddress(token1, token0, fee, factoryAddress, HYPEREVM_CHAIN_ID)
         if (pool2 && pool2 !== '0x0000000000000000000000000000000000000000' && pool2 !== pool1) {
             pools.push(pool2)
         }

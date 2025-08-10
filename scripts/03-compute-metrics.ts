@@ -1,10 +1,12 @@
 #!/usr/bin/env tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { AnalyticsPullService } from '@/services/04-analytics-fetcher.service'
-import { lpDatabaseService } from '@/services/05-analytics-store.service'
+import { analyticsStoreService } from '@/services/05-analytics-store.service'
 import type { LPPosition } from '@/interfaces/dex.interface'
 import { getViemClient } from '@/lib/viem'
 import { getAllPositionManagers, getDexByPositionManager } from '@/config/hyperevm-dexs.config'
+import { DexProtocol } from '@/enums'
 
 // ABIs for fetching positions from blockchain
 const POSITION_MANAGER_ABI = [
@@ -74,21 +76,21 @@ const POOL_ABI = [
 const MOCK_POSITIONS: LPPosition[] = [
     {
         id: 'test-hyperswap-hype-usdt-1',
-        dex: 'hyperswap',
+        dex: DexProtocol.HYPERSWAP,
         poolAddress: '0x1234567890123456789012345678901234567890',
         tokenId: '1',
         positionManagerAddress: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
     },
     {
         id: 'test-prjtx-hype-usdc-1',
-        dex: 'prjtx',
+        dex: DexProtocol.PRJTX,
         poolAddress: '0x2345678901234567890123456789012345678901',
         tokenId: '2',
         positionManagerAddress: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
     },
     {
         id: 'test-hybra-usdc-usdt-1',
-        dex: 'hybra',
+        dex: DexProtocol.HYBRA,
         poolAddress: '0x3456789012345678901234567890123456789012',
         tokenId: '3',
         positionManagerAddress: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
@@ -127,7 +129,7 @@ class TestAnalyticsPullService extends AnalyticsPullService {
 
             // Special handling for HYPE/USDT0 search
             let token0: string, token1: string, poolFee: number
-            
+
             if (poolAddress === 'HYPE/USDT0' || poolAddress === 'HYPE') {
                 // Looking for any HYPE/USDT0 positions
                 token0 = '0x5555555555555555555555555555555555555555' // Can be wrapped or native
@@ -229,21 +231,20 @@ class TestAnalyticsPullService extends AnalyticsPullService {
                 // Note: Handle HYPE which can be either 0x0000... or 0x5555... (wrapped)
                 const isHypeToken = (addr: string) => {
                     const lower = addr.toLowerCase()
-                    return lower === '0x0000000000000000000000000000000000000000' || 
-                           lower === '0x5555555555555555555555555555555555555555'
+                    return lower === '0x0000000000000000000000000000000000000000' || lower === '0x5555555555555555555555555555555555555555'
                 }
-                
+
                 const isUsdt0Token = (addr: string) => {
                     return addr.toLowerCase() === '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'
                 }
-                
+
                 // Special matching for HYPE/USDT0 search
                 if (poolAddress === 'HYPE/USDT0' || poolAddress === 'HYPE') {
                     // Check if it's a HYPE/USDT0 pair (in either order)
-                    const isHypeUsdt0Pair = 
+                    const isHypeUsdt0Pair =
                         (isHypeToken(position.token0) && isUsdt0Token(position.token1)) ||
                         (isUsdt0Token(position.token0) && isHypeToken(position.token1))
-                    
+
                     if (position.token0 && position.token1 && isHypeUsdt0Pair) {
                         // This is a HYPE/USDT0 position
                         if (!QUIET_MODE) {
@@ -252,11 +253,10 @@ class TestAnalyticsPullService extends AnalyticsPullService {
                             console.log(`- DEX: ${getDexByPositionManager(positionManagerAddress) || 'unknown'}`)
                             console.log(`- Fee Tier: ${Number(position.fee) / 10000}%`)
                             console.log(`- Liquidity (L): ${position.liquidity}`)
-                            const tickRange = position.tickLower && position.tickUpper ? 
-                                `[${position.tickLower}, ${position.tickUpper}]` : 'N/A'
+                            const tickRange = position.tickLower && position.tickUpper ? `[${position.tickLower}, ${position.tickUpper}]` : 'N/A'
                             console.log(`- Tick Range: ${tickRange}`)
                         }
-                        
+
                         const dex = getDexByPositionManager(positionManagerAddress) || 'unknown'
                         positions.push({
                             id: `hyperevm-${dex}-${tokenId}`,
@@ -271,14 +271,8 @@ class TestAnalyticsPullService extends AnalyticsPullService {
                     const token0Match = position.token0?.toLowerCase() === token0.toLowerCase()
                     const token1Match = position.token1?.toLowerCase() === token1.toLowerCase()
                     const feeMatch = Number(position.fee) === Number(poolFee)
-                    
-                    if (
-                        position.token0 &&
-                        position.token1 &&
-                        token0Match &&
-                        token1Match &&
-                        feeMatch
-                    ) {
+
+                    if (position.token0 && position.token1 && token0Match && token1Match && feeMatch) {
                         if (!QUIET_MODE) {
                             console.log(`\n✅ Found matching position:`)
                             console.log(`- Token ID: ${tokenId}`)
@@ -334,11 +328,13 @@ class TestAnalyticsPullService extends AnalyticsPullService {
 
                 if (metrics) {
                     const metricsWithAmounts = metrics as any
-                    
+
                     if (QUIET_MODE) {
                         // In quiet mode, only show essential information
                         console.log(`\nPosition #${position.tokenId}:`)
-                        console.log(`  Reserve: $${(metricsWithAmounts.token0Amount * metricsWithAmounts.token0Price + metricsWithAmounts.token1Amount * metricsWithAmounts.token1Price).toFixed(2)}`)
+                        console.log(
+                            `  Reserve: $${(metricsWithAmounts.token0Amount * metricsWithAmounts.token0Price + metricsWithAmounts.token1Amount * metricsWithAmounts.token1Price).toFixed(2)}`,
+                        )
                         console.log(`  ${metricsWithAmounts.token0Symbol}: ${metricsWithAmounts.token0Amount?.toFixed(2)}`)
                         console.log(`  ${metricsWithAmounts.token1Symbol}: ${metricsWithAmounts.token1Amount?.toFixed(2)}`)
                         console.log(`  APR: ${metrics.feeAPR.toFixed(2)}%`)
@@ -347,21 +343,21 @@ class TestAnalyticsPullService extends AnalyticsPullService {
                         // Full display mode
                         console.log('\n📊 Position #' + position.tokenId)
                         console.log('━'.repeat(50))
-                        
+
                         // Display exactly like the UI
                         console.log('\n📍 Your Reserve:')
                         const token0Value = metricsWithAmounts.token0Amount * metricsWithAmounts.token0Price || 0
                         const token1Value = metricsWithAmounts.token1Amount * metricsWithAmounts.token1Price || 0
                         const totalReserve = token0Value + token1Value
-                        
+
                         console.log(`   Total: $${totalReserve.toFixed(2)}`)
                         console.log(`   ✅ ${metricsWithAmounts.token0Amount?.toFixed(1) || 'N/A'} ${metricsWithAmounts.token0Symbol || 'Token0'}`)
                         console.log(`   ✅ ${metricsWithAmounts.token1Amount?.toFixed(1) || 'N/A'} ${metricsWithAmounts.token1Symbol || 'Token1'}`)
-                        
+
                         console.log('\n💵 Token Prices:')
                         console.log(`   ${metricsWithAmounts.token0Symbol}: $${metricsWithAmounts.token0Price?.toFixed(4) || 'N/A'}`)
                         console.log(`   ${metricsWithAmounts.token1Symbol}: $${metricsWithAmounts.token1Price?.toFixed(4) || 'N/A'}`)
-                        
+
                         console.log('\n📈 Performance:')
                         console.log(`   APR: ${metrics.feeAPR.toFixed(2)}%`)
                         console.log(`   In Range: ${metrics.inRange ? '✅ Yes' : '❌ No'}`)
@@ -460,7 +456,7 @@ class TestAnalyticsPullService extends AnalyticsPullService {
         const invalidPositions: LPPosition[] = [
             {
                 id: 'invalid-no-token-id',
-                dex: 'hyperswap',
+                dex: DexProtocol.HYPERSWAP,
                 poolAddress: '0x0000000000000000000000000000000000000000',
             },
             {
@@ -498,14 +494,15 @@ async function testStoreService() {
     }
 
     // Store snapshots using lpDatabaseService
-    const snapshots = await lpDatabaseService.createPositionSnapshots([])
-    console.log(`✅ Created ${snapshots.length} position snapshots in database`)
+    // Snapshots now handled at account level
+    // const snapshots = await analyticsStoreService.createAccountSnapshot(...)
+    console.log(`✅ Position snapshots now handled at account level`)
 }
 
 async function main() {
     // Check for quiet mode flag
     QUIET_MODE = process.argv.includes('--quiet') || process.argv.includes('-q')
-    
+
     if (!QUIET_MODE) {
         console.log('🚀 HyperLP Analytics Test Suite')
         console.log('='.repeat(50))
@@ -556,7 +553,7 @@ async function main() {
             // Store positions in database if --save flag is present
             if (process.argv.includes('--save') && allPositions.length > 0) {
                 console.log('\n💾 Saving positions to database...')
-                
+
                 for (const position of allPositions) {
                     // Fetch full position details from blockchain
                     const client = getViemClient(998)
@@ -566,45 +563,38 @@ async function main() {
                         functionName: 'positions',
                         args: [BigInt(position.tokenId!)],
                     })
-                    
-                    const [
-                        nonce,
-                        operator,
-                        token0,
-                        token1,
-                        fee,
-                        tickLower,
-                        tickUpper,
-                        liquidity,
-                    ] = [...positionData] as any[]
-                    
-                    await lpDatabaseService.upsertPosition({
+
+                    const [nonce, operator, token0, token1, fee, tickLower, tickUpper, liquidity] = [...positionData] as any[]
+
+                    await analyticsStoreService.upsertLpPosition({
                         tokenId: position.tokenId!,
                         dex: position.dex,
-                        ownerAddress: eoa,
-                        poolAddress: position.poolAddress?.startsWith('HYPE/USDT0') ? undefined : position.poolAddress,
-                        positionManagerAddress: position.positionManagerAddress!,
-                        token0Address: token0,
-                        token1Address: token1,
+                        accountId: eoa,
+                        poolAddress: position.poolAddress?.startsWith('HYPE/USDT0') ? '' : position.poolAddress || '',
+                        // positionManagerAddress: position.positionManagerAddress!, // Not in new schema
+                        token0Symbol: 'HYPE', // TODO: Get from token addresses
+                        token1Symbol: 'USDT0', // TODO: Get from token addresses
+                        valueUSD: 0, // TODO: Calculate
+                        inRange: true, // TODO: Calculate
                         feeTier: Number(fee),
                         tickLower: Number(tickLower),
                         tickUpper: Number(tickUpper),
                         liquidity: liquidity.toString(),
                     })
-                    
+
                     console.log(`  ✅ Saved position #${position.tokenId} (${position.dex})`)
                 }
-                
+
                 console.log('\n✅ All positions saved to database!')
             }
-            
+
             if (QUIET_MODE && allPositions.length > 0) {
                 // In quiet mode, show a summary of found positions
                 console.log('\nHYPE/USDT0 Positions Found:')
                 console.log('━'.repeat(30))
-                
-                const byDex: Record<string, { positions: any[], totalLiquidity: bigint }> = {}
-                
+
+                const byDex: Record<string, { positions: any[]; totalLiquidity: bigint }> = {}
+
                 for (const position of allPositions) {
                     const dex = position.dex
                     if (!byDex[dex]) {
@@ -612,7 +602,7 @@ async function main() {
                     }
                     byDex[dex].positions.push(position)
                 }
-                
+
                 for (const [dex, data] of Object.entries(byDex)) {
                     console.log(`\n${dex.toUpperCase()}:`)
                     for (const position of data.positions) {
@@ -620,7 +610,7 @@ async function main() {
                         console.log(`  Position #${position.tokenId} (${Number(fee) / 10000}% fee)`)
                     }
                 }
-                
+
                 console.log('\n' + '━'.repeat(30))
                 console.log(`Total: ${allPositions.length} position(s) across ${Object.keys(byDex).length} DEX(es)`)
             } else if (!QUIET_MODE) {

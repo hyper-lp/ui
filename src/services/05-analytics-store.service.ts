@@ -1,230 +1,184 @@
-import { prisma } from '@/lib/prisma'
-import type { LPPosition, PositionSnapshot } from '@prisma/client'
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
+import type { LpPosition, AccountSnapshot } from '@prisma/client-monitoring'
+import { Dex, Prisma } from '@prisma/client-monitoring'
+const { Decimal } = Prisma
 
-export class LPDatabaseService {
+export class AnalyticsStoreService {
     /**
      * Upsert an LP position - create if new, update if exists
      */
-    async upsertPosition(data: {
+    async upsertLpPosition(data: {
+        accountId: string
         tokenId: string
         dex: string
-        ownerAddress: string
         poolAddress?: string
-        positionManagerAddress: string
-        token0Address: string
-        token1Address: string
+        token0Symbol: string
+        token1Symbol: string
         feeTier: number
         tickLower: number
         tickUpper: number
         liquidity: string
-        walletId?: string
-    }): Promise<LPPosition> {
-        const { liquidity, ...positionData } = data
+        valueUSD: number
+        inRange: boolean
+    }): Promise<LpPosition> {
+        // Map DEX protocol names to enum values
+        const dexMapping: Record<string, Dex> = {
+            HYPERSWAP: Dex.HYPERSWAP,
+            PRJTX: Dex.PRJTX,
+            HYBRA: Dex.HYBRA,
+        }
+        const dexEnum = dexMapping[data.dex.toUpperCase()] || Dex.OTHER
 
-        return prisma.lPPosition.upsert({
+        return prismaMonitoring.lpPosition.upsert({
             where: {
-                tokenId_dex_positionManagerAddress: {
-                    tokenId: data.tokenId,
-                    dex: data.dex,
-                    positionManagerAddress: data.positionManagerAddress,
-                },
+                tokenId: data.tokenId,
             },
             update: {
-                ownerAddress: data.ownerAddress,
+                accountId: data.accountId,
                 poolAddress: data.poolAddress,
-                token0Address: data.token0Address,
-                token1Address: data.token1Address,
+                token0Symbol: data.token0Symbol,
+                token1Symbol: data.token1Symbol,
                 feeTier: data.feeTier,
                 tickLower: data.tickLower,
                 tickUpper: data.tickUpper,
-                isActive: liquidity !== '0',
-                walletId: data.walletId,
+                liquidity: data.liquidity,
+                valueUSD: new Decimal(data.valueUSD),
+                inRange: data.inRange,
                 updatedAt: new Date(),
             },
             create: {
-                ...positionData,
-                isActive: liquidity !== '0',
-                walletId: data.walletId,
+                accountId: data.accountId,
+                tokenId: data.tokenId,
+                dex: dexEnum,
+                poolAddress: data.poolAddress,
+                token0Symbol: data.token0Symbol,
+                token1Symbol: data.token1Symbol,
+                feeTier: data.feeTier,
+                tickLower: data.tickLower,
+                tickUpper: data.tickUpper,
+                liquidity: data.liquidity,
+                valueUSD: new Decimal(data.valueUSD),
+                inRange: data.inRange,
             },
         })
     }
 
     /**
-     * Create position snapshots
+     * Create an account snapshot (5-minute interval)
      */
-    async createPositionSnapshots(
-        positions: Array<{
-            tokenId: string
-            dex: string
-            positionManagerAddress: string
-            liquidity: string
-            token0Amount: number
-            token1Amount: number
-            token0Symbol: string
-            token1Symbol: string
-            token0Price: number
-            token1Price: number
-            totalValueUSD: number
-            unclaimedFees0: number
-            unclaimedFees1: number
-            unclaimedFeesUSD: number
-            feeAPR: number
-            poolTick: number
-            poolSqrtPriceX96: string
-            inRange: boolean
-        }>,
-    ): Promise<PositionSnapshot[]> {
-        const snapshots = await Promise.all(
-            positions.map(async (pos) => {
-                // First ensure the position exists in the database
-                const position = await prisma.lPPosition.findUnique({
-                    where: {
-                        tokenId_dex_positionManagerAddress: {
-                            tokenId: pos.tokenId,
-                            dex: pos.dex,
-                            positionManagerAddress: pos.positionManagerAddress,
-                        },
-                    },
-                })
+    async createAccountSnapshot(data: {
+        accountId: string
+        timestamp?: Date
+        lpValue: number
+        perpValue: number
+        spotValue: number
+        netDelta: number
+        lpFeeAPR: number
+        fundingAPR: number
+        netAPR: number
+    }): Promise<AccountSnapshot> {
+        // Floor timestamp to 5-minute interval
+        const timestamp = data.timestamp || new Date()
+        const flooredTime = new Date(Math.floor(timestamp.getTime() / (5 * 60 * 1000)) * (5 * 60 * 1000))
 
-                if (!position) {
-                    throw new Error(`Position not found: ${pos.tokenId} on ${pos.dex}`)
-                }
-
-                return prisma.positionSnapshot.create({
-                    data: {
-                        positionId: position.id,
-                        liquidity: pos.liquidity,
-                        token0Amount: pos.token0Amount,
-                        token1Amount: pos.token1Amount,
-                        token0Symbol: pos.token0Symbol,
-                        token1Symbol: pos.token1Symbol,
-                        token0Price: pos.token0Price,
-                        token1Price: pos.token1Price,
-                        totalValueUSD: pos.totalValueUSD,
-                        unclaimedFees0: pos.unclaimedFees0,
-                        unclaimedFees1: pos.unclaimedFees1,
-                        unclaimedFeesUSD: pos.unclaimedFeesUSD,
-                        feeAPR: pos.feeAPR,
-                        poolTick: pos.poolTick,
-                        poolSqrtPriceX96: pos.poolSqrtPriceX96,
-                        inRange: pos.inRange,
-                    },
-                })
-            }),
-        )
-
-        return snapshots
-    }
-
-    /**
-     * Get the latest snapshots
-     */
-    async getLatestSnapshots(): Promise<PositionSnapshot[]> {
-        const positions = await prisma.lPPosition.findMany({
-            where: { isActive: true },
-        })
-
-        const snapshots = await Promise.all(
-            positions.map(async (position) => {
-                const snapshot = await prisma.positionSnapshot.findFirst({
-                    where: { positionId: position.id },
-                    orderBy: { timestamp: 'desc' },
-                })
-                return snapshot
-            }),
-        )
-
-        return snapshots.filter((s): s is PositionSnapshot => s !== null)
-    }
-
-    /**
-     * Get all positions for an owner
-     */
-    async getPositionsByOwner(ownerAddress: string): Promise<LPPosition[]> {
-        return prisma.lPPosition.findMany({
-            where: { ownerAddress },
-            include: {
-                snapshots: {
-                    orderBy: { timestamp: 'desc' },
-                    take: 1,
-                },
-            },
-        })
-    }
-
-    /**
-     * Get HYPE/USDT0 positions
-     */
-    async getHypeUsdtPositions(): Promise<LPPosition[]> {
-        const hypeAddresses = ['0x0000000000000000000000000000000000000000', '0x5555555555555555555555555555555555555555']
-        const usdt0Address = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'
-
-        return prisma.lPPosition.findMany({
+        // Check if snapshot already exists for this time bucket
+        const existing = await prismaMonitoring.accountSnapshot.findUnique({
             where: {
-                OR: [
-                    {
-                        token0Address: { in: hypeAddresses },
-                        token1Address: usdt0Address,
-                    },
-                    {
-                        token0Address: usdt0Address,
-                        token1Address: { in: hypeAddresses },
-                    },
-                ],
-                isActive: true,
-            },
-            include: {
-                snapshots: {
-                    orderBy: { timestamp: 'desc' },
-                    take: 1,
-                },
-            },
-        })
-    }
-
-    /**
-     * Get historical snapshots for a position
-     */
-    async getPositionHistory(tokenId: string, dex: string, limit = 100): Promise<PositionSnapshot[]> {
-        const position = await prisma.lPPosition.findUnique({
-            where: {
-                tokenId_dex_positionManagerAddress: {
-                    tokenId,
-                    dex,
-                    positionManagerAddress: '', // Need to know this
+                accountId_timestamp: {
+                    accountId: data.accountId,
+                    timestamp: flooredTime,
                 },
             },
         })
 
-        if (!position) {
-            return []
+        if (existing) {
+            // Update existing snapshot
+            return prismaMonitoring.accountSnapshot.update({
+                where: { id: existing.id },
+                data: {
+                    lpValue: new Decimal(data.lpValue),
+                    perpValue: new Decimal(data.perpValue),
+                    spotValue: new Decimal(data.spotValue),
+                    netDelta: new Decimal(data.netDelta),
+                    lpFeeAPR: new Decimal(data.lpFeeAPR),
+                    fundingAPR: new Decimal(data.fundingAPR),
+                    netAPR: new Decimal(data.netAPR),
+                },
+            })
         }
 
-        return prisma.positionSnapshot.findMany({
-            where: { positionId: position.id },
-            orderBy: { timestamp: 'desc' },
-            take: limit,
+        // Create new snapshot
+        return prismaMonitoring.accountSnapshot.create({
+            data: {
+                accountId: data.accountId,
+                timestamp: flooredTime,
+                lpValue: new Decimal(data.lpValue),
+                perpValue: new Decimal(data.perpValue),
+                spotValue: new Decimal(data.spotValue),
+                netDelta: new Decimal(data.netDelta),
+                lpFeeAPR: new Decimal(data.lpFeeAPR),
+                fundingAPR: new Decimal(data.fundingAPR),
+                netAPR: new Decimal(data.netAPR),
+            },
         })
     }
 
     /**
-     * Clean up old snapshots
+     * Get recent snapshots for an account
      */
-    async cleanupOldSnapshots(daysToKeep = 30): Promise<number> {
-        const cutoffDate = new Date()
-        cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
+    async getRecentSnapshots(accountId: string, hours: number = 24): Promise<AccountSnapshot[]> {
+        const since = new Date(Date.now() - hours * 60 * 60 * 1000)
 
-        const result = await prisma.positionSnapshot.deleteMany({
+        return prismaMonitoring.accountSnapshot.findMany({
             where: {
-                timestamp: {
-                    lt: cutoffDate,
-                },
+                accountId,
+                timestamp: { gte: since },
+            },
+            orderBy: { timestamp: 'asc' },
+        })
+    }
+
+    /**
+     * Clean up old snapshots (keep only last N days)
+     */
+    async cleanupOldSnapshots(daysToKeep: number = 30): Promise<number> {
+        const cutoffDate = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000)
+
+        const result = await prismaMonitoring.accountSnapshot.deleteMany({
+            where: {
+                timestamp: { lt: cutoffDate },
             },
         })
 
         return result.count
     }
+
+    /**
+     * Get all active LP positions for an account
+     */
+    async getActiveLpPositions(accountId: string): Promise<LpPosition[]> {
+        return prismaMonitoring.lpPosition.findMany({
+            where: {
+                accountId,
+                inRange: true,
+            },
+        })
+    }
+
+    /**
+     * Mark LP positions as inactive if liquidity is zero
+     */
+    async markInactiveLpPositions(tokenIds: string[]): Promise<void> {
+        await prismaMonitoring.lpPosition.updateMany({
+            where: {
+                tokenId: { in: tokenIds },
+            },
+            data: {
+                inRange: false,
+                updatedAt: new Date(),
+            },
+        })
+    }
 }
 
-export const lpDatabaseService = new LPDatabaseService()
+export const analyticsStoreService = new AnalyticsStoreService()

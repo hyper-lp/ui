@@ -189,11 +189,10 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 triggerOn: 'mousemove|click',
                 backgroundColor: colors.tooltipBackground,
                 borderRadius: 12,
-                appendToBody: isMobile ? false : true,
+                appendToBody: true,
                 extraCssText: 'box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);',
                 padding: [12, 16],
-                // alwaysShowContent: false,
-                transitionDuration: 0, // No fade animation
+                transitionDuration: 1, // No fade animation
                 textStyle: {
                     color: isDarkMode ? '#f3f4f6' : '#1f2937',
                     fontSize: 14,
@@ -215,23 +214,23 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                     const tertiaryColor = '#6b7280'
 
                     return `
-                        <div style="font-family: ${TEODOR_LIGHT_FONT.style.fontFamily}; min-width: ${isMobile ? '180' : '220'}px; padding: 4px;">
+                        <div style="font-family: ${TEODOR_LIGHT_FONT.style.fontFamily}; min-width: ${isMobile ? '180' : '220'}px; padding: 3px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span style="font-size: 13px; color: ${tertiaryColor};">LP Fees</span>
                                 <span style="font-size: 15px; color: ${secondaryColor}; font-weight: 600;">${tooltipData.lpApr}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <span style="font-size: 13px; color: ${tertiaryColor};">Short Perp Funding</span>
                                 <span style="font-size: 15px; color: ${secondaryColor}; font-weight: 600;">${tooltipData.fundingApr}</span>
                             </div>
-                            <div style="font-size: 24px; font-weight: 700; margin-bottom: 16px; color: ${primaryColor};">
+                            <div style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: ${primaryColor};">
                                 = ${tooltipData.netApr} APR
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
                                 <span style="font-size: 13px; color: ${tertiaryColor};">Time to 2x</span>
                                 <span style="font-size: 13px; color: ${secondaryColor};">${tooltipData.yearsTo2x}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
                                 <span style="font-size: 13px; color: ${tertiaryColor};">Time to 5x</span>
                                 <span style="font-size: 13px; color: ${secondaryColor};">${tooltipData.yearsTo5x}</span>
                             </div>
@@ -363,10 +362,10 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                     },
                     blur: {
                         itemStyle: {
-                            opacity: isDarkMode ? 0.15 : 0.25,
+                            opacity: isDarkMode ? 0.25 : 0.25,
                         },
                         label: {
-                            opacity: 0.3,
+                            opacity: 0.5,
                         },
                     },
                 },

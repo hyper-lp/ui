@@ -1,29 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
 
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams
-        const walletAddress = searchParams.get('wallet')
+        const accountAddress = searchParams.get('account')
         const days = parseInt(searchParams.get('days') || '7')
         const limit = parseInt(searchParams.get('limit') || '100')
 
         const startDate = new Date()
         startDate.setDate(startDate.getDate() - days)
 
-        // Get position snapshots
-        const positionSnapshots = await prisma.positionSnapshot.findMany({
+        // Get account snapshots for the specified time period
+        const snapshots = await prismaMonitoring.accountSnapshot.findMany({
             where: {
                 timestamp: {
                     gte: startDate,
                 },
-                ...(walletAddress
+                ...(accountAddress
                     ? {
-                          position: {
-                              ownerAddress: {
-                                  equals: walletAddress,
-                                  mode: 'insensitive',
-                              },
+                          account: {
+                              address: accountAddress,
                           },
                       }
                     : {}),
@@ -31,95 +28,49 @@ export async function GET(request: NextRequest) {
             orderBy: { timestamp: 'desc' },
             take: limit,
             include: {
-                position: true,
+                account: true,
             },
         })
 
-        // Get hedge snapshots if wallet specified
-        let hedgeSnapshots: Awaited<ReturnType<typeof prisma.hedgeSnapshot.findMany>> = []
-        if (walletAddress) {
-            hedgeSnapshots = await prisma.hedgeSnapshot.findMany({
-                where: {
-                    timestamp: {
-                        gte: startDate,
-                    },
-                    hedgePosition: {
-                        walletAddress: {
-                            equals: walletAddress,
-                            mode: 'insensitive',
-                        },
-                    },
-                },
-                orderBy: { timestamp: 'desc' },
-                take: limit,
-                include: {
-                    hedgePosition: true,
-                },
-            })
+        // Format the data for the frontend
+        const formattedData = snapshots.map((snapshot) => ({
+            id: snapshot.id,
+            timestamp: snapshot.timestamp,
+            accountAddress: snapshot.account.address,
+            accountName: snapshot.account.name,
+            lpValue: snapshot.lpValue.toNumber(),
+            perpValue: snapshot.perpValue.toNumber(),
+            spotValue: snapshot.spotValue.toNumber(),
+            totalValue: snapshot.lpValue.toNumber() + snapshot.perpValue.toNumber() + snapshot.spotValue.toNumber(),
+            netDelta: snapshot.netDelta.toNumber(),
+            lpFeeAPR: snapshot.lpFeeAPR.toNumber(),
+            fundingAPR: snapshot.fundingAPR.toNumber(),
+            netAPR: snapshot.netAPR.toNumber(),
+        }))
+
+        // Calculate summary statistics
+        const summary = {
+            totalSnapshots: formattedData.length,
+            accounts: [...new Set(formattedData.map((s) => s.accountAddress))].length,
+            averageValue: formattedData.reduce((sum, s) => sum + s.totalValue, 0) / (formattedData.length || 1),
+            averageAPR: formattedData.reduce((sum, s) => sum + s.netAPR, 0) / (formattedData.length || 1),
+            maxValue: Math.max(...formattedData.map((s) => s.totalValue), 0),
+            minValue: Math.min(...formattedData.map((s) => s.totalValue), 0),
         }
-
-        // Group snapshots by timestamp (roughly) for time series
-        const snapshotsByHour = new Map<string, typeof positionSnapshots>()
-
-        for (const snapshot of positionSnapshots) {
-            const hourKey = new Date(snapshot.timestamp).toISOString().slice(0, 13) // Group by hour
-            if (!snapshotsByHour.has(hourKey)) {
-                snapshotsByHour.set(hourKey, [])
-            }
-            snapshotsByHour.get(hourKey)!.push(snapshot)
-        }
-
-        // Format time series data
-        const timeSeries = Array.from(snapshotsByHour.entries())
-            .map(([hourKey, snapshots]) => {
-                const totalValueUSD = snapshots.reduce((sum, s) => sum + s.totalValueUSD, 0)
-                const totalUnclaimedFeesUSD = snapshots.reduce((sum, s) => sum + s.unclaimedFeesUSD, 0)
-                const averageFeeAPR = snapshots.reduce((sum, s) => sum + s.feeAPR, 0) / snapshots.length
-                const positionsInRange = snapshots.filter((s) => s.inRange).length
-
-                // Group by DEX
-                const byDex: Record<string, { count: number; value: number; apr: number }> = {}
-                for (const snapshot of snapshots) {
-                    const dex = snapshot.position.dex
-                    if (!byDex[dex]) {
-                        byDex[dex] = { count: 0, value: 0, apr: 0 }
-                    }
-                    byDex[dex].count++
-                    byDex[dex].value += snapshot.totalValueUSD
-                    byDex[dex].apr = (byDex[dex].apr * (byDex[dex].count - 1) + snapshot.feeAPR) / byDex[dex].count
-                }
-
-                return {
-                    timestamp: new Date(hourKey + ':00:00.000Z'),
-                    totalValueUSD,
-                    totalUnclaimedFeesUSD,
-                    averageFeeAPR,
-                    positionsInRange,
-                    totalPositions: snapshots.length,
-                    dexBreakdown: byDex,
-                    positionSnapshots: snapshots,
-                }
-            })
-            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 
         return NextResponse.json({
-            wallet: walletAddress,
-            period: {
-                start: startDate,
-                end: new Date(),
-                days,
-            },
-            timeSeries,
-            hedgeSnapshots,
-            summary: {
-                dataPoints: timeSeries.length,
-                latestRun: timeSeries[0],
-                averageValue: timeSeries.reduce((sum, t) => sum + t.totalValueUSD, 0) / timeSeries.length,
-                averageAPR: timeSeries.reduce((sum, t) => sum + t.averageFeeAPR, 0) / timeSeries.length,
-            },
+            success: true,
+            data: formattedData,
+            summary,
         })
     } catch (error) {
         console.error('Error fetching analytics history:', error)
-        return NextResponse.json({ error: 'Failed to fetch analytics history' }, { status: 500 })
+        return NextResponse.json(
+            {
+                success: false,
+                error: 'Failed to fetch analytics history',
+            },
+            { status: 500 },
+        )
     }
 }

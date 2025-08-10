@@ -1,4 +1,5 @@
 import type { Address } from 'viem'
+import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 
 // Hyperliquid API endpoint (public API, no authentication needed)
 const HYPERLIQUID_API = 'https://api.hyperliquid.xyz/info'
@@ -121,8 +122,8 @@ async function fetchHypePrice(): Promise<number> {
 }
 
 export async function getTokenPrice(tokenAddress: Address, chainId: number): Promise<number> {
-    if (chainId !== 998) {
-        console.warn(`Price feed only available for HyperEVM (chain 998)`)
+    if (chainId !== HYPEREVM_CHAIN_ID) {
+        console.warn(`Price feed only available for HyperEVM (chain ${HYPEREVM_CHAIN_ID})`)
         return 0
     }
 

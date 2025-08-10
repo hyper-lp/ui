@@ -1,5 +1,5 @@
 import type { Address } from 'viem'
-import type { DexProtocol } from '@/interfaces/dex.interface'
+import { DexProtocol } from '@/enums'
 
 /**
  * V3 Contract addresses interface
@@ -27,6 +27,7 @@ export interface V3ContractAddresses {
 export interface DexConfig {
     protocol: DexProtocol
     name: string
+    portfolioUrl?: string
     // Legacy fields for backward compatibility
     factoryAddress?: Address
     positionManagerAddress?: Address
@@ -109,8 +110,8 @@ const PRJTX_V3_CONTRACTS: V3ContractAddresses = {
  * Main DEX configurations with all contract addresses
  */
 export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
-    hyperswap: {
-        protocol: 'hyperswap',
+    [DexProtocol.HYPERSWAP]: {
+        protocol: DexProtocol.HYPERSWAP,
         name: 'Hyperswap V3',
         factoryAddress: HYPERSWAP_V3_CONTRACTS.factory,
         positionManagerAddress: HYPERSWAP_V3_CONTRACTS.positionManager,
@@ -118,10 +119,11 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         isUniswapV3Fork: true,
         contracts: HYPERSWAP_V3_CONTRACTS,
         audited: true,
+        portfolioUrl: 'https://app.hyperswap.exchange/#/pool',
         docsUrl: 'https://docs.hyperswap.exchange/hyperswap/contracts/or-hyper-evm/v3',
     },
-    prjtx: {
-        protocol: 'prjtx',
+    [DexProtocol.PRJTX]: {
+        protocol: DexProtocol.PRJTX,
         name: 'Project X',
         factoryAddress: PRJTX_V3_CONTRACTS.factory,
         positionManagerAddress: PRJTX_V3_CONTRACTS.positionManager,
@@ -130,10 +132,11 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         contracts: PRJTX_V3_CONTRACTS,
         audited: true,
         auditReports: ['PeckShield-Audit-Report-PRJX', '0xQuit-Audit-Report-PRJX'],
+        portfolioUrl: 'https://www.prjx.com/portfolio',
         docsUrl: 'https://prjxdocs.notion.site/6-Tech-2291a8328ce880debb10e0d2a6b31931',
     },
-    hybra: {
-        protocol: 'hybra',
+    [DexProtocol.HYBRA]: {
+        protocol: DexProtocol.HYBRA,
         name: 'Hybra Finance',
         factoryAddress: HYBRA_V3_CONTRACTS.factory,
         positionManagerAddress: HYBRA_V3_CONTRACTS.positionManager,
@@ -142,6 +145,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         contracts: HYBRA_V3_CONTRACTS,
         audited: true,
         auditReports: ['https://github.com/peckshield/publications/blob/master/audit_reports/PeckShield-Audit-Report-Hybra-v1.0.pdf'],
+        portfolioUrl: 'https://www.hybra.finance/dashboard',
         docsUrl: 'https://docs.hyperswap.exchange/hyperswap/contracts/or-hyper-evm/v3#amm-v3',
     },
 }

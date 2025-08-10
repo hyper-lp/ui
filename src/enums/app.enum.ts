@@ -29,3 +29,9 @@ export enum AppFontFamilies {
     LATO = 'lato',
     PVP_TRADE = 'pvp-trade',
 }
+
+export enum DexProtocol {
+    HYPERSWAP = 'hyperswap',
+    PRJTX = 'prjtx',
+    HYBRA = 'hybra',
+}

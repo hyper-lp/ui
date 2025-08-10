@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prismaReferrals } from '@/lib/prisma-referrals'
 import { headers } from 'next/headers'
 import { env } from '@/env/t3-env'
 
@@ -58,7 +58,7 @@ export async function GET() {
             return NextResponse.json({ error: 'Invalid Twitter ID format' }, { status: 400 })
         }
 
-        const waitlistEntry = await prisma.waitlist.findUnique({
+        const waitlistEntry = await prismaReferrals.waitlist.findUnique({
             where: { twitterId },
         })
 

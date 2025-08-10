@@ -1,50 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { hedgeMonitorService } from '@/services/03-hedge-monitor.service'
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
+import { perpMonitorService } from '@/services/03-perp-monitor.service'
 
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams
-        const walletAddress = searchParams.get('wallet')
+        const accountAddress = searchParams.get('account')
 
-        if (walletAddress) {
-            // Get delta drift for specific wallet
-            const rebalanceCheck = await hedgeMonitorService.checkRebalanceNeeded(walletAddress)
+        if (accountAddress) {
+            // Get delta drift for specific account
+            const rebalanceCheck = await perpMonitorService.checkRebalanceNeeded(accountAddress)
 
             return NextResponse.json({
-                wallet: walletAddress,
+                account: accountAddress,
                 needsRebalance: rebalanceCheck.needed,
                 currentDrift: rebalanceCheck.currentDrift,
                 lpDelta: rebalanceCheck.lpDelta,
-                hedgeDelta: rebalanceCheck.hedgeDelta,
-                netDelta: rebalanceCheck.lpDelta + rebalanceCheck.hedgeDelta,
+                perpDelta: rebalanceCheck.perpDelta,
+                netDelta: rebalanceCheck.lpDelta + rebalanceCheck.perpDelta,
             })
         }
 
-        // Get delta drift for all monitored wallets
-        const wallets = await prisma.monitoredWallet.findMany({
+        // Get delta drift for all monitored accounts
+        const accounts = await prismaMonitoring.monitoredAccount.findMany({
             where: { isActive: true },
         })
 
         const driftData = await Promise.all(
-            wallets.map(async (wallet) => {
-                const check = await hedgeMonitorService.checkRebalanceNeeded(wallet.address)
+            accounts.map(async (account) => {
+                const check = await perpMonitorService.checkRebalanceNeeded(account.address)
                 return {
-                    wallet: wallet.address,
-                    name: wallet.name,
+                    account: account.address,
+                    name: account.name,
                     needsRebalance: check.needed,
                     currentDrift: check.currentDrift,
                     lpDelta: check.lpDelta,
-                    hedgeDelta: check.hedgeDelta,
-                    netDelta: check.lpDelta + check.hedgeDelta,
+                    perpDelta: check.perpDelta,
+                    netDelta: check.lpDelta + check.perpDelta,
                 }
             }),
         )
 
         return NextResponse.json({
-            wallets: driftData,
+            accounts: driftData,
             summary: {
-                totalWallets: wallets.length,
+                totalAccounts: accounts.length,
                 needingRebalance: driftData.filter((d) => d.needsRebalance).length,
                 averageDrift: driftData.reduce((sum, d) => sum + d.currentDrift, 0) / driftData.length,
             },

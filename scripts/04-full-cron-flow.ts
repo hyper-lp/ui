@@ -38,9 +38,9 @@ async function main() {
 
         // Display results
         console.log('\n📊 Run Summary:')
-        console.log(`  Wallets monitored: ${result.walletsMonitored}`)
+        console.log(`  Accounts monitored: ${result.accountsMonitored}`)
         console.log(`  Positions updated: ${result.positionsUpdated}`)
-        console.log(`  Hedge positions: ${result.hedgePositions}`)
+        console.log(`  Perp positions: ${result.perpPositions}`)
         console.log(`  Total value locked: ${formatUSD(result.totalValueUSD || 0)}`)
         console.log(`  Average APR: ${formatPercent(result.averageFeeAPR || 0)}`)
         console.log(`  Old runs deleted: ${result.oldRunsDeleted}`)
@@ -59,17 +59,17 @@ async function main() {
             }
         }
 
-        // Delta drift check
-        if (result.deltaDrift) {
-            console.log('\n⚖️ Delta Drift Analysis:')
-            if (result.deltaDrift.needsRebalance) {
-                printWarning(`Rebalance needed for ${result.deltaDrift.wallets.length} wallets`)
-                console.log(`  Total drift: ${formatUSD(result.deltaDrift.totalDriftUSD)}`)
+        // Net delta check
+        if (result.netDelta) {
+            console.log('\n⚖️ Net Delta Analysis:')
+            if (result.netDelta.needsRebalance) {
+                printWarning(`Rebalance needed for ${result.netDelta.accounts.length} accounts`)
+                console.log(`  Total drift: ${formatUSD(result.netDelta.totalDriftUSD)}`)
 
                 if (verbose) {
-                    console.log('  Wallets needing rebalance:')
-                    for (const wallet of result.deltaDrift.wallets) {
-                        console.log(`    - ${formatAddress(wallet)}`)
+                    console.log('  Accounts needing rebalance:')
+                    for (const account of result.netDelta.accounts) {
+                        console.log(`    - ${formatAddress(account)}`)
                     }
                 }
             } else {

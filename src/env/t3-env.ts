@@ -8,18 +8,28 @@ export const env = createEnv({
      */
 
     server: {
-        // Database
-        DATABASE_URL: z.string().url(),
+        // Databases
+        DATABASE_URL_REFERRALS: z.string().url(),
+        DATABASE_URL_MONITORING: z.string().url(),
+        DATABASE_URL: z.string().url().optional(), // Legacy - for backward compatibility
 
         // Privy Server-side
         PRIVY_APP_SECRET: z.string().optional(),
 
         // API Security
         API_SECRET_KEY: z.string().optional(),
+        INTERNAL_API_KEY: z.string().optional(),
         RATE_LIMIT_ENABLED: z.string().optional().default('true'),
 
         // Monitoring Configuration
         MONITORED_WALLETS: z.string().optional(), // Comma-separated list of wallet addresses
+
+        // Inngest Configuration
+        INNGEST_BRANCH: z.string().optional(),
+        INNGEST_EVENT_KEY: z.string().optional(),
+        INNGEST_SIGNING_KEY: z.string().optional(),
+        INGEST_CLIENT_ID: z.string().optional(),
+        ANALYTICS_CRON: z.string().optional(),
     },
 
     /**
@@ -40,11 +50,19 @@ export const env = createEnv({
 
     runtimeEnv: {
         // Server
+        DATABASE_URL_REFERRALS: process.env.DATABASE_URL_REFERRALS,
+        DATABASE_URL_MONITORING: process.env.DATABASE_URL_MONITORING,
         DATABASE_URL: process.env.DATABASE_URL,
         PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET,
         API_SECRET_KEY: process.env.API_SECRET_KEY,
+        INTERNAL_API_KEY: process.env.INTERNAL_API_KEY,
         RATE_LIMIT_ENABLED: process.env.RATE_LIMIT_ENABLED,
         MONITORED_WALLETS: process.env.MONITORED_WALLETS,
+        INNGEST_BRANCH: process.env.INNGEST_BRANCH,
+        INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
+        INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
+        INGEST_CLIENT_ID: process.env.INGEST_CLIENT_ID,
+        ANALYTICS_CRON: process.env.ANALYTICS_CRON,
 
         // Client
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

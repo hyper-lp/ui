@@ -7,6 +7,7 @@ const path = require('path')
 module.exports = {
     root: true,
     extends: ['plugin:@next/next/recommended'],
+    ignorePatterns: ['src/generated/**/*'],
     overrides: [
         {
             extends: [

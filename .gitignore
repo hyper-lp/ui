@@ -36,6 +36,9 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# generated prisma clients
+src/generated/
+
 # specs
 /specs
 

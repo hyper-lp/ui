@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client-referrals'
+import { PrismaClient } from '@/generated/prisma-referrals'
 
 const globalForPrisma = globalThis as unknown as {
     prismaReferrals: PrismaClient | undefined

@@ -4,7 +4,7 @@ import { calculateTokenAmounts, fetchPoolState, fetchPosition, getTokenMetadata 
 import { getTokenPrice } from '@/utils/token-prices.util'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
-import { Prisma } from '@prisma/client-monitoring'
+import { Prisma } from '@/generated/prisma-monitoring'
 
 export interface PositionMetrics {
     positionId: string

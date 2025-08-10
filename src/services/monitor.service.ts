@@ -5,7 +5,7 @@ import { getAllPositionManagers, getDexByPositionManager, HYPEREVM_DEXS } from '
 import { getPoolAddress, fetchPoolState } from '@/utils/uniswap-v3.util'
 // import { positionFetcher } from '@/utils/position-fetcher.util' // TODO: Use this for optimized fetching
 import type { Address } from 'viem'
-import type { MonitoredAccount, Dex, Asset } from '@prisma/client-monitoring'
+import type { MonitoredAccount, Dex, Asset } from '@/generated/prisma-monitoring'
 import type { DexProtocol } from '@/interfaces/dex.interface'
 
 // Updated UnifiedPosition interface for monitor service

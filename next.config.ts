@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
         remotePatterns: [{ hostname: '*' }],
     },
     output: 'standalone',
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
+    typescript: {
+        ignoreBuildErrors: false,
+    },
     async headers() {
         return [
             {

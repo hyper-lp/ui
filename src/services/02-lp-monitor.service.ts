@@ -6,7 +6,7 @@ import { analyticsPullService } from './04-analytics-fetcher.service'
 import { analyticsStoreService } from './05-analytics-store.service'
 import { poolDiscoveryService } from './01-pool-discovery.service'
 import type { DexLPPosition } from '@/interfaces/dex.interface'
-import type { MonitoredAccount } from '@prisma/client-monitoring'
+import type { MonitoredAccount } from '@/generated/prisma-monitoring'
 import { DexProtocol } from '@/enums'
 
 const POSITION_MANAGER_ABI = [

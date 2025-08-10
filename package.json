@@ -8,7 +8,7 @@
         "build": "export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build",
         "start": "next start",
         "lint": "next lint",
-        "eslint:fix": "eslint ./src --fix",
+        "eslint:fix": "eslint ./src --fix --ignore-pattern 'src/generated/**'",
         "prettier:fix": "prettier --write src",
         "lint:fix": "pnpm eslint:fix && pnpm prettier:fix",
         "postinstall": "pnpm prisma:generate",

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiAuth } from '@/middleware/api-auth'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
-import { Asset } from '@prisma/client-monitoring'
+import { Asset } from '@/generated/prisma-monitoring'
 import { getTokenPrice } from '@/utils/token-prices.util'
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 

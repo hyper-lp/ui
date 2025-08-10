@@ -1,5 +1,5 @@
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
-import type { LpPosition, AccountSnapshot } from '@prisma/client-monitoring'
+import type { LpPosition, AccountSnapshot } from '@/generated/prisma-monitoring'
 import { Dex, Prisma } from '@prisma/client-monitoring'
 const { Decimal } = Prisma
 

@@ -38,10 +38,7 @@
         "monitor": "tsx scripts/monitor.ts",
         "monitor:quick": "tsx scripts/monitor.ts quick",
         "monitor:status": "tsx scripts/monitor.ts status",
-        "monitor:pools": "tsx scripts/monitor.ts pools",
-        "test:analytics": "tsx scripts/test-analytics.ts",
-        "test:analytics:real": "tsx scripts/test-analytics.ts --real",
-        "test:monitoring": "tsx scripts/test-monitoring.ts"
+        "monitor:pools": "tsx scripts/monitor.ts pools"
     },
     "dependencies": {
         "@heroui/tooltip": "^2.2.21",

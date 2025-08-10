@@ -1,2 +1,7 @@
 export * from './app.interface'
-export * from './dex.interface'
+// Selectively export from dex.interface to avoid conflicts
+export { DexProtocol } from './dex.interface'
+export type { DexLPPosition, LPMetrics, UniswapV3Position, FullPoolState, DexPositionMetrics, TokenPrice, DexAnalyticsResult } from './dex.interface'
+export * from './analytics.interface'
+export * from './positions.interface'
+export * from './account.interface'

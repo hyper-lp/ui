@@ -5,7 +5,7 @@ import { getAllPositionManagers, getDexByPositionManager } from '@/config/hypere
 import { analyticsPullService } from './04-analytics-fetcher.service'
 import { analyticsStoreService } from './05-analytics-store.service'
 import { poolDiscoveryService } from './01-pool-discovery.service'
-import type { LPPosition } from '@/interfaces/dex.interface'
+import type { DexLPPosition } from '@/interfaces/dex.interface'
 import type { MonitoredAccount } from '@prisma/client-monitoring'
 import { DexProtocol } from '@/enums'
 
@@ -89,8 +89,8 @@ export class LPMonitorService {
      * Fetch all HYPE/USDT0 positions for an account across all DEXs
      * Enhanced version using pool discovery
      */
-    async fetchHypeUsdtPositionsForAccount(accountAddress: string, accountId?: string): Promise<LPPosition[]> {
-        const allPositions: LPPosition[] = []
+    async fetchHypeUsdtPositionsForAccount(accountAddress: string, accountId?: string): Promise<DexLPPosition[]> {
+        const allPositions: DexLPPosition[] = []
         const positionManagers = getAllPositionManagers()
         const client = getViemClient(this.chainId)
 
@@ -301,12 +301,12 @@ export class LPMonitorService {
         accountAddress: string,
         accountId?: string,
     ): Promise<{
-        positions: LPPosition[]
+        positions: DexLPPosition[]
         poolsChecked: number
         positionsFound: number
     }> {
         const client = getViemClient(this.chainId)
-        const allPositions: LPPosition[] = []
+        const allPositions: DexLPPosition[] = []
 
         if (process.env.NODE_ENV === 'development') {
             console.log(`\n🔎 [LP Monitor] Discovering positions for account ${accountAddress.slice(0, 10)}...`)
@@ -389,7 +389,7 @@ export class LPMonitorService {
                                     (p.token0.toLowerCase() === token1.toLowerCase() && p.token1.toLowerCase() === token0.toLowerCase())),
                         )
 
-                        const position: LPPosition = {
+                        const position: DexLPPosition = {
                             id: `${dex}-${tokenId}`,
                             dex: dex as DexProtocol,
                             poolAddress: matchingPool?.poolAddress || (`HYPE/USDT0-${fee}` as `0x${string}`),
@@ -486,7 +486,7 @@ export class LPMonitorService {
             },
         })
 
-        const lpPositions: LPPosition[] = positions.map((p) => ({
+        const lpPositions: DexLPPosition[] = positions.map((p) => ({
             id: p.id,
             dex: p.dex as DexProtocol,
             poolAddress: p.poolAddress as `0x${string}`,

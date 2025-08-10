@@ -3,7 +3,7 @@
 
 import { AnalyticsPullService } from '@/services/04-analytics-fetcher.service'
 import { analyticsStoreService } from '@/services/05-analytics-store.service'
-import type { LPPosition } from '@/interfaces/dex.interface'
+import type { DexLPPosition } from '@/interfaces/dex.interface'
 import { getViemClient } from '@/lib/viem'
 import { getAllPositionManagers, getDexByPositionManager } from '@/config/hyperevm-dexs.config'
 import { DexProtocol } from '@/enums'
@@ -73,7 +73,7 @@ const POOL_ABI = [
     },
 ] as const
 
-const MOCK_POSITIONS: LPPosition[] = [
+const MOCK_POSITIONS: DexLPPosition[] = [
     {
         id: 'test-hyperswap-hype-usdt-1',
         dex: DexProtocol.HYPERSWAP,
@@ -105,9 +105,9 @@ class TestAnalyticsPullService extends AnalyticsPullService {
         userAddress: string,
         poolAddress: string,
         positionManagerAddress: string = '0x6eDA206207c09e5428F281761DdC0D300851fBC8',
-    ): Promise<LPPosition[]> {
+    ): Promise<DexLPPosition[]> {
         const client = getViemClient(998)
-        const positions: LPPosition[] = []
+        const positions: DexLPPosition[] = []
 
         try {
             // Get number of positions owned by user
@@ -307,7 +307,7 @@ class TestAnalyticsPullService extends AnalyticsPullService {
         }
     }
 
-    async testFetchedPositions(positions: LPPosition[]) {
+    async testFetchedPositions(positions: DexLPPosition[]) {
         if (positions.length === 0) {
             if (!QUIET_MODE) console.log('\n❌ No positions found to analyze')
             return
@@ -453,7 +453,7 @@ class TestAnalyticsPullService extends AnalyticsPullService {
         console.log('\n🔧 Testing Error Handling...')
         console.log('='.repeat(50))
 
-        const invalidPositions: LPPosition[] = [
+        const invalidPositions: DexLPPosition[] = [
             {
                 id: 'invalid-no-token-id',
                 dex: DexProtocol.HYPERSWAP,
@@ -533,7 +533,7 @@ async function main() {
                 console.log(`\nSearching across DEXs: ${positionManagers.map((pm) => pm.protocol).join(', ')}`)
             }
 
-            const allPositions: LPPosition[] = []
+            const allPositions: DexLPPosition[] = []
 
             for (const { protocol, address } of positionManagers) {
                 if (!QUIET_MODE) {
@@ -623,7 +623,7 @@ async function main() {
             console.log('\n⚠️  Running with REAL blockchain data')
             console.log('Make sure you have valid positions configured!\n')
 
-            const realPositions: LPPosition[] = process.env.LP_POSITIONS ? JSON.parse(process.env.LP_POSITIONS) : []
+            const realPositions: DexLPPosition[] = process.env.LP_POSITIONS ? JSON.parse(process.env.LP_POSITIONS) : []
 
             if (realPositions.length === 0) {
                 console.log('❌ No real positions configured in LP_POSITIONS env var')

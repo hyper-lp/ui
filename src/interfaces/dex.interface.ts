@@ -3,7 +3,8 @@ import { DexProtocol } from '@/enums'
 
 export { DexProtocol }
 
-export interface LPPosition {
+// Renamed to avoid conflict with positions.interface.ts
+export interface DexLPPosition {
     id: string
     dex: DexProtocol
     poolAddress: Address
@@ -36,7 +37,8 @@ export interface UniswapV3Position {
     tokensOwed1: bigint
 }
 
-export interface PoolState {
+// Full pool state with all Uniswap V3 fields
+export interface FullPoolState {
     sqrtPriceX96: bigint
     tick: number
     liquidity: bigint
@@ -47,7 +49,7 @@ export interface PoolState {
     feeGrowthGlobal1X128: bigint
 }
 
-export interface PositionMetrics {
+export interface DexPositionMetrics {
     tokenId: string
     poolAddress: Address
     token0Symbol: string
@@ -81,9 +83,9 @@ export interface TokenPrice {
     priceUSD: number
 }
 
-export interface AnalyticsResult {
+export interface DexAnalyticsResult {
     timestamp: Date
-    positions: PositionMetrics[]
+    positions: DexPositionMetrics[]
     totalValueLocked: number
     totalUnclaimedFees: number
     averageFeeAPR: number

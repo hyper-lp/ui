@@ -24,6 +24,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 const totalLpValue = lpPositions.reduce((sum, p) => sum + p.valueUSD, 0)
                 const totalSpotValue = spotBalances.reduce((sum, b) => sum + b.valueUSD, 0)
 
+                // Calculate delta exposures - use actual WHYPE amounts from LP positions
+                const lpDelta = lpPositions.reduce((sum, p) => {
+                    // For each LP position, calculate WHYPE exposure
+                    const token0IsHype = p.token0Symbol === 'WHYPE' || p.token0Symbol === 'HYPE'
+                    const token1IsHype = p.token1Symbol === 'WHYPE' || p.token1Symbol === 'HYPE'
+
+                    if (token0IsHype && p.token0ValueUSD) {
+                        return sum + p.token0ValueUSD
+                    } else if (token1IsHype && p.token1ValueUSD) {
+                        return sum + p.token1ValueUSD
+                    }
+                    return sum
+                }, 0)
+                const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD, 0)
+                const netDelta = lpDelta + spotDelta
+
                 // Return response for non-monitored accounts with cache headers
                 return NextResponse.json(
                     {
@@ -46,10 +62,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                             totalPerpValue: 0,
                             totalSpotValue,
                             totalValue: totalLpValue + totalSpotValue,
-                            netDelta: totalLpValue * 0.5, // Rough estimate
-                            lpDelta: totalLpValue * 0.5, // Assume 50% HYPE exposure in LP
+                            netDelta,
+                            lpDelta,
                             perpDelta: 0,
-                            spotDelta: spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD, 0),
+                            spotDelta,
                             lastSnapshot: null,
                         },
                     },
@@ -71,8 +87,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             }
         }
 
-        // Get LP positions
-        const lpPositions = await prismaMonitoring.lpPosition.findMany({
+        // Get LP positions from database - note these have limited fields
+        const lpPositionsFromDb = await prismaMonitoring.lpPosition.findMany({
             where: {
                 accountId: monitoredAccount.id,
             },
@@ -101,16 +117,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         })
 
         // Calculate summary metrics
-        const totalLpValue = lpPositions.reduce((sum, p) => sum + p.valueUSD.toNumber(), 0)
+        const totalLpValue = lpPositionsFromDb.reduce((sum, p) => sum + p.valueUSD.toNumber(), 0)
         const totalPerpValue = perpPositions.reduce((sum, p) => {
             const notionalValue = Math.abs(p.szi.toNumber() * p.markPx.toNumber())
             return sum + notionalValue
         }, 0)
         const totalSpotValue = spotBalances.reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
 
-        // Calculate delta exposures
-        const lpDelta = totalLpValue * 0.5 // Simplified: assume 50% HYPE exposure in LP
+        // Calculate delta exposures - for monitored accounts, estimate based on 50/50 assumption
+        // since we don't have token amounts stored in the database
+        const lpDelta = lpPositionsFromDb.reduce((sum, p) => {
+            // Check if this is a HYPE/USDT0 pair
+            const hasHype = p.token0Symbol === 'WHYPE' || p.token0Symbol === 'HYPE' || p.token1Symbol === 'WHYPE' || p.token1Symbol === 'HYPE'
+            if (hasHype) {
+                // Assume 50% exposure for in-range positions, 0% for out-of-range
+                return sum + (p.inRange ? p.valueUSD.toNumber() * 0.5 : 0)
+            }
+            return sum
+        }, 0)
         const perpDelta = perpPositions.reduce((sum, p) => {
+            // Negative size means short position (negative delta)
             return sum + p.szi.toNumber() * p.markPx.toNumber()
         }, 0)
         const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
@@ -126,16 +152,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 isActive: monitoredAccount.isActive,
             },
             positions: {
-                lp: lpPositions.map((p) => ({
+                lp: lpPositionsFromDb.map((p) => ({
                     id: p.id,
                     tokenId: p.tokenId,
                     dex: p.dex,
+                    token0: null, // Not stored in DB
+                    token1: null, // Not stored in DB
                     token0Symbol: p.token0Symbol,
                     token1Symbol: p.token1Symbol,
-                    liquidity: p.liquidity,
+                    fee: p.feeTier || undefined, // Use feeTier from DB
+                    tickLower: p.tickLower,
+                    tickUpper: p.tickUpper,
+                    liquidity: p.liquidity.toString(),
                     valueUSD: p.valueUSD.toNumber(),
                     inRange: p.inRange,
                     feeTier: p.feeTier ? `${(p.feeTier / 10000).toFixed(2)}%` : null,
+                    token0Amount: undefined, // Not stored in DB
+                    token1Amount: undefined, // Not stored in DB
+                    token0ValueUSD: undefined, // Not stored in DB
+                    token1ValueUSD: undefined, // Not stored in DB
                 })),
                 perp: perpPositions.map((p) => ({
                     id: p.id,

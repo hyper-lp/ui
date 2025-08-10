@@ -1,11 +1,11 @@
-import type { LPPosition } from '@/interfaces/dex.interface'
+import type { DexLPPosition } from '@/interfaces/dex.interface'
 import type { Address } from 'viem'
 import { DexProtocol } from '@/enums'
 
 /**
  * Mock HYPE/USDT0 positions for testing
  */
-export const MOCK_POSITIONS: LPPosition[] = [
+export const MOCK_POSITIONS: DexLPPosition[] = [
     {
         id: 'test-hyperswap-hype-usdt-1',
         dex: DexProtocol.HYPERSWAP,
@@ -209,7 +209,7 @@ export function printPoolSummary(pools: { dex: string; fee: number; liquidity: b
 /**
  * Print position summary
  */
-export function printPositionSummary(positions: LPPosition[]) {
+export function printPositionSummary(positions: DexLPPosition[]) {
     const byDex: Record<string, number> = {}
 
     for (const position of positions) {

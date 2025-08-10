@@ -5,7 +5,7 @@ import { perpMonitorService } from './03-perp-monitor.service'
 import { analyticsPullService } from './04-analytics-fetcher.service'
 import { analyticsStoreService } from './05-analytics-store.service'
 import type { PoolInfo } from './01-pool-discovery.service'
-import type { LPPosition } from '@/interfaces/dex.interface'
+import type { DexLPPosition } from '@/interfaces/dex.interface'
 import type { MonitoredAccount } from '@prisma/client-monitoring'
 
 export interface AnalyticsRunResult {
@@ -31,7 +31,7 @@ export interface AnalyticsRunResult {
 
 export interface PositionDiscoveryResult {
     account: MonitoredAccount
-    positions: LPPosition[]
+    positions: DexLPPosition[]
     poolsChecked: number
     positionsFound: number
 }
@@ -114,7 +114,7 @@ class AnalyticsOrchestrator {
     /**
      * Step 3: Compute metrics for all positions
      */
-    async computeMetrics(positions: LPPosition[]): Promise<{
+    async computeMetrics(positions: DexLPPosition[]): Promise<{
         metrics: PositionMetricsResult[]
         summary: {
             totalValueUSD: number

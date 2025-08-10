@@ -3,7 +3,7 @@ import { calculateTokenAmounts, fetchPoolState, fetchPosition, getTokenMetadata 
 import { getTokenPrice } from '@/utils/token-prices.util'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
-import type { LPPosition, LPMetrics } from '@/interfaces/dex.interface'
+import type { DexLPPosition, LPMetrics } from '@/interfaces/dex.interface'
 import type { IAnalyticsPullService, AnalyticsResult, DexSummary } from '@/interfaces/analytics.interface'
 
 export class AnalyticsPullService implements IAnalyticsPullService {
@@ -13,7 +13,7 @@ export class AnalyticsPullService implements IAnalyticsPullService {
         this.chainId = chainId
     }
 
-    async pullPositionMetrics(position: LPPosition): Promise<LPMetrics | null> {
+    async pullPositionMetrics(position: DexLPPosition): Promise<LPMetrics | null> {
         try {
             const dexConfig = HYPEREVM_DEXS[position.dex]
 
@@ -119,7 +119,7 @@ export class AnalyticsPullService implements IAnalyticsPullService {
         }
     }
 
-    async pullAllPositionsMetrics(positions: LPPosition[]): Promise<AnalyticsResult> {
+    async pullAllPositionsMetrics(positions: DexLPPosition[]): Promise<AnalyticsResult> {
         if (process.env.NODE_ENV === 'development') {
             console.log(`\n📊 [Analytics Fetcher] Pulling metrics for ${positions.length} position(s)...`)
         }

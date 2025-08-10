@@ -8,7 +8,7 @@ import type { Address } from 'viem'
 import type { MonitoredAccount, Dex, Asset } from '@prisma/client-monitoring'
 import type { DexProtocol } from '@/interfaces/dex.interface'
 
-// Unified position interface for all platforms
+// Updated UnifiedPosition interface for monitor service
 export interface UnifiedPosition {
     id: string
     accountId: string
@@ -22,7 +22,7 @@ export interface UnifiedPosition {
     metadata: Record<string, unknown>
 }
 
-// Pool info for discovery
+// Updated PoolInfo interface for monitor service
 export interface PoolInfo {
     dex: DexProtocol
     poolAddress: Address

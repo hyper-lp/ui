@@ -1,4 +1,4 @@
-import type { LPMetrics, LPPosition } from './dex.interface'
+import type { LPMetrics, DexLPPosition } from './dex.interface'
 
 export interface AnalyticsSummary {
     totalValueUSD: number
@@ -26,8 +26,8 @@ export interface AnalyticsSnapshot extends AnalyticsResult {
 }
 
 export interface IAnalyticsPullService {
-    pullPositionMetrics(position: LPPosition): Promise<LPMetrics | null>
-    pullAllPositionsMetrics(positions: LPPosition[]): Promise<AnalyticsResult>
+    pullPositionMetrics(position: DexLPPosition): Promise<LPMetrics | null>
+    pullAllPositionsMetrics(positions: DexLPPosition[]): Promise<AnalyticsResult>
 }
 
 export interface IAnalyticsStoreService {

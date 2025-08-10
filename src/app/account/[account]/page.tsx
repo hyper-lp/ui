@@ -4,64 +4,7 @@ import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import PageWrapper from '@/components/common/PageWrapper'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
-
-interface AccountData {
-    success: boolean
-    account?: {
-        address: string
-        name: string | null
-        isActive: boolean
-    }
-    positions?: {
-        lp: Array<{
-            id: string
-            tokenId: string
-            dex: string
-            token0Symbol: string
-            token1Symbol: string
-            liquidity: string | number
-            valueUSD: number
-            inRange: boolean
-            feeTier: number | null
-            token0ValueUSD?: number
-            token1ValueUSD?: number
-        }>
-        perp: Array<{
-            id: string
-            asset: string
-            size: number
-            entryPrice: number
-            markPrice: number
-            marginUsed: number
-            unrealizedPnl: number
-            fundingPaid: number
-            notionalValue: number
-        }>
-        spot: Array<{
-            id: string
-            asset: string
-            balance: string | number
-            valueUSD: number
-        }>
-    }
-    summary?: {
-        totalLpValue: number
-        totalPerpValue: number
-        totalSpotValue: number
-        totalValue: number
-        netDelta: number
-        lpDelta: number
-        perpDelta: number
-        spotDelta: number
-        lastSnapshot: {
-            timestamp: string
-            netAPR: number
-            lpFeeAPR: number
-            fundingAPR: number
-        } | null
-    }
-    error?: string
-}
+import type { AccountData } from '@/interfaces'
 
 async function fetchAccountData(account: string): Promise<AccountData> {
     const response = await fetch(`/api/positions/${account}`)
@@ -196,8 +139,10 @@ export default function AccountPage() {
 
             {/* LP Positions */}
             {data.positions?.lp && data.positions.lp.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-4">
                     <h2 className="text-xl font-semibold">LP Positions ({data.positions.lp.length})</h2>
+
+                    {/* Main Table */}
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse border text-sm">
                             <thead>
@@ -231,12 +176,14 @@ export default function AccountPage() {
                                                 </span>
                                             </td>
                                             <td className="border p-2 text-right font-mono">
-                                                <div className="text-xs text-gray-500">{position.token0Symbol}</div>$
-                                                {formatNumber(position.token0ValueUSD || 0)}
+                                                <div className="text-xs text-gray-500">{position.token0Symbol}</div>
+                                                <div>{position.token0Amount ? formatNumber(position.token0Amount, 4) : '0'}</div>
+                                                <div className="text-xs">${formatNumber(position.token0ValueUSD || 0)}</div>
                                             </td>
                                             <td className="border p-2 text-right font-mono">
-                                                <div className="text-xs text-gray-500">{position.token1Symbol}</div>$
-                                                {formatNumber(position.token1ValueUSD || 0)}
+                                                <div className="text-xs text-gray-500">{position.token1Symbol}</div>
+                                                <div>{position.token1Amount ? formatNumber(position.token1Amount, 4) : '0'}</div>
+                                                <div className="text-xs">${formatNumber(position.token1ValueUSD || 0)}</div>
                                             </td>
                                             <td className="border p-2 text-right font-mono font-semibold">${formatNumber(position.valueUSD)}</td>
                                             <td className="border p-2 text-center">
@@ -254,6 +201,77 @@ export default function AccountPage() {
                                 })}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Detailed LP Data */}
+                    <div className="space-y-2">
+                        <h3 className="text-lg font-semibold">LP Position Details</h3>
+                        {data.positions.lp.map((position) => (
+                            <div key={position.id} className="border p-4 space-y-2">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="font-mono text-lg">Position #{position.tokenId}</div>
+                                        <div className="text-sm text-gray-600">
+                                            {position.dex} - {position.token0Symbol}/{position.token1Symbol}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-bold">${formatNumber(position.valueUSD)}</div>
+                                        <div className={`text-sm ${position.inRange ? 'text-green-600' : 'text-red-600'}`}>
+                                            {position.inRange ? 'In Range' : 'Out of Range'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                    <div>
+                                        <span className="text-gray-600">Token0 Address:</span>
+                                        <div className="font-mono text-xs truncate">{position.token0}</div>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">Token1 Address:</span>
+                                        <div className="font-mono text-xs truncate">{position.token1}</div>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">Liquidity:</span>
+                                        <div className="font-mono">{position.liquidity.toString()}</div>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">Fee Tier:</span>
+                                        <div>{position.feeTier || `${position.fee ? (position.fee / 10000).toFixed(2) + '%' : 'N/A'}`}</div>
+                                    </div>
+                                </div>
+
+                                {(position.tickLower !== undefined || position.tickUpper !== undefined) && (
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div>
+                                            <span className="text-gray-600">Tick Range:</span>
+                                            <div className="font-mono">
+                                                {position.tickLower ?? 'N/A'} → {position.tickUpper ?? 'N/A'}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">Price Range:</span>
+                                            <div className="font-mono text-xs">
+                                                {position.tickLower ? Math.pow(1.0001, position.tickLower).toFixed(4) : 'N/A'} →{' '}
+                                                {position.tickUpper ? Math.pow(1.0001, position.tickUpper).toFixed(4) : 'N/A'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                        <span className="text-gray-600">{position.token0Symbol} Amount:</span>
+                                        <div className="font-mono">{position.token0Amount ? formatNumber(position.token0Amount, 6) : '0'}</div>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">{position.token1Symbol} Amount:</span>
+                                        <div className="font-mono">{position.token1Amount ? formatNumber(position.token1Amount, 6) : '0'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
@@ -332,6 +350,45 @@ export default function AccountPage() {
             {!data.positions?.lp?.length && !data.positions?.perp?.length && !data.positions?.spot?.length && (
                 <div className="text-center py-8 text-gray-500">No positions found for this account</div>
             )}
+
+            {/* Raw Data Section (for debugging) */}
+            <details className="mt-8 border p-4">
+                <summary className="cursor-pointer font-semibold text-gray-700 hover:text-gray-900">Raw API Response (Debug)</summary>
+                <div className="mt-4 space-y-4">
+                    <div>
+                        <h3 className="font-semibold mb-2">Account Info</h3>
+                        <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.account, null, 2)}</pre>
+                    </div>
+
+                    {data.summary && (
+                        <div>
+                            <h3 className="font-semibold mb-2">Summary</h3>
+                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.summary, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {data.positions?.lp && data.positions.lp.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">LP Positions (Raw)</h3>
+                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.lp, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {data.positions?.perp && data.positions.perp.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">Perp Positions (Raw)</h3>
+                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.perp, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {data.positions?.spot && data.positions.spot.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">Spot Balances (Raw)</h3>
+                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.spot, null, 2)}</pre>
+                        </div>
+                    )}
+                </div>
+            </details>
         </PageWrapper>
     )
 }

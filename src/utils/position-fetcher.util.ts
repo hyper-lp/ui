@@ -5,39 +5,7 @@ import { NONFUNGIBLE_POSITION_MANAGER_ABI, UNISWAP_V3_POOL_ABI, UNISWAP_V3_FACTO
 import { MULTICALL3_ABI, MULTICALL3_ADDRESS } from '@/contracts/multicall-abi'
 import { calculateTokenAmounts } from '@/utils/uniswap-v3.util'
 import { keccak256, encodePacked, getAddress } from 'viem'
-
-interface PoolState {
-    sqrtPriceX96: bigint
-    tick: number
-    liquidity: bigint
-}
-
-interface LPPosition {
-    id: string
-    tokenId: string
-    dex: string
-    token0: string
-    token1: string
-    token0Symbol: string
-    token1Symbol: string
-    fee: number
-    tickLower: number
-    tickUpper: number
-    liquidity: string
-    inRange: boolean
-    valueUSD: number
-    token0Amount: number
-    token1Amount: number
-    token0ValueUSD: number
-    token1ValueUSD: number
-}
-
-interface SpotBalance {
-    id: string
-    asset: string
-    balance: number
-    valueUSD: number
-}
+import type { PoolState, LPPosition, SpotBalance } from '@/interfaces'
 
 export class PositionFetcher {
     private poolStateCache = new Map<string, PoolState>()
@@ -487,11 +455,11 @@ export class PositionFetcher {
                     const { coin, total } = balance
                     const totalBalance = parseFloat(total)
 
-                    let price = 0
-                    if (coin === 'USDC' || coin === 'USDT0') price = 1
-                    else if (coin === 'HYPE') price = this.tokenPriceCache.get('HYPE') || 44.8
-                    else if (coin === 'BTC') price = this.tokenPriceCache.get('BTC') || 100000
-                    else if (coin === 'ETH') price = this.tokenPriceCache.get('ETH') || 3800
+                    // Get price from cache or use defaults for stables
+                    let price = this.tokenPriceCache.get(coin) || 0
+                    if (coin === 'USDC' || coin === 'USDT0') {
+                        price = 1
+                    }
 
                     return {
                         id: `${account}-${coin}`,
@@ -507,7 +475,7 @@ export class PositionFetcher {
     }
 
     /**
-     * Fetch token prices
+     * Fetch token prices from Hyperliquid API
      */
     private async fetchTokenPrices(): Promise<void> {
         // Skip if recently fetched
@@ -516,15 +484,58 @@ export class PositionFetcher {
         }
 
         try {
-            // Use current market prices
+            // Fetch spot prices from Hyperliquid
+            const response = await fetch('https://api.hyperliquid.xyz/info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'spotMeta',
+                }),
+            })
+
+            const data = await response.json()
+            const tokens = data.tokens || []
+
+            // Parse prices from API response
+            for (const token of tokens) {
+                const { name, markPx } = token
+                if (name && markPx) {
+                    const price = parseFloat(markPx)
+                    this.tokenPriceCache.set(name, price)
+
+                    // Special handling for HYPE/WHYPE
+                    if (name === 'HYPE') {
+                        this.tokenPriceCache.set('WHYPE', price) // WHYPE has same price as HYPE
+                    }
+                }
+            }
+
+            // Set stable coin prices
+            this.tokenPriceCache.set('USDT0', 1)
+            this.tokenPriceCache.set('USDC', 1)
+
+            // Fallback prices if not found in API
+            if (!this.tokenPriceCache.has('HYPE')) {
+                this.tokenPriceCache.set('HYPE', 44.8)
+                this.tokenPriceCache.set('WHYPE', 44.8)
+            }
+            if (!this.tokenPriceCache.has('BTC')) {
+                this.tokenPriceCache.set('BTC', 100000)
+            }
+            if (!this.tokenPriceCache.has('ETH')) {
+                this.tokenPriceCache.set('ETH', 3800)
+            }
+
+            console.log('[PositionFetcher] Token prices fetched:', Array.from(this.tokenPriceCache.entries()))
+        } catch (error) {
+            console.error('Error fetching token prices:', error)
+            // Use fallback prices on error
             this.tokenPriceCache.set('HYPE', 44.8)
-            this.tokenPriceCache.set('WHYPE', 44.8) // Same as HYPE
+            this.tokenPriceCache.set('WHYPE', 44.8)
             this.tokenPriceCache.set('USDT0', 1)
             this.tokenPriceCache.set('USDC', 1)
             this.tokenPriceCache.set('BTC', 100000)
             this.tokenPriceCache.set('ETH', 3800)
-        } catch (error) {
-            console.error('Error fetching token prices:', error)
         }
     }
 
@@ -578,19 +589,16 @@ export class PositionFetcher {
     private getTokenPrice(symbol: string): number {
         // Use cached prices if available
         const cached = this.tokenPriceCache.get(symbol)
-        if (cached) return cached
+        if (cached !== undefined) return cached
 
-        // Default prices (you mentioned HYPE is around $44-45)
-        switch (symbol) {
-            case 'HYPE':
-            case 'WHYPE':
-                return 44.8 // Current HYPE price
-            case 'USDT0':
-            case 'USDC':
-                return 1.0
-            default:
-                return 0
+        // Default prices for stablecoins
+        if (symbol === 'USDT0' || symbol === 'USDC') {
+            return 1.0
         }
+
+        // If no price found, return 0
+        console.warn(`[PositionFetcher] No price found for token: ${symbol}`)
+        return 0
     }
 
     // Removed unused isHypeUsdt0Pair function - we're now showing all positions

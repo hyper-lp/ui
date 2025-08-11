@@ -9,7 +9,8 @@ export enum AppUrls {
     TAIKAI = 'https://taikai.network/hl-hackathon-organizers/hackathons/hl-hackathon/projects/cmdnbxv990721dcc359icaqvr/idea',
     GITHUB = 'https://github.com/hyperlp',
     PRIVY = 'https://www.privy.io/',
-    DOCS = 'https://arxiv.org/pdf/2407.05146',
+    // DOCS = 'https://arxiv.org/pdf/2407.05146',
+    DOCS = 'https://hyperliquid.gitbook.io/hyperliquid-docs',
     CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
 
     // Authors

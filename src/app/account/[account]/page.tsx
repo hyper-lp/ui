@@ -39,9 +39,9 @@ export default function AccountPage() {
         queryKey: ['account', account],
         queryFn: () => fetchAccountData(account),
         enabled: !!account,
-        staleTime: 60000, // Consider data fresh for 60 seconds
+        staleTime: 30000, // Consider data fresh for 30 seconds
         gcTime: 300000, // Keep in cache for 5 minutes (gcTime replaces cacheTime in v5)
-        refetchInterval: 60000, // Refresh every 60 seconds
+        refetchInterval: 30000, // Refresh every 30 seconds
     })
 
     // Add data point to history on each refresh

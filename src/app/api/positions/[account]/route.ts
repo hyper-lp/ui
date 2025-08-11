@@ -110,7 +110,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                     },
                     {
                         headers: {
-                            'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
+                            'Cache-Control': 'public, max-age=30, s-maxage=30, stale-while-revalidate=60',
                         },
                     },
                 )

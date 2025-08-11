@@ -2,9 +2,9 @@ import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import { env } from '@/env/t3-env'
 import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { getAllPositionManagers, getDexByPositionManager } from '@/config/hyperevm-dexs.config'
-import { analyticsPullService } from './04-analytics-fetcher.service'
-import { analyticsStoreService } from './05-analytics-store.service'
-import { poolDiscoveryService } from './01-pool-discovery.service'
+import { analyticsPullService } from '../04-analytics-fetcher.service'
+import { analyticsStoreService } from '../05-analytics-store.service'
+import { poolDiscoveryService } from '../01-pool-discovery.service'
 import type { DexLPPosition } from '@/interfaces/dex.interface'
 import type { MonitoredAccount } from '@/generated/prisma-monitoring'
 import { DexProtocol } from '@/enums'
@@ -98,7 +98,10 @@ export class LPMonitorService {
             '0x0000000000000000000000000000000000000000', // Native HYPE
             '0x5555555555555555555555555555555555555555', // Wrapped HYPE
         ]
-        const usdt0Address = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'
+        const stableAddresses = [
+            '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb', // USDT0
+            '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70', // USDC (feUSD)
+        ]
 
         for (const { protocol, address: positionManagerAddress } of positionManagers) {
             try {
@@ -153,12 +156,12 @@ export class LPMonitorService {
                         liquidity,
                     ] = positionArray
 
-                    // Check if it's a HYPE/USDT0 pair
-                    const isHypeUsdt0 =
-                        (hypeAddresses.includes(token0.toLowerCase()) && token1.toLowerCase() === usdt0Address) ||
-                        (hypeAddresses.includes(token1.toLowerCase()) && token0.toLowerCase() === usdt0Address)
+                    // Check if it's a HYPE/Stable pair (HYPE/USDT0 or HYPE/USDC)
+                    const isHypeStable =
+                        (hypeAddresses.includes(token0.toLowerCase()) && stableAddresses.includes(token1.toLowerCase())) ||
+                        (hypeAddresses.includes(token1.toLowerCase()) && stableAddresses.includes(token0.toLowerCase()))
 
-                    if (isHypeUsdt0) {
+                    if (isHypeStable) {
                         const dex = getDexByPositionManager(positionManagerAddress) || protocol
 
                         allPositions.push({
@@ -371,13 +374,13 @@ export class LPMonitorService {
                         bigint,
                     ]
 
-                    // Check if this is a HYPE/USDT0 position using pool discovery
-                    const isHypeUsdt0 = poolDiscoveryService.isHypeUsdt0Pool(
+                    // Check if this is a HYPE/Stable position using pool discovery
+                    const isHypeStable = poolDiscoveryService.isHypeUsdt0Pool(
                         '' as `0x${string}`, // We don't have pool address yet
                         { token0: token0 as `0x${string}`, token1: token1 as `0x${string}` },
                     )
 
-                    if (isHypeUsdt0) {
+                    if (isHypeStable) {
                         const dex = getDexByPositionManager(positionManagerAddress) || protocol
 
                         // Find the actual pool from discovered pools

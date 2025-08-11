@@ -2,7 +2,7 @@
  * Account and metrics-related interfaces
  */
 
-import type { LPPosition, PerpPosition, SpotBalance } from './positions.interface'
+import type { LPPosition, PerpPosition, SpotBalance, HyperEvmBalance } from './positions.interface'
 
 export interface AccountData {
     success: boolean
@@ -15,6 +15,7 @@ export interface AccountData {
         lp: Array<LPPosition>
         perp: Array<PerpPosition>
         spot: Array<SpotBalance>
+        hyperEvm?: Array<HyperEvmBalance>
     }
     summary?: AccountSummary
     error?: string
@@ -24,11 +25,13 @@ export interface AccountSummary {
     totalLpValue: number
     totalPerpValue: number
     totalSpotValue: number
+    totalHyperEvmValue?: number
     totalValue: number
     netDelta: number
     lpDelta: number
     perpDelta: number
     spotDelta: number
+    hyperEvmDelta?: number
     lastSnapshot: {
         timestamp: string
         netAPR: number

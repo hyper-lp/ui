@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiAuth } from '@/middleware/api-auth'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
-import { Asset } from '@/generated/prisma-monitoring'
-import { getTokenPrice } from '@/utils/token-prices.util'
-import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
+import { hyperCoreSpotMonitor } from '@/services/monitors'
 
 export const maxDuration = 60 // 60 seconds for Vercel
-
-// Token addresses on HyperCore
-const TOKEN_ADDRESSES = {
-    HYPE: '0x0000000000000000000000000000000000000000',
-    USDT0: '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb',
-    USDC: '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70', // feUSD as USDC proxy
-}
 
 /**
  * Sync spot balances from HyperCore for specified accounts
@@ -76,103 +67,28 @@ export const POST = withApiAuth(async (request: NextRequest) => {
                 }
 
                 // Use the platform-specific address if configured
-                const coreAddress = account.hyperCoreAddress || account.address
+                // const coreAddress = account.hyperCoreAddress || account.address
 
-                // Fetch spot balances from HyperCore API
-                const response = await fetch(`https://api.hyperliquid.xyz/info`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'spotClearinghouseState',
-                        user: coreAddress,
-                    }),
-                })
+                // Fetch and store spot balances using the monitor service
+                const balances = await hyperCoreSpotMonitor.updateAccountBalances(account)
 
-                const data = await response.json()
-                const balances = data.balances || []
-
-                let accountTotalValue = 0
-                const processedBalances = []
-
-                // Process each balance
-                for (const balance of balances) {
-                    const { coin, hold, total } = balance
-                    const totalBalance = parseFloat(total)
-
-                    if (totalBalance <= 0) continue
-
-                    // Get token price
-                    const tokenAddress = TOKEN_ADDRESSES[coin as keyof typeof TOKEN_ADDRESSES]
-                    if (!tokenAddress) {
-                        console.log(`[HyperCore Spot Sync] Unknown token: ${coin}`)
-                        continue
-                    }
-
-                    const price = await getTokenPrice(tokenAddress as `0x${string}`, HYPEREVM_CHAIN_ID)
-                    const valueUSD = totalBalance * price
-
-                    // Upsert spot balance
-                    await prismaMonitoring.spotBalance.upsert({
-                        where: {
-                            accountId_asset: {
-                                accountId: account.id,
-                                asset: coin as Asset,
-                            },
-                        },
-                        create: {
-                            accountId: account.id,
-                            asset: coin as Asset,
-                            balance: totalBalance,
-                            valueUSD,
-                        },
-                        update: {
-                            balance: totalBalance,
-                            valueUSD,
-                        },
-                    })
-
-                    processedBalances.push({
-                        asset: coin,
-                        balance: totalBalance,
-                        price,
-                        valueUSD,
-                        held: parseFloat(hold),
-                    })
-
-                    accountTotalValue += valueUSD
-                    results.balancesFound++
-                }
-
-                // Mark zero balances as inactive
-                await prismaMonitoring.spotBalance.updateMany({
-                    where: {
-                        accountId: account.id,
-                        asset: {
-                            notIn: processedBalances.map((b) => b.asset),
-                        },
-                    },
-                    data: {
-                        balance: 0,
-                        valueUSD: 0,
-                    },
-                })
+                const accountTotalValue = balances.reduce((sum, b) => sum + b.valueUSD, 0)
+                results.balancesFound += balances.length
 
                 results.processed++
                 results.totalSpotValue += accountTotalValue
                 results.accountResults.push({
                     address: accountAddress,
-                    balancesFound: processedBalances.length,
+                    balancesFound: balances.length,
                     totalValue: accountTotalValue,
-                    balances: processedBalances.map((b) => ({
+                    balances: balances.map((b) => ({
                         coin: b.asset,
-                        balance: b.balance,
+                        balance: typeof b.balance === 'number' ? b.balance : parseFloat(b.balance.toString()),
                         valueUSD: b.valueUSD,
                     })),
                 })
 
-                console.log(
-                    `[HyperCore Spot Sync] ${accountAddress}: Found ${processedBalances.length} balances, value: $${accountTotalValue.toFixed(2)}`,
-                )
+                console.log(`[HyperCore Spot Sync] ${accountAddress}: Found ${balances.length} balances, value: $${accountTotalValue.toFixed(2)}`)
             } catch (error) {
                 const errorMsg = `Failed to sync ${accountAddress}: ${error instanceof Error ? error.message : 'Unknown error'}`
                 console.error(`[HyperCore Spot Sync] ${errorMsg}`)

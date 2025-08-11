@@ -22,12 +22,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                     lpData: lpPositions,
                     spotData: spotBalances,
                     perpData: perpPositions,
+                    hyperEvmData: hyperEvmBalances,
                 } = await positionFetcher.fetchAllPositions(accountAddress)
 
                 // Calculate totals
                 const totalLpValue = lpPositions.reduce((sum, p) => sum + p.valueUSD, 0)
                 const totalSpotValue = spotBalances.reduce((sum, b) => sum + b.valueUSD, 0)
                 const totalPerpValue = perpPositions.reduce((sum, p) => sum + p.notionalValue, 0)
+                const totalHyperEvmValue = hyperEvmBalances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0
 
                 // Calculate delta exposures - use actual WHYPE amounts from LP positions
                 const lpDelta = lpPositions.reduce((sum, p) => {
@@ -43,13 +45,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                     return sum
                 }, 0)
                 const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD, 0)
+                const hyperEvmDelta =
+                    hyperEvmBalances?.filter((b) => b.asset === 'HYPE' || b.asset === 'WHYPE').reduce((sum, b) => sum + b.valueUSD, 0) || 0
                 const perpDelta = perpPositions
                     .filter((p) => p.asset === 'HYPE') // Only HYPE positions affect HYPE delta
                     .reduce((sum, p) => {
                         // Negative size means short position (negative delta)
                         return sum + p.size * p.markPrice
                     }, 0)
-                const netDelta = lpDelta + spotDelta + perpDelta
+                const netDelta = lpDelta + spotDelta + perpDelta + hyperEvmDelta
 
                 // Calculate APR components (annualized)
                 // Note: These are placeholder calculations - actual APR needs historical data
@@ -81,16 +85,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                             })),
                             perp: perpPositions,
                             spot: spotBalances,
+                            hyperEvm: hyperEvmBalances,
                         },
                         summary: {
                             totalLpValue,
                             totalPerpValue,
                             totalSpotValue,
-                            totalValue: totalLpValue + totalPerpValue + totalSpotValue,
+                            totalHyperEvmValue,
+                            totalValue: totalLpValue + totalPerpValue + totalSpotValue + totalHyperEvmValue,
                             netDelta,
                             lpDelta,
                             perpDelta,
                             spotDelta,
+                            hyperEvmDelta,
                             lastSnapshot: null,
                             currentAPR: {
                                 lpFeeAPR,

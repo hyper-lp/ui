@@ -30,6 +30,16 @@ export interface SpotBalance {
     valueUSD: number
 }
 
+export interface HyperEvmBalance {
+    id: string
+    asset: string
+    symbol: string
+    address: string
+    balance: string
+    decimals: number
+    valueUSD: number
+}
+
 export interface PerpPosition {
     id: string
     asset: string

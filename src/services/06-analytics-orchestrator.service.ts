@@ -1,7 +1,6 @@
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import { poolDiscoveryService } from './01-pool-discovery.service'
-import { lpMonitorService } from './02-lp-monitor.service'
-import { perpMonitorService } from './03-perp-monitor.service'
+import { lpMonitorService, perpMonitorService } from './monitors'
 import { analyticsPullService } from './04-analytics-fetcher.service'
 import { analyticsStoreService } from './05-analytics-store.service'
 import type { PoolInfo } from './01-pool-discovery.service'

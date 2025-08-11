@@ -4,7 +4,7 @@
 import { AnalyticsPullService } from '@/services/04-analytics-fetcher.service'
 import { analyticsStoreService } from '@/services/05-analytics-store.service'
 import type { DexLPPosition } from '@/interfaces/dex.interface'
-import { getViemClient } from '@/lib/viem'
+import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { getAllPositionManagers, getDexByPositionManager } from '@/config/hyperevm-dexs.config'
 import { DexProtocol } from '@/enums'
 
@@ -106,7 +106,7 @@ class TestAnalyticsPullService extends AnalyticsPullService {
         poolAddress: string,
         positionManagerAddress: string = '0x6eDA206207c09e5428F281761DdC0D300851fBC8',
     ): Promise<DexLPPosition[]> {
-        const client = getViemClient(998)
+        const client = getViemClient(HYPEREVM_CHAIN_ID)
         const positions: DexLPPosition[] = []
 
         try {
@@ -490,7 +490,7 @@ async function testStoreService() {
     const snapshot = {
         ...result,
         timestamp: new Date(),
-        chainId: 998,
+        chainId: HYPEREVM_CHAIN_ID,
     }
 
     // Store snapshots using lpDatabaseService
@@ -556,7 +556,7 @@ async function main() {
 
                 for (const position of allPositions) {
                     // Fetch full position details from blockchain
-                    const client = getViemClient(998)
+                    const client = getViemClient(HYPEREVM_CHAIN_ID)
                     const positionData = await client.readContract({
                         address: position.positionManagerAddress as `0x${string}`,
                         abi: POSITION_MANAGER_ABI,

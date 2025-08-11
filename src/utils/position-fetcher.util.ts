@@ -5,7 +5,7 @@ import { NONFUNGIBLE_POSITION_MANAGER_ABI, UNISWAP_V3_POOL_ABI, UNISWAP_V3_FACTO
 import { MULTICALL3_ABI, MULTICALL3_ADDRESS } from '@/contracts/multicall-abi'
 import { calculateTokenAmounts } from '@/utils/uniswap-v3.util'
 import { keccak256, encodePacked, getAddress } from 'viem'
-import type { PoolState, LPPosition, SpotBalance, PerpPosition } from '@/interfaces'
+import type { PoolState, LPPosition, SpotBalance, PerpPosition, HyperEvmBalance } from '@/interfaces'
 
 export class PositionFetcher {
     private poolStateCache = new Map<string, PoolState>()
@@ -31,7 +31,7 @@ export class PositionFetcher {
     }
 
     /**
-     * Fetch all positions for an account (LP, Spot, Perp)
+     * Fetch all positions for an account (LP, Spot, Perp, HyperEVM)
      */
     async fetchAllPositions(account: string) {
         // Clear cache if expired
@@ -42,13 +42,14 @@ export class PositionFetcher {
         }
 
         // Fetch all data types in parallel
-        const [lpData, spotData, perpData] = await Promise.all([
+        const [lpData, spotData, perpData, hyperEvmData] = await Promise.all([
             this.fetchLPPositionsBatched(account),
             this.fetchSpotBalances(account),
             this.fetchPerpPositions(account),
+            this.fetchHyperEvmBalances(account),
         ])
 
-        return { lpData, spotData, perpData }
+        return { lpData, spotData, perpData, hyperEvmData }
     }
 
     /**
@@ -455,6 +456,7 @@ export class PositionFetcher {
 
             return balances
                 .filter((b: { total: string }) => parseFloat(b.total) > 0)
+                .filter((b: { coin: string }) => ['HYPE', 'USDT0', 'USDC'].includes(b.coin)) // Only track HYPE, USDT0, USDC
                 .map((balance: { coin: string; total: string }) => {
                     const { coin, total } = balance
                     const totalBalance = parseFloat(total)
@@ -689,6 +691,113 @@ export class PositionFetcher {
         // If no price found, return 0
         console.warn(`[PositionFetcher] No price found for token: ${symbol}`)
         return 0
+    }
+
+    /**
+     * Fetch HyperEVM wallet balances
+     */
+    private async fetchHyperEvmBalances(account: string): Promise<HyperEvmBalance[]> {
+        try {
+            const client = getViemClient(HYPEREVM_CHAIN_ID)
+
+            // Get native HYPE balance
+            const nativeBalance = await client.getBalance({ address: account as Address })
+
+            // Common token addresses on HyperEVM - Only track HYPE, USDT0, USDC
+            const tokens = [
+                { address: '0x5555555555555555555555555555555555555555', symbol: 'WHYPE', decimals: 18 },
+                { address: '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb', symbol: 'USDT0', decimals: 6 },
+                // { address: '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70', symbol: 'USDC', decimals: 18 },
+            ]
+
+            // Fetch token balances using multicall
+            const balanceCalls = tokens.map((token) => ({
+                target: token.address as Address,
+                callData: encodeFunctionData({
+                    abi: [
+                        {
+                            inputs: [{ name: 'account', type: 'address' }],
+                            name: 'balanceOf',
+                            outputs: [{ name: '', type: 'uint256' }],
+                            stateMutability: 'view',
+                            type: 'function',
+                        },
+                    ],
+                    functionName: 'balanceOf',
+                    args: [account as Address],
+                }),
+            }))
+
+            const balanceResults = (await client.readContract({
+                address: MULTICALL3_ADDRESS,
+                abi: MULTICALL3_ABI,
+                functionName: 'tryAggregate',
+                args: [false, balanceCalls],
+            })) as Array<{ success: boolean; returnData: `0x${string}` }>
+
+            // Get token prices
+            await this.fetchTokenPrices()
+
+            const balances: HyperEvmBalance[] = []
+
+            // Add native HYPE balance
+            const hypePrice = this.tokenPriceCache.get('HYPE') || 44.8
+            const nativeHypeAmount = Number(nativeBalance) / 10 ** 18
+            if (nativeHypeAmount > 0.0001) {
+                balances.push({
+                    id: `${account}-hyperevm-HYPE`,
+                    asset: 'HYPE',
+                    symbol: 'HYPE',
+                    address: '0x0000000000000000000000000000000000000000',
+                    balance: nativeBalance.toString(),
+                    decimals: 18,
+                    valueUSD: nativeHypeAmount * hypePrice,
+                })
+            }
+
+            // Process token balances
+            for (let i = 0; i < tokens.length; i++) {
+                if (!balanceResults[i].success) continue
+
+                const balance = decodeFunctionResult({
+                    abi: [
+                        {
+                            inputs: [{ name: 'account', type: 'address' }],
+                            name: 'balanceOf',
+                            outputs: [{ name: '', type: 'uint256' }],
+                            stateMutability: 'view',
+                            type: 'function',
+                        },
+                    ],
+                    functionName: 'balanceOf',
+                    data: balanceResults[i].returnData,
+                }) as bigint
+
+                if (balance > 0n) {
+                    const token = tokens[i]
+                    const tokenAmount = Number(balance) / 10 ** token.decimals
+                    const tokenPrice = this.tokenPriceCache.get(token.symbol) || 0
+
+                    // Skip if balance is too small
+                    if (tokenAmount > 0.0001) {
+                        balances.push({
+                            id: `${account}-hyperevm-${token.symbol}`,
+                            asset: token.symbol,
+                            symbol: token.symbol,
+                            address: token.address,
+                            balance: balance.toString(),
+                            decimals: token.decimals,
+                            valueUSD: tokenAmount * tokenPrice,
+                        })
+                    }
+                }
+            }
+
+            return balances
+        } catch (error) {
+            console.error('Error fetching HyperEVM balances:', error)
+            return []
+        }
     }
 
     // Removed unused isHypeUsdt0Pair function - we're now showing all positions

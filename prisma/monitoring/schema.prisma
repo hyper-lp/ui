@@ -21,8 +21,6 @@ enum Asset {
   HYPE
   USDT0
   USDC
-  BTC
-  ETH
   OTHER
 }
 
@@ -44,10 +42,11 @@ model MonitoredAccount {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   // Relations
-  snapshots     AccountSnapshot[]
-  lpPositions   LpPosition[]
-  perpPositions PerpPosition[]
-  spotBalances  SpotBalance[]
+  snapshots        AccountSnapshot[]
+  lpPositions      LpPosition[]
+  perpPositions    PerpPosition[]
+  spotBalances     SpotBalance[]
+  hyperEvmBalances HyperEvmBalance[]
 
   @@index([isActive])
   @@index([hasHyperEvm])
@@ -121,7 +120,7 @@ model PerpPosition {
   @@index([accountId, asset])
 }
 
-// Current spot balances
+// Current spot balances on HyperCore
 model SpotBalance {
   id        String           @id @default(cuid())
   accountId String
@@ -134,5 +133,25 @@ model SpotBalance {
   account   MonitoredAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, asset])
+  @@index([accountId, asset])
+}
+
+// Current HyperEVM wallet balances
+model HyperEvmBalance {
+  id        String           @id @default(cuid())
+  accountId String
+  asset     String           // Token symbol (HYPE, WHYPE, USDT0, etc)
+  symbol    String           // Display symbol
+  address   String           // Token contract address (0x0000... for native HYPE)
+  balance   Decimal          @db.Decimal(78, 0)  // Raw balance in smallest unit
+  decimals  Int              // Token decimals
+  valueUSD  Decimal          @db.Decimal(38, 18)
+  updatedAt DateTime         @updatedAt
+  createdAt DateTime         @default(now())
+  // Relations
+  account   MonitoredAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, asset, address])
+  @@index([accountId])
   @@index([accountId, asset])
 }

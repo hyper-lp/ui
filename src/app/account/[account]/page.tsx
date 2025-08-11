@@ -92,7 +92,7 @@ export default function AccountPage() {
             {data.summary && (
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold">Summary</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="border p-3">
                             <div className="text-sm text-gray-600">Total Value</div>
                             <div className="font-mono">${formatNumber(data.summary.totalValue)}</div>
@@ -109,23 +109,28 @@ export default function AccountPage() {
                             <div className="text-sm text-gray-600">Spot Value</div>
                             <div className="font-mono">${formatNumber(data.summary.totalSpotValue)}</div>
                         </div>
+                        <div className="border p-3">
+                            <div className="text-sm text-gray-600">HyperEVM Value</div>
+                            <div className="font-mono">${formatNumber(data.summary.totalHyperEvmValue || 0)}</div>
+                        </div>
                     </div>
 
                     {/* Delta Breakdown */}
                     <div className="border p-4">
                         <h3 className="font-semibold mb-2">Delta Exposure (HYPE)</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
                             <div title="HYPE exposure from LP positions">LP Delta: ${formatNumber(data.summary.lpDelta)}</div>
                             <div title="HYPE exposure from perp positions (negative = short)">
                                 Perp Delta: ${formatNumber(data.summary.perpDelta)}
                             </div>
                             <div title="HYPE held in spot">Spot Delta: ${formatNumber(data.summary.spotDelta)}</div>
+                            <div title="HYPE held in HyperEVM">EVM Delta: ${formatNumber(data.summary.hyperEvmDelta || 0)}</div>
                             <div className="font-semibold" title="Net HYPE exposure">
                                 Net Delta: ${formatNumber(data.summary.netDelta)}
                             </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-2">
-                            Formula: Net Delta = LP Delta + Perp Delta + Spot Delta
+                            Formula: Net Delta = LP Delta + Perp Delta + Spot Delta + EVM Delta
                             {Math.abs(data.summary.netDelta) < 100 && <span className="text-green-600 ml-2">✓ Near delta neutral</span>}
                         </div>
                     </div>
@@ -368,8 +373,44 @@ export default function AccountPage() {
                 </div>
             )}
 
+            {/* HyperEVM Balances */}
+            {data.positions?.hyperEvm && data.positions.hyperEvm.length > 0 && (
+                <div className="space-y-2">
+                    <h2 className="text-xl font-semibold">HyperEVM Wallet Balances ({data.positions.hyperEvm.length})</h2>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border text-sm">
+                            <thead>
+                                <tr className="bg-gray-50">
+                                    <th className="border p-2 text-left">Asset</th>
+                                    <th className="border p-2 text-left">Address</th>
+                                    <th className="border p-2 text-right">Balance</th>
+                                    <th className="border p-2 text-right">Value USD</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.positions.hyperEvm.map((balance) => {
+                                    const formattedBalance = Number(balance.balance) / 10 ** balance.decimals
+                                    return (
+                                        <tr key={balance.id}>
+                                            <td className="border p-2 font-semibold">{balance.symbol}</td>
+                                            <td className="border p-2 font-mono text-xs">
+                                                {balance.address === '0x0000000000000000000000000000000000000000'
+                                                    ? 'Native HYPE'
+                                                    : balance.address.slice(0, 10) + '...' + balance.address.slice(-8)}
+                                            </td>
+                                            <td className="border p-2 text-right font-mono">{formatNumber(formattedBalance, 4)}</td>
+                                            <td className="border p-2 text-right font-mono">${formatNumber(balance.valueUSD)}</td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
             {/* No positions message */}
-            {!data.positions?.lp?.length && !data.positions?.perp?.length && !data.positions?.spot?.length && (
+            {!data.positions?.lp?.length && !data.positions?.perp?.length && !data.positions?.spot?.length && !data.positions?.hyperEvm?.length && (
                 <div className="text-center py-8 text-gray-500">No positions found for this account</div>
             )}
 
@@ -407,6 +448,13 @@ export default function AccountPage() {
                         <div>
                             <h3 className="font-semibold mb-2">Spot Balances (Raw)</h3>
                             <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.spot, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {data.positions?.hyperEvm && data.positions.hyperEvm.length > 0 && (
+                        <div>
+                            <h3 className="font-semibold mb-2">HyperEVM Balances (Raw)</h3>
+                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.hyperEvm, null, 2)}</pre>
                         </div>
                     )}
                 </div>

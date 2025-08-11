@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { analyticsOrchestrator } from '@/services/06-analytics-orchestrator.service'
-import { lpMonitorService } from '@/services/02-lp-monitor.service'
+import { lpMonitorService } from '@/services/monitors'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import {
     printSectionHeader,

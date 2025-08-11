@@ -2,6 +2,7 @@ import { createPublicClient, http, type PublicClient, defineChain, fallback } fr
 
 // HyperEVM public RPC endpoints with fallbacks
 const HYPEREVM_RPC_URLS = [
+    'https://hyperliquid-mainnet.g.alchemy.com/v2/xrhhC2wgJl6OX9lEGPrek', // Alchemy RPC, fberger account
     'https://api.hyperliquid.xyz/evm', // Primary official RPC
     'https://rpc.hyperliquid.xyz/evm', // Alternative official RPC
     'https://rpc.hyperlend.finance', // HyperLend RPC fallback

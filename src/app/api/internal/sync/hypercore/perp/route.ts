@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiAuth } from '@/middleware/api-auth'
-import { perpMonitorService } from '@/services/03-perp-monitor.service'
+import { perpMonitorService } from '@/services/monitors'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 
 export const maxDuration = 60 // 60 seconds for Vercel

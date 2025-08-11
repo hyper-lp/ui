@@ -28,6 +28,10 @@ export const COLORS = {
         background: '#ffffff',
         foreground: '#000000',
 
+        // Additional UI colors
+        muted: '#6b7280', // Gray for muted text
+        border: '#e5e7eb', // Light gray for borders
+
         // Chart specific
         tooltipBackground: 'rgba(255, 255, 255, 0.98)',
         folly: '#ff3366', // Red/pink for negative values
@@ -54,6 +58,10 @@ export const COLORS = {
         // Base colors
         background: '#000000',
         foreground: '#ffffff',
+
+        // Additional UI colors
+        muted: '#9ca3af', // Lighter gray for muted text in dark mode
+        border: '#374151', // Darker gray for borders in dark mode
 
         // Chart specific
         tooltipBackground: 'rgba(20, 30, 45, 0.99)',

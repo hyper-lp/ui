@@ -126,34 +126,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             }
         }
 
-        // Get LP positions from database - note these have limited fields
-        const lpPositionsFromDb = await prismaMonitoring.lpPosition.findMany({
-            where: {
-                accountId: monitoredAccount.id,
-            },
-        })
-
-        // Get perp positions
-        const perpPositions = await prismaMonitoring.perpPosition.findMany({
-            where: {
-                accountId: monitoredAccount.id,
-            },
-        })
-
-        // Get spot balances
-        const spotBalances = await prismaMonitoring.spotBalance.findMany({
-            where: {
-                accountId: monitoredAccount.id,
-            },
-        })
-
-        // Get latest account snapshot for summary
-        const latestSnapshot = await prismaMonitoring.accountSnapshot.findFirst({
-            where: {
-                accountId: monitoredAccount.id,
-            },
-            orderBy: { timestamp: 'desc' },
-        })
+        // Batch all database queries using Promise.all for better performance
+        const [lpPositionsFromDb, perpPositions, spotBalances, hyperEvmBalances, latestSnapshot] = await Promise.all([
+            prismaMonitoring.lpPosition.findMany({
+                where: {
+                    accountId: monitoredAccount.id,
+                },
+            }),
+            prismaMonitoring.perpPosition.findMany({
+                where: {
+                    accountId: monitoredAccount.id,
+                },
+            }),
+            prismaMonitoring.spotBalance.findMany({
+                where: {
+                    accountId: monitoredAccount.id,
+                },
+            }),
+            prismaMonitoring.hyperEvmBalance.findMany({
+                where: {
+                    accountId: monitoredAccount.id,
+                },
+            }),
+            prismaMonitoring.accountSnapshot.findFirst({
+                where: {
+                    accountId: monitoredAccount.id,
+                },
+                orderBy: { timestamp: 'desc' },
+            }),
+        ])
 
         // Calculate summary metrics
         const totalLpValue = lpPositionsFromDb.reduce((sum, p) => sum + p.valueUSD.toNumber(), 0)
@@ -162,6 +163,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             return sum + notionalValue
         }, 0)
         const totalSpotValue = spotBalances.reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
+        const totalHyperEvmValue = hyperEvmBalances.reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
 
         // Calculate delta exposures - for monitored accounts, estimate based on 50/50 assumption
         // since we don't have token amounts stored in the database
@@ -181,8 +183,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 return sum + p.szi.toNumber() * p.markPx.toNumber()
             }, 0)
         const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
+        const hyperEvmDelta = hyperEvmBalances
+            .filter((b) => b.symbol === 'HYPE' || b.symbol === 'WHYPE')
+            .reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
 
-        const netDelta = lpDelta + perpDelta + spotDelta
+        const netDelta = lpDelta + perpDelta + spotDelta + hyperEvmDelta
 
         // Calculate APR components for monitored accounts
         const fundingAPR = perpPositions
@@ -240,16 +245,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                     balance: b.balance,
                     valueUSD: b.valueUSD.toNumber(),
                 })),
+                hyperEvm: hyperEvmBalances.map((b) => ({
+                    id: b.id,
+                    address: b.address,
+                    symbol: b.symbol,
+                    balance: b.balance.toString(),
+                    decimals: b.decimals,
+                    valueUSD: b.valueUSD.toNumber(),
+                })),
             },
             summary: {
                 totalLpValue,
                 totalPerpValue,
                 totalSpotValue,
-                totalValue: totalLpValue + totalPerpValue + totalSpotValue,
+                totalHyperEvmValue,
+                totalValue: totalLpValue + totalPerpValue + totalSpotValue + totalHyperEvmValue,
                 netDelta,
                 lpDelta,
                 perpDelta,
                 spotDelta,
+                hyperEvmDelta,
                 lastSnapshot: latestSnapshot
                     ? {
                           timestamp: latestSnapshot.timestamp,

@@ -390,7 +390,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                     <EchartWrapper
                         options={options}
                         className={cn(
-                            'min-w-[300px] w-full min-h-[450px] md:min-h-[550px] h-full max-h-[400px] md:max-h-[700px] max-w-[900px] mx-auto',
+                            'min-w-[300px] w-full min-h-[450px] md:min-h-[550px] h-full max-h-[300px] md:max-h-[700px] max-w-[900px] mx-auto',
                         )}
                     />
                 </div>

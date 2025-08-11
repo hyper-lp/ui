@@ -93,6 +93,12 @@
 - **withdraw**: Remove capital from vault
 - **harvest**: Collect and reinvest earned fees
 
+### Blockchain Identifiers
+For detailed information about Token IDs, Spot IDs, and Asset IDs used in HyperCore/HyperEVM interactions, see [TECHNICAL_IDENTIFIERS.md](./TECHNICAL_IDENTIFIERS.md). Key concepts:
+- **Token Index**: Unique identifier for spot tokens on HyperCore
+- **Spot Index**: Identifier for trading pairs/markets
+- **Asset ID**: Trading identifier used in CoreWriter (spot: spotIndex + 10000)
+
 ### Database Models (Prisma Schema)
 ```typescript
 // Current models after refactoring:

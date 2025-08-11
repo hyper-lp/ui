@@ -9,7 +9,7 @@ const IframeWrapper: React.FC<{
     src?: string
     width?: string
     height?: string
-}> = ({ src, width = 'w-[300px] md:w-[600px] lg:w-[800px]', height = 'h-[400px]' }) => {
+}> = ({ src, width = 'w-[300px] md:w-[600px] lg:w-[800px]', height = 'h-[300px]' }) => {
     const [isLoading, setIsLoading] = useState(true)
     return (
         <div className={`relative z-10 ${width} ${height}`}>

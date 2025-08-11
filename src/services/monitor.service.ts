@@ -4,6 +4,8 @@ import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { getAllPositionManagers, getDexByPositionManager, HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import { getPoolAddress, fetchPoolState } from '@/utils/uniswap-v3.util'
 // import { positionFetcher } from '@/utils/position-fetcher.util' // TODO: Use this for optimized fetching
+import { POSITION_MANAGER_ABI } from './constants/abis'
+import { HYPE_ADDRESSES, TOKEN_ADDRESSES, CACHE_DURATIONS } from './constants/tokens'
 import type { Address } from 'viem'
 import type { MonitoredAccount, Dex, Asset } from '@/generated/prisma-monitoring'
 import type { DexProtocol } from '@/interfaces/dex.interface'
@@ -33,43 +35,6 @@ export interface PoolInfo {
     isActive: boolean
 }
 
-// Position manager ABI (minimal)
-const POSITION_MANAGER_ABI = [
-    {
-        inputs: [{ name: 'owner', type: 'address' }],
-        name: 'balanceOf',
-        outputs: [{ name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [
-            { name: 'owner', type: 'address' },
-            { name: 'index', type: 'uint256' },
-        ],
-        name: 'tokenOfOwnerByIndex',
-        outputs: [{ name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [{ name: 'tokenId', type: 'uint256' }],
-        name: 'positions',
-        outputs: [
-            { name: 'nonce', type: 'uint96' },
-            { name: 'operator', type: 'address' },
-            { name: 'token0', type: 'address' },
-            { name: 'token1', type: 'address' },
-            { name: 'fee', type: 'uint24' },
-            { name: 'tickLower', type: 'int24' },
-            { name: 'tickUpper', type: 'int24' },
-            { name: 'liquidity', type: 'uint128' },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-    },
-] as const
-
 /**
  * Unified monitoring service for all platforms and position types
  * Handles LP, Perp, and Spot position discovery and tracking
@@ -77,14 +42,11 @@ const POSITION_MANAGER_ABI = [
 export class MonitorService {
     private poolCache: Map<string, PoolInfo> = new Map()
     private lastPoolFetch: number = 0
-    private readonly CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+    private readonly CACHE_DURATION = CACHE_DURATIONS.POOL_INFO
 
-    // Known token addresses
-    private readonly HYPE_ADDRESSES = [
-        '0x0000000000000000000000000000000000000000', // Native
-        '0x5555555555555555555555555555555555555555', // Wrapped
-    ]
-    private readonly USDT0_ADDRESS = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'
+    // Use shared token constants
+    private readonly HYPE_ADDRESSES = HYPE_ADDRESSES
+    private readonly USDT0_ADDRESS = TOKEN_ADDRESSES.USDT0
 
     /**
      * Get or create monitored accounts

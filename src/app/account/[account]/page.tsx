@@ -1,10 +1,20 @@
 'use client'
 
 import { useParams } from 'next/navigation'
+import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import PageWrapper from '@/components/common/PageWrapper'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import type { AccountData } from '@/interfaces'
+import { useDeltaHistoryStore } from '@/stores/delta-history.store'
+import dynamic from 'next/dynamic'
+
+// Dynamically import charts to avoid SSR issues
+const DeltaTrackingChart = dynamic(() => import('@/components/charts/DeltaTrackingChart'), { ssr: false })
+const APRBreakdownChart = dynamic(() => import('@/components/charts/APRBreakdownChart'), { ssr: false })
+const DeltaThresholdGauge = dynamic(() => import('@/components/charts/DeltaThresholdGauge'), { ssr: false })
+const PositionCompositionBar = dynamic(() => import('@/components/charts/PositionCompositionBar'), { ssr: false })
+const RebalancingLog = dynamic(() => import('@/components/charts/RebalancingLog'), { ssr: false })
 
 async function fetchAccountData(account: string): Promise<AccountData> {
     const response = await fetch(`/api/positions/${account}`)
@@ -21,6 +31,10 @@ export default function AccountPage() {
     const params = useParams()
     const account = params?.account as string
 
+    // Delta history store
+    const { addDataPoint, getHistory } = useDeltaHistoryStore()
+    const deltaHistory = getHistory(account)
+
     const { data, isLoading, error, refetch, isFetching } = useQuery({
         queryKey: ['account', account],
         queryFn: () => fetchAccountData(account),
@@ -29,6 +43,21 @@ export default function AccountPage() {
         gcTime: 300000, // Keep in cache for 5 minutes (gcTime replaces cacheTime in v5)
         refetchInterval: 60000, // Refresh every 60 seconds
     })
+
+    // Add data point to history on each refresh
+    useEffect(() => {
+        if (data?.summary && account) {
+            const point = {
+                timestamp: Date.now(),
+                lpDelta: data.summary.lpDelta || 0,
+                perpDelta: data.summary.perpDelta || 0,
+                netDelta: data.summary.netDelta || 0,
+                spotDelta: data.summary.spotDelta || 0,
+                hyperEvmDelta: data.summary.hyperEvmDelta || 0,
+            }
+            addDataPoint(account, point)
+        }
+    }, [data?.summary, account, addDataPoint])
 
     if (isLoading) {
         return (
@@ -87,6 +116,53 @@ export default function AccountPage() {
                     )}
                 </button>
             </div>
+
+            {/* Live Strategy Monitoring - New Charts Section */}
+            {data.summary && (
+                <div className="space-y-4 border-b pb-6">
+                    <h2 className="text-xl font-semibold">Live Strategy Monitoring</h2>
+
+                    {/* Main charts row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-4 h-[400px]">
+                            <DeltaTrackingChart
+                                history={deltaHistory}
+                                showSpotDelta={true}
+                                showHyperEvmDelta={!!data.summary.hyperEvmDelta}
+                                className="h-full"
+                            />
+                        </div>
+                        <div className="border rounded-lg p-4 h-[400px]">
+                            <APRBreakdownChart
+                                lpFeeAPR={(data.summary.lastSnapshot?.lpFeeAPR || data.summary.currentAPR?.lpFeeAPR || 0) * 100}
+                                fundingAPR={(data.summary.lastSnapshot?.fundingAPR || data.summary.currentAPR?.fundingAPR || 0) * 100}
+                                rebalancingCost={0.2} // Example 0.2% cost
+                                className="h-full"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Secondary charts row */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="border rounded-lg p-4 h-[300px]">
+                            <DeltaThresholdGauge currentDelta={data.summary.netDelta} threshold={100} warningThreshold={200} className="h-full" />
+                        </div>
+                        <div className="border rounded-lg p-4 h-[300px]">
+                            <PositionCompositionBar
+                                lpValue={data.summary.totalLpValue}
+                                perpMargin={data.summary.totalPerpValue}
+                                spotValue={data.summary.totalSpotValue}
+                                hyperEvmValue={data.summary.totalHyperEvmValue || 0}
+                                totalValue={data.summary.totalValue}
+                                className="h-full"
+                            />
+                        </div>
+                        <div className="border rounded-lg p-4 h-[300px]">
+                            <RebalancingLog events={deltaHistory.rebalanceEvents} maxEvents={5} className="h-full" />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Summary Section */}
             {data.summary && (

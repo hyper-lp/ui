@@ -5,7 +5,7 @@ import { NONFUNGIBLE_POSITION_MANAGER_ABI, UNISWAP_V3_POOL_ABI, UNISWAP_V3_FACTO
 import { MULTICALL3_ABI, MULTICALL3_ADDRESS } from '@/contracts/multicall-abi'
 import { calculateTokenAmounts } from '@/utils/uniswap-v3.util'
 import { keccak256, encodePacked, getAddress } from 'viem'
-import type { PoolState, LPPosition, SpotBalance } from '@/interfaces'
+import type { PoolState, LPPosition, SpotBalance, PerpPosition } from '@/interfaces'
 
 export class PositionFetcher {
     private poolStateCache = new Map<string, PoolState>()
@@ -42,9 +42,13 @@ export class PositionFetcher {
         }
 
         // Fetch all data types in parallel
-        const [lpData, spotData] = await Promise.all([this.fetchLPPositionsBatched(account), this.fetchSpotBalances(account)])
+        const [lpData, spotData, perpData] = await Promise.all([
+            this.fetchLPPositionsBatched(account),
+            this.fetchSpotBalances(account),
+            this.fetchPerpPositions(account),
+        ])
 
-        return { lpData, spotData }
+        return { lpData, spotData, perpData }
     }
 
     /**
@@ -470,6 +474,92 @@ export class PositionFetcher {
                 })
         } catch (error) {
             console.error('Error fetching spot balances:', error)
+            return []
+        }
+    }
+
+    /**
+     * Fetch perpetual positions from HyperCore
+     */
+    private async fetchPerpPositions(account: string): Promise<PerpPosition[]> {
+        try {
+            const response = await fetch('https://api.hyperliquid.xyz/info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'clearinghouseState',
+                    user: account,
+                }),
+            })
+
+            const data = await response.json()
+            const assetPositions = data.assetPositions || []
+
+            // Also fetch current mark prices for accurate calculations
+            const markPricesResponse = await fetch('https://api.hyperliquid.xyz/info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'allMids',
+                }),
+            })
+
+            const markPricesData = await markPricesResponse.json()
+            const markPrices: Record<string, number> = {}
+
+            // Build mark price map
+            if (markPricesData) {
+                for (const [coin, price] of Object.entries(markPricesData)) {
+                    markPrices[coin] = parseFloat(price as string)
+                }
+            }
+
+            return assetPositions
+                .filter((pos: { position: { szi: string } }) => {
+                    const szi = parseFloat(pos.position?.szi || '0')
+                    return Math.abs(szi) > 0.00001
+                })
+                .map(
+                    (pos: {
+                        position: {
+                            coin: string
+                            szi: string
+                            entryPx: string
+                            markPx: string
+                            cumFunding: { allTime: string; total: string }
+                            marginUsed: string
+                        }
+                    }) => {
+                        const { position } = pos
+                        const coin = position.coin
+                        const szi = parseFloat(position.szi)
+                        const entryPx = parseFloat(position.entryPx || '0')
+
+                        // Use mark price from allMids API or fallback to position data
+                        const markPx = markPrices[coin] || parseFloat(position.markPx || '0')
+
+                        // Calculate unrealized PnL manually if needed
+                        const unrealizedPnl = szi * (markPx - entryPx)
+
+                        const fundingPaid = parseFloat(position.cumFunding?.allTime || position.cumFunding?.total || '0')
+                        const marginUsed = parseFloat(position.marginUsed || Math.abs((szi * entryPx) / 5).toString()) // Estimate 5x leverage if not provided
+                        const notionalValue = Math.abs(szi * markPx)
+
+                        return {
+                            id: `${account}-perp-${coin}`,
+                            asset: coin,
+                            size: szi,
+                            entryPrice: entryPx,
+                            markPrice: markPx,
+                            notionalValue,
+                            unrealizedPnl,
+                            fundingPaid,
+                            marginUsed,
+                        }
+                    },
+                )
+        } catch (error) {
+            console.error('Error fetching perp positions:', error)
             return []
         }
     }

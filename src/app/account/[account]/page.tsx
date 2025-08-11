@@ -113,25 +113,47 @@ export default function AccountPage() {
 
                     {/* Delta Breakdown */}
                     <div className="border p-4">
-                        <h3 className="font-semibold mb-2">Delta Exposure</h3>
+                        <h3 className="font-semibold mb-2">Delta Exposure (HYPE)</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                            <div>LP Delta: ${formatNumber(data.summary.lpDelta)}</div>
-                            <div>Perp Delta: ${formatNumber(data.summary.perpDelta)}</div>
-                            <div>Spot Delta: ${formatNumber(data.summary.spotDelta)}</div>
-                            <div className="font-semibold">Net Delta: ${formatNumber(data.summary.netDelta)}</div>
+                            <div title="HYPE exposure from LP positions">LP Delta: ${formatNumber(data.summary.lpDelta)}</div>
+                            <div title="HYPE exposure from perp positions (negative = short)">
+                                Perp Delta: ${formatNumber(data.summary.perpDelta)}
+                            </div>
+                            <div title="HYPE held in spot">Spot Delta: ${formatNumber(data.summary.spotDelta)}</div>
+                            <div className="font-semibold" title="Net HYPE exposure">
+                                Net Delta: ${formatNumber(data.summary.netDelta)}
+                            </div>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-2">
+                            Formula: Net Delta = LP Delta + Perp Delta + Spot Delta
+                            {Math.abs(data.summary.netDelta) < 100 && <span className="text-green-600 ml-2">✓ Near delta neutral</span>}
                         </div>
                     </div>
 
                     {/* APRs */}
-                    {data.summary.lastSnapshot && (
+                    {(data.summary.lastSnapshot || data.summary.currentAPR) && (
                         <div className="border p-4">
                             <h3 className="font-semibold mb-2">Current APRs</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                                <div>LP Fee APR: {formatPercent(data.summary.lastSnapshot.lpFeeAPR)}</div>
-                                <div>Funding APR: {formatPercent(data.summary.lastSnapshot.fundingAPR)}</div>
-                                <div className="font-semibold">Net APR: {formatPercent(data.summary.lastSnapshot.netAPR)}</div>
-                                <div className="text-gray-600">Updated: {new Date(data.summary.lastSnapshot.timestamp).toLocaleString()}</div>
-                            </div>
+                            {data.summary.lastSnapshot ? (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                    <div>LP Fee APR: {formatPercent(data.summary.lastSnapshot.lpFeeAPR)}</div>
+                                    <div>Funding APR: {formatPercent(data.summary.lastSnapshot.fundingAPR)}</div>
+                                    <div className="font-semibold">Net APR: {formatPercent(data.summary.lastSnapshot.netAPR)}</div>
+                                    <div className="text-gray-600">Updated: {new Date(data.summary.lastSnapshot.timestamp).toLocaleString()}</div>
+                                </div>
+                            ) : data.summary.currentAPR ? (
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                                        <div>LP Fee APR: {formatPercent(data.summary.currentAPR.lpFeeAPR)}</div>
+                                        <div>Funding APR: {formatPercent(data.summary.currentAPR.fundingAPR)}</div>
+                                        <div className="font-semibold">Net APR: {formatPercent(data.summary.currentAPR.netAPR)}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-600 border-t pt-2">
+                                        <div className="font-mono bg-gray-100 p-2 rounded">{data.summary.currentAPR.formula}</div>
+                                        <div className="mt-1">{data.summary.currentAPR.note}</div>
+                                    </div>
+                                </div>
+                            ) : null}
                         </div>
                     )}
                 </div>

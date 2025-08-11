@@ -18,11 +18,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         if (!monitoredAccount) {
             try {
                 // Use optimized position fetcher with batching
-                const { lpData: lpPositions, spotData: spotBalances } = await positionFetcher.fetchAllPositions(accountAddress)
+                const {
+                    lpData: lpPositions,
+                    spotData: spotBalances,
+                    perpData: perpPositions,
+                } = await positionFetcher.fetchAllPositions(accountAddress)
 
                 // Calculate totals
                 const totalLpValue = lpPositions.reduce((sum, p) => sum + p.valueUSD, 0)
                 const totalSpotValue = spotBalances.reduce((sum, b) => sum + b.valueUSD, 0)
+                const totalPerpValue = perpPositions.reduce((sum, p) => sum + p.notionalValue, 0)
 
                 // Calculate delta exposures - use actual WHYPE amounts from LP positions
                 const lpDelta = lpPositions.reduce((sum, p) => {
@@ -38,7 +43,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                     return sum
                 }, 0)
                 const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD, 0)
-                const netDelta = lpDelta + spotDelta
+                const perpDelta = perpPositions
+                    .filter((p) => p.asset === 'HYPE') // Only HYPE positions affect HYPE delta
+                    .reduce((sum, p) => {
+                        // Negative size means short position (negative delta)
+                        return sum + p.size * p.markPrice
+                    }, 0)
+                const netDelta = lpDelta + spotDelta + perpDelta
+
+                // Calculate APR components (annualized)
+                // Note: These are placeholder calculations - actual APR needs historical data
+                const lpFeeAPR = 0 // Would need to track fees over time
+                const fundingAPR = perpPositions
+                    .filter((p) => p.asset === 'HYPE')
+                    .reduce((sum, p) => {
+                        // Estimate based on current funding (would need historical average)
+                        // Negative position earns funding when rate is positive
+                        const dailyFunding = p.fundingPaid / 30 // Rough estimate
+                        const notional = Math.abs(p.size * p.markPrice)
+                        return sum + (notional > 0 ? (dailyFunding / notional) * 365 : 0)
+                    }, 0)
+                const netAPR = lpFeeAPR + fundingAPR
 
                 // Return response for non-monitored accounts with cache headers
                 return NextResponse.json(
@@ -54,19 +79,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                                 ...p,
                                 feeTier: p.fee ? `${(p.fee / 10000).toFixed(2)}%` : null,
                             })),
-                            perp: [],
+                            perp: perpPositions,
                             spot: spotBalances,
                         },
                         summary: {
                             totalLpValue,
-                            totalPerpValue: 0,
+                            totalPerpValue,
                             totalSpotValue,
-                            totalValue: totalLpValue + totalSpotValue,
+                            totalValue: totalLpValue + totalPerpValue + totalSpotValue,
                             netDelta,
                             lpDelta,
-                            perpDelta: 0,
+                            perpDelta,
                             spotDelta,
                             lastSnapshot: null,
+                            currentAPR: {
+                                lpFeeAPR,
+                                fundingAPR,
+                                netAPR,
+                                formula: 'Net APR = LP Fee APR + Funding APR',
+                                note: 'Real-time APR calculation requires historical data tracking',
+                            },
                         },
                     },
                     {
@@ -135,13 +167,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             }
             return sum
         }, 0)
-        const perpDelta = perpPositions.reduce((sum, p) => {
-            // Negative size means short position (negative delta)
-            return sum + p.szi.toNumber() * p.markPx.toNumber()
-        }, 0)
+        const perpDelta = perpPositions
+            .filter((p) => p.asset === 'HYPE') // Only HYPE positions affect HYPE delta
+            .reduce((sum, p) => {
+                // Negative size means short position (negative delta)
+                return sum + p.szi.toNumber() * p.markPx.toNumber()
+            }, 0)
         const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
 
         const netDelta = lpDelta + perpDelta + spotDelta
+
+        // Calculate APR components for monitored accounts
+        const fundingAPR = perpPositions
+            .filter((p) => p.asset === 'HYPE')
+            .reduce((sum, p) => {
+                // For shorts, positive funding rate means earning
+                const dailyFunding = p.fundingPaid.toNumber() / 30 // Rough estimate
+                const notional = Math.abs(p.szi.toNumber() * p.markPx.toNumber())
+                return sum + (notional > 0 ? (dailyFunding / notional) * 365 : 0)
+            }, 0)
 
         // Format response
         const response = {
@@ -207,6 +251,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                           fundingAPR: latestSnapshot.fundingAPR.toNumber(),
                       }
                     : null,
+                currentAPR: latestSnapshot
+                    ? {
+                          lpFeeAPR: latestSnapshot.lpFeeAPR.toNumber(),
+                          fundingAPR,
+                          netAPR: latestSnapshot.lpFeeAPR.toNumber() + fundingAPR,
+                          formula: 'Net APR = LP Fee APR + Funding APR',
+                          note: 'LP Fee APR from snapshot, Funding APR estimated from 30-day average',
+                      }
+                    : {
+                          lpFeeAPR: 0, // No historical data for LP fees yet
+                          fundingAPR,
+                          netAPR: fundingAPR,
+                          formula: 'Net APR = LP Fee APR + Funding APR',
+                          note: 'Funding APR estimated from 30-day average. LP fee tracking requires historical data.',
+                      },
             },
         }
 

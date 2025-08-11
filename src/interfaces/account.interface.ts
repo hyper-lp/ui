@@ -35,6 +35,13 @@ export interface AccountSummary {
         lpFeeAPR: number
         fundingAPR: number
     } | null
+    currentAPR?: {
+        lpFeeAPR: number
+        fundingAPR: number
+        netAPR: number
+        formula: string
+        note: string
+    }
 }
 
 export interface AccountMetrics {

@@ -15,6 +15,7 @@ const APRBreakdownChart = dynamic(() => import('@/components/charts/APRBreakdown
 const DeltaThresholdGauge = dynamic(() => import('@/components/charts/DeltaThresholdGauge'), { ssr: false })
 const PositionCompositionBar = dynamic(() => import('@/components/charts/PositionCompositionBar'), { ssr: false })
 const RebalancingLog = dynamic(() => import('@/components/charts/RebalancingLog'), { ssr: false })
+const PoolTVLTable = dynamic(() => import('@/components/charts/PoolTVLTable'), { ssr: false })
 
 async function fetchAccountData(account: string): Promise<AccountData> {
     const response = await fetch(`/api/positions/${account}`)
@@ -94,6 +95,16 @@ export default function AccountPage() {
         return `${formatNumber(num * 100, 2)}%`
     }
 
+    const formatDelta = (num: number, decimals = 2) => {
+        const sign = num >= 0 ? '+' : ''
+        return `${sign}$${formatNumber(Math.abs(num), decimals)}`
+    }
+
+    const getDeltaColor = (num: number) => {
+        if (Math.abs(num) < 0.01) return 'text-gray-600'
+        return num >= 0 ? 'text-green-600' : 'text-red-600'
+    }
+
     return (
         <PageWrapper>
             {/* Header */}
@@ -161,6 +172,11 @@ export default function AccountPage() {
                             <RebalancingLog events={deltaHistory.rebalanceEvents} maxEvents={5} className="h-full" />
                         </div>
                     </div>
+
+                    {/* Pool TVL Overview */}
+                    <div className="grid grid-cols-1">
+                        <PoolTVLTable />
+                    </div>
                 </div>
             )}
 
@@ -195,19 +211,51 @@ export default function AccountPage() {
                     <div className="border p-4">
                         <h3 className="font-semibold mb-2">Delta Exposure (HYPE)</h3>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
-                            <div title="HYPE exposure from LP positions">LP Delta: ${formatNumber(data.summary.lpDelta)}</div>
-                            <div title="HYPE exposure from perp positions (negative = short)">
-                                Perp Delta: ${formatNumber(data.summary.perpDelta)}
+                            <div title="HYPE exposure from LP positions">
+                                <span className="text-gray-600">LP Delta:</span>
+                                <div className={`font-mono font-semibold ${getDeltaColor(data.summary.lpDelta)}`}>
+                                    {formatDelta(data.summary.lpDelta)}
+                                </div>
                             </div>
-                            <div title="HYPE held in spot">Spot Delta: ${formatNumber(data.summary.spotDelta)}</div>
-                            <div title="HYPE held in HyperEVM">EVM Delta: ${formatNumber(data.summary.hyperEvmDelta || 0)}</div>
-                            <div className="font-semibold" title="Net HYPE exposure">
-                                Net Delta: ${formatNumber(data.summary.netDelta)}
+                            <div title="HYPE exposure from perp positions (negative = short)">
+                                <span className="text-gray-600">Perp Delta:</span>
+                                <div className={`font-mono font-semibold ${getDeltaColor(data.summary.perpDelta)}`}>
+                                    {formatDelta(data.summary.perpDelta)}
+                                </div>
+                            </div>
+                            <div title="HYPE held in spot">
+                                <span className="text-gray-600">Spot Delta:</span>
+                                <div className={`font-mono font-semibold ${getDeltaColor(data.summary.spotDelta)}`}>
+                                    {formatDelta(data.summary.spotDelta)}
+                                </div>
+                            </div>
+                            <div title="HYPE held in HyperEVM">
+                                <span className="text-gray-600">EVM Delta:</span>
+                                <div className={`font-mono font-semibold ${getDeltaColor(data.summary.hyperEvmDelta || 0)}`}>
+                                    {formatDelta(data.summary.hyperEvmDelta || 0)}
+                                </div>
+                            </div>
+                            <div title="Net HYPE exposure">
+                                <span className="text-gray-600 font-semibold">Net Delta:</span>
+                                <div className={`font-mono font-bold text-lg ${getDeltaColor(data.summary.netDelta)}`}>
+                                    {formatDelta(data.summary.netDelta)}
+                                </div>
                             </div>
                         </div>
-                        <div className="text-xs text-gray-600 mt-2">
-                            Formula: Net Delta = LP Delta + Perp Delta + Spot Delta + EVM Delta
-                            {Math.abs(data.summary.netDelta) < 100 && <span className="text-green-600 ml-2">✓ Near delta neutral</span>}
+                        <div className="text-xs text-gray-600 mt-3 pt-3 border-t">
+                            <div>Formula: Net Delta = LP Delta + Perp Delta + Spot Delta + EVM Delta</div>
+                            <div className="mt-1">
+                                {Math.abs(data.summary.netDelta) < 100 && <span className="text-green-600">✓ Near delta neutral</span>}
+                                {Math.abs(data.summary.netDelta) >= 100 && Math.abs(data.summary.netDelta) < 500 && (
+                                    <span className="text-yellow-600">⚠ Moderate delta exposure</span>
+                                )}
+                                {Math.abs(data.summary.netDelta) >= 500 && <span className="text-red-600">⚠ High delta exposure - rebalance needed</span>}
+                            </div>
+                            {data.summary.perpDelta >= 0 && data.summary.lpDelta > 0 && (
+                                <div className="text-red-600 font-semibold mt-1">
+                                    ⚠ WARNING: Perp position is not hedging LP exposure! Expected negative perp delta for short hedge.
+                                </div>
+                            )}
                         </div>
                     </div>
 

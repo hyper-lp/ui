@@ -51,9 +51,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                     .filter((p) => p.asset === 'HYPE') // Only HYPE positions affect HYPE delta
                     .reduce((sum, p) => {
                         // Negative size means short position (negative delta)
-                        return sum + p.size * p.markPrice
+                        const delta = p.size * p.markPrice
+                        console.log(`[Non-Monitored] Perp ${p.asset}: size=${p.size}, markPrice=${p.markPrice}, delta=${delta}`)
+                        return sum + delta
                     }, 0)
                 const netDelta = lpDelta + spotDelta + perpDelta + hyperEvmDelta
+                console.log(`[Non-Monitored] Delta Summary: LP=${lpDelta}, Perp=${perpDelta}, Spot=${spotDelta}, EVM=${hyperEvmDelta}, Net=${netDelta}`)
 
                 // Calculate APR components (annualized)
                 // Note: These are placeholder calculations - actual APR needs historical data
@@ -180,7 +183,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             .filter((p) => p.asset === 'HYPE') // Only HYPE positions affect HYPE delta
             .reduce((sum, p) => {
                 // Negative size means short position (negative delta)
-                return sum + p.szi.toNumber() * p.markPx.toNumber()
+                const size = p.szi.toNumber()
+                const markPrice = p.markPx.toNumber()
+                const delta = size * markPrice
+                console.log(`[Monitored] Perp ${p.asset}: size=${size}, markPrice=${markPrice}, delta=${delta}`)
+                return sum + delta
             }, 0)
         const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
         const hyperEvmDelta = hyperEvmBalances
@@ -188,6 +195,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             .reduce((sum, b) => sum + b.valueUSD.toNumber(), 0)
 
         const netDelta = lpDelta + perpDelta + spotDelta + hyperEvmDelta
+        console.log(`[Monitored] Delta Summary: LP=${lpDelta}, Perp=${perpDelta}, Spot=${spotDelta}, EVM=${hyperEvmDelta}, Net=${netDelta}`)
 
         // Calculate APR components for monitored accounts
         const fundingAPR = perpPositions

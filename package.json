@@ -6,12 +6,12 @@
         "dev": "sh -c 'cp .env.development .env && NEXT_PUBLIC_COMMIT_TIMESTAMP=$(date +%s) next dev'",
         "dev:prod": "sh -c 'cp .env.production .env && NEXT_PUBLIC_COMMIT_TIMESTAMP=$(date +%s) next dev'",
         "build": "export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build",
+        "build:analyze": "ANALYZE=true export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build -c next.config.analyzer.js",
         "start": "next start",
         "lint": "next lint",
         "eslint:fix": "eslint ./src --fix --ignore-pattern 'src/generated/**'",
         "prettier:fix": "prettier --write src",
         "lint:fix": "pnpm eslint:fix && pnpm prettier:fix",
-        "postinstall": "pnpm prisma:generate",
         "prisma:referrals:generate": "prisma generate --schema=./prisma/referrals/schema.prisma",
         "prisma:referrals:migrate": "prisma migrate dev --schema=./prisma/referrals/schema.prisma",
         "prisma:referrals:deploy": "prisma migrate deploy --schema=./prisma/referrals/schema.prisma",
@@ -34,6 +34,7 @@
         "db:migrate:prod": "tsx scripts/db-migrate-prod.ts",
         "db:status": "prisma migrate status",
         "vercel-build": "pnpm prisma:generate && pnpm prisma:deploy && export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build",
+        "postinstall:ci": "pnpm prisma:generate",
         "inngest": "pnpm dlx inngest-cli@latest dev",
         "monitor": "tsx scripts/monitor.ts",
         "monitor:quick": "tsx scripts/monitor.ts quick",
@@ -79,6 +80,7 @@
     },
     "devDependencies": {
         "@iconify/react": "^5.2.1",
+        "@next/bundle-analyzer": "^15.4.6",
         "@next/eslint-plugin-next": "15.2.1",
         "@types/echarts": "^5.0.0",
         "@types/node": "^20.19.9",
@@ -99,11 +101,13 @@
         "prettier": "^3.6.2",
         "prettier-eslint": "^16.4.2",
         "prisma": "^6.13.0",
-        "sharp": "^0.34.3",
         "tailwindcss": "^3.4.17",
         "ts-prune": "^0.10.3",
         "tsx": "^4.20.3",
         "typescript": "^5.9.2"
+    },
+    "optionalDependencies": {
+        "sharp": "^0.34.3"
     },
     "pnpm": {
         "overrides": {

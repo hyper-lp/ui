@@ -5,7 +5,7 @@ import type { EChartsOption } from 'echarts'
 import { ErrorBoundary } from 'react-error-boundary'
 import { Suspense } from 'react'
 import { useTheme } from 'next-themes'
-import EchartWrapper, { CustomFallback } from './EchartWrapper'
+import EchartWrapper, { CustomFallback } from './EchartWrapperOptimized'
 import { ErrorBoundaryFallback } from '../common/ErrorBoundaryFallback'
 
 /**

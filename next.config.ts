@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
     typescript: {
         ignoreBuildErrors: false,
     },
+    experimental: {
+        webpackBuildWorker: true,
+    },
     async headers() {
         return [
             {

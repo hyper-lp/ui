@@ -38,6 +38,7 @@ interface DexTVL {
  */
 async function calculatePoolTVL(
     poolAddress: Address,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     poolState: any,
     prices: { HYPE: number; USDT0: number },
 ): Promise<{ token0Balance: number; token1Balance: number; tvlUSD: number }> {
@@ -68,13 +69,9 @@ async function calculatePoolTVL(
         const token1Amount = Number(token1Balance) / 10 ** token1Decimals
 
         // Calculate USD values
-        const token0USD = poolState.token0.toLowerCase() === WHYPE_ADDRESS.toLowerCase() 
-            ? token0Amount * prices.HYPE 
-            : token0Amount * prices.USDT0
+        const token0USD = poolState.token0.toLowerCase() === WHYPE_ADDRESS.toLowerCase() ? token0Amount * prices.HYPE : token0Amount * prices.USDT0
 
-        const token1USD = poolState.token1.toLowerCase() === WHYPE_ADDRESS.toLowerCase() 
-            ? token1Amount * prices.HYPE 
-            : token1Amount * prices.USDT0
+        const token1USD = poolState.token1.toLowerCase() === WHYPE_ADDRESS.toLowerCase() ? token1Amount * prices.HYPE : token1Amount * prices.USDT0
 
         return {
             token0Balance: token0Amount,
@@ -94,12 +91,12 @@ export async function GET() {
             getTokenPrice(WHYPE_ADDRESS, HYPEREVM_CHAIN_ID),
             getTokenPrice(USDT0_ADDRESS, HYPEREVM_CHAIN_ID),
         ])
-        
+
         const prices = {
             HYPE: hypePrice,
             USDT0: usdt0Price,
         }
-        
+
         const dexTVLs: DexTVL[] = []
 
         // Iterate through each DEX
@@ -131,11 +128,7 @@ export async function GET() {
                     }
 
                     // Calculate TVL
-                    const { token0Balance, token1Balance, tvlUSD } = await calculatePoolTVL(
-                        poolAddress,
-                        poolState,
-                        prices,
-                    )
+                    const { token0Balance, token1Balance, tvlUSD } = await calculatePoolTVL(poolAddress, poolState, prices)
 
                     pools.push({
                         dex: dexKey,
@@ -152,6 +145,7 @@ export async function GET() {
                     })
                 } catch (error) {
                     // Pool doesn't exist for this fee tier, skip
+                    console.error(`[Pool TVL] Pool doesn't exist for this fee tier`, error)
                     continue
                 }
             }
@@ -174,17 +168,20 @@ export async function GET() {
         // Calculate grand total
         const grandTotalTVL = dexTVLs.reduce((sum, dex) => sum + dex.totalTVL, 0)
 
-        return NextResponse.json({
-            success: true,
-            timestamp: Date.now(),
-            prices,
-            grandTotalTVL,
-            dexes: dexTVLs,
-        }, {
-            headers: {
-                'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
+        return NextResponse.json(
+            {
+                success: true,
+                timestamp: Date.now(),
+                prices,
+                grandTotalTVL,
+                dexes: dexTVLs,
             },
-        })
+            {
+                headers: {
+                    'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
+                },
+            },
+        )
     } catch (error) {
         console.error('Error fetching pool TVL data:', error)
         return NextResponse.json(

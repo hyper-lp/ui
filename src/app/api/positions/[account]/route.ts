@@ -56,7 +56,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                         return sum + delta
                     }, 0)
                 const netDelta = lpDelta + spotDelta + perpDelta + hyperEvmDelta
-                console.log(`[Non-Monitored] Delta Summary: LP=${lpDelta}, Perp=${perpDelta}, Spot=${spotDelta}, EVM=${hyperEvmDelta}, Net=${netDelta}`)
+                console.log(
+                    `[Non-Monitored] Delta Summary: LP=${lpDelta}, Perp=${perpDelta}, Spot=${spotDelta}, EVM=${hyperEvmDelta}, Net=${netDelta}`,
+                )
 
                 // Calculate APR components (annualized)
                 // Note: These are placeholder calculations - actual APR needs historical data

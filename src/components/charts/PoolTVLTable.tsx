@@ -103,24 +103,15 @@ function PoolTVLTable({ className }: { className?: string }) {
                         </div>
                         <div className="space-y-0.5">
                             {dex.pools.map((pool) => (
-                                <div
-                                    key={pool.poolAddress}
-                                    className="flex justify-between items-center text-xs text-muted pl-4"
-                                >
+                                <div key={pool.poolAddress} className="flex justify-between items-center text-xs text-muted pl-4">
                                     <span>
                                         {pool.feeLabel} tier
                                         {pool.isActive && <span className="text-green-600 ml-1">●</span>}
                                     </span>
                                     <div className="flex gap-3">
-                                        <span className="font-mono">
-                                            {formatNumber(pool.token0Balance, 2)} HYPE
-                                        </span>
-                                        <span className="font-mono">
-                                            {formatNumber(pool.token1Balance, 2)} USDT0
-                                        </span>
-                                        <span className="font-mono font-semibold">
-                                            {formatUSD(pool.tvlUSD)}
-                                        </span>
+                                        <span className="font-mono">{formatNumber(pool.token0Balance, 2)} HYPE</span>
+                                        <span className="font-mono">{formatNumber(pool.token1Balance, 2)} USDT0</span>
+                                        <span className="font-mono font-semibold">{formatUSD(pool.tvlUSD)}</span>
                                     </div>
                                 </div>
                             ))}
@@ -128,9 +119,7 @@ function PoolTVLTable({ className }: { className?: string }) {
                     </div>
                 ))}
 
-                {data.dexes.length === 0 && (
-                    <div className="text-sm text-muted text-center py-2">No pools found</div>
-                )}
+                {data.dexes.length === 0 && <div className="text-sm text-muted text-center py-2">No pools found</div>}
             </div>
 
             <div className="mt-3 pt-3 border-t text-xs text-muted">

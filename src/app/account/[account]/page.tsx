@@ -249,7 +249,9 @@ export default function AccountPage() {
                                 {Math.abs(data.summary.netDelta) >= 100 && Math.abs(data.summary.netDelta) < 500 && (
                                     <span className="text-yellow-600">⚠ Moderate delta exposure</span>
                                 )}
-                                {Math.abs(data.summary.netDelta) >= 500 && <span className="text-red-600">⚠ High delta exposure - rebalance needed</span>}
+                                {Math.abs(data.summary.netDelta) >= 500 && (
+                                    <span className="text-red-600">⚠ High delta exposure - rebalance needed</span>
+                                )}
                             </div>
                             {data.summary.perpDelta >= 0 && data.summary.lpDelta > 0 && (
                                 <div className="text-red-600 font-semibold mt-1">

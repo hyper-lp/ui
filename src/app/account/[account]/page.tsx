@@ -140,6 +140,7 @@ export default function AccountPage() {
                                 history={deltaHistory}
                                 showSpotDelta={true}
                                 showHyperEvmDelta={!!data.summary.hyperEvmDelta}
+                                totalCapital={data.summary.totalValue}
                                 className="h-full"
                             />
                         </div>

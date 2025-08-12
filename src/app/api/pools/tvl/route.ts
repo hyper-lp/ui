@@ -119,6 +119,11 @@ export async function GET() {
                         undefined, // Will use default Uniswap V3 init code hash
                     )
 
+                    // Skip if pool address is zero (pool doesn't exist)
+                    if (poolAddress === '0x0000000000000000000000000000000000000000') {
+                        continue
+                    }
+
                     // Fetch pool state
                     const poolState = await fetchPoolState(poolAddress, HYPEREVM_CHAIN_ID)
 

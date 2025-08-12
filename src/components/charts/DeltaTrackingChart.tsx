@@ -13,9 +13,10 @@ interface DeltaTrackingChartProps {
     history: DeltaHistory
     showSpotDelta?: boolean
     showHyperEvmDelta?: boolean
+    totalCapital?: number
 }
 
-function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyperEvmDelta = false }: DeltaTrackingChartProps) {
+function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyperEvmDelta = false, totalCapital }: DeltaTrackingChartProps) {
     const [options, setOptions] = useState<EChartsOption | null>(null)
     const { resolvedTheme } = useTheme()
     const isDarkMode = resolvedTheme === 'dark'
@@ -43,6 +44,31 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             }
             setOptions(emptyOptions)
             return
+        }
+
+        // Calculate max delta for symmetric scale on both axes
+        const showRatioAxis = totalCapital && totalCapital > 0
+        
+        const allDeltas = [
+            ...history.lpDeltas,
+            ...history.perpDeltas,
+            ...history.netDeltas,
+            ...(showSpotDelta ? history.spotDeltas : []),
+            ...(showHyperEvmDelta ? history.hyperEvmDeltas : []),
+        ]
+        
+        // Find max absolute delta for symmetric USD scale
+        const maxAbsDelta = Math.max(...allDeltas.map(Math.abs), 100) // At least $100 scale
+        const paddedMaxDelta = maxAbsDelta * 1.1 // Add 10% padding
+        
+        // Calculate max ratio for percentage scale
+        let maxRatio = 1 // Default to 100%
+        if (showRatioAxis) {
+            maxRatio = Math.max(paddedMaxDelta / totalCapital, 0.5) // At least 50% scale
+            // Round to nice numbers
+            if (maxRatio > 2) maxRatio = Math.ceil(maxRatio)
+            else if (maxRatio > 1) maxRatio = 2
+            else maxRatio = 1
         }
 
         // Format timestamps for display
@@ -214,7 +240,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             },
             grid: {
                 top: 60,
-                right: 20,
+                right: 80,
                 bottom: 60,
                 left: 80,
                 containLabel: true,
@@ -234,27 +260,81 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                     interval: Math.floor(formattedTimestamps.length / 8), // Show ~8 labels
                 },
             },
-            yAxis: {
-                type: 'value',
-                name: 'Delta (USD)',
-                nameLocation: 'middle',
-                nameGap: 60,
-                axisLine: {
-                    lineStyle: {
-                        color: colors.border,
-                    },
-                },
-                axisLabel: {
-                    color: colors.muted,
-                    formatter: '${value}',
-                },
-                splitLine: {
-                    lineStyle: {
-                        color: colors.border,
-                        type: 'dashed',
-                    },
-                },
-            },
+            yAxis: showRatioAxis
+                ? [
+                      {
+                          type: 'value',
+                          name: 'Delta (USD)',
+                          nameLocation: 'middle',
+                          nameGap: 60,
+                          position: 'left',
+                          min: -paddedMaxDelta,
+                          max: paddedMaxDelta,
+                          axisLine: {
+                              lineStyle: {
+                                  color: colors.border,
+                              },
+                          },
+                          axisLabel: {
+                              color: colors.muted,
+                              formatter: '${value}',
+                          },
+                          splitLine: {
+                              lineStyle: {
+                                  color: colors.border,
+                                  type: 'dashed',
+                              },
+                          },
+                      },
+                      {
+                          type: 'value',
+                          name: 'Delta Ratio (%)',
+                          nameLocation: 'middle',
+                          nameGap: 50,
+                          position: 'right',
+                          min: -(paddedMaxDelta / totalCapital) * 100,
+                          max: (paddedMaxDelta / totalCapital) * 100,
+                          axisLine: {
+                              lineStyle: {
+                                  color: colors.border,
+                              },
+                          },
+                          axisLabel: {
+                              color: colors.muted,
+                              formatter: function (value: number) {
+                                  if (Math.abs(value) < 0.01) return '0%'
+                                  const sign = value > 0 ? '+' : ''
+                                  return `${sign}${value.toFixed(0)}%`
+                              },
+                          },
+                          splitLine: {
+                              show: false,
+                          },
+                      },
+                  ]
+                : {
+                      type: 'value',
+                      name: 'Delta (USD)',
+                      nameLocation: 'middle',
+                      nameGap: 60,
+                      min: -paddedMaxDelta,
+                      max: paddedMaxDelta,
+                      axisLine: {
+                          lineStyle: {
+                              color: colors.border,
+                          },
+                      },
+                      axisLabel: {
+                          color: colors.muted,
+                          formatter: '${value}',
+                      },
+                      splitLine: {
+                          lineStyle: {
+                              color: colors.border,
+                              type: 'dashed',
+                          },
+                      },
+                  },
             series: series.map((s) => ({
                 ...s,
                 markLine: s.name === 'Net Delta' ? markLine : undefined,
@@ -276,7 +356,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
         }
 
         setOptions(chartOptions)
-    }, [history, colors, isDarkMode, showSpotDelta, showHyperEvmDelta])
+    }, [history, colors, isDarkMode, showSpotDelta, showHyperEvmDelta, totalCapital])
 
     if (!options) {
         return (

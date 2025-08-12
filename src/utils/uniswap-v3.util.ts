@@ -67,6 +67,11 @@ export async function fetchPoolState(
     token1: Address
     fee: number
 }> {
+    // Check for zero address
+    if (poolAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Invalid pool address: zero address')
+    }
+
     try {
         const client = getViemClient(chainId)
 

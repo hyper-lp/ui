@@ -2,10 +2,10 @@ import { createPublicClient, http, type PublicClient, defineChain, fallback } fr
 
 // HyperEVM public RPC endpoints with fallbacks
 const HYPEREVM_RPC_URLS = [
-    'https://api.hyperliquid.xyz/evm', // Primary official RPC
-    'https://rpc.hyperliquid.xyz/evm', // Alternative official RPC
     'https://hyperliquid-mainnet.g.alchemy.com/v2/xrhhC2wgJl6OX9lEGPrek', // Alchemy RPC, fberger account
+    'https://api.hyperliquid.xyz/evm', // Primary official RPC
     'https://hyperliquid-mainnet.g.alchemy.com/v2/T4Jmj7HYUBr1psFAZh415', // Alchemy RPC, katalyster account
+    'https://rpc.hyperliquid.xyz/evm', // Alternative official RPC
     'https://rpc.hyperlend.finance', // HyperLend RPC fallback
     'https://hyperliquid-json-rpc.stakely.io', // Stakely RPC fallback
     'https://hyperliquid.drpc.org', // DRPC RPC fallback
@@ -47,7 +47,7 @@ export function getViemClient(chainId: number = HYPEREVM_CHAIN_ID): PublicClient
             http(url, {
                 batch: true,
                 retryCount: 2,
-                retryDelay: 1000,
+                retryDelay: 200, // Reduced from 1000ms - fail fast with multiple RPCs
                 timeout: 10000,
                 onFetchRequest: (request) => {
                     if (process.env.NODE_ENV === 'development') {
@@ -69,7 +69,7 @@ export function getViemClient(chainId: number = HYPEREVM_CHAIN_ID): PublicClient
                 rank: {
                     interval: 60_000, // Re-rank RPCs every minute
                     sampleCount: 5, // Sample 5 requests for ranking
-                    timeout: 2_000, // 2 second timeout for ranking
+                    timeout: 500, // Reduced from 2000ms - faster ranking
                     weights: {
                         latency: 0.3, // 30% weight on latency
                         stability: 0.7, // 70% weight on stability

@@ -22,7 +22,7 @@ export default function FileMapper({
     className?: string
 }) {
     // all files
-    if (props.id && props.id in FileIds)
+    if (props.id && Object.values(FileIds).includes(props.id as FileIds))
         return (
             <ImageWrapper
                 src={props.id as FileIds}
@@ -35,8 +35,8 @@ export default function FileMapper({
         )
 
     // all icons, just in case
-    if (props.id && props.id in IconIds) return <IconWrapper id={props.id as IconIds} className={className} />
+    if (props.id && Object.values(IconIds).includes(props.id as IconIds)) return <IconWrapper id={props.id as IconIds} className={className} />
 
     // fallback
-    return <div className={cn('bg-milk rounded-full', className)} style={{ width, height }} />
+    return <div className={cn('skeleton-loading rounded', className)} style={{ width, height }} />
 }

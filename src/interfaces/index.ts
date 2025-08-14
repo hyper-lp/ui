@@ -5,3 +5,4 @@ export type { DexLPPosition, LPMetrics, UniswapV3Position, FullPoolState, DexPos
 export * from './analytics.interface'
 export * from './positions.interface'
 export * from './account.interface'
+export * from './token.interface'

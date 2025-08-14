@@ -32,11 +32,11 @@ export default function HeaderDesktop(props: { className?: string }) {
                     <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
                         <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={60} height={60} />
                         <div className="flex flex-col">
-                            <p className="text-2xl font-light">
+                            <p className="text-3xl font-light">
                                 Hyper
                                 <span className="-ml-0.5 italic">LP</span>
                             </p>
-                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={100} height={20} />
+                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={120} height={16} className="rounded-none" />
                         </div>
                     </LinkWrapper>
                 </motion.div>

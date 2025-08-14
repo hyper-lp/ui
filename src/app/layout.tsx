@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { APP_METADATA, LATO_FONT, PVP_TRADE_FONT, TEODOR_LIGHT_FONT } from '../config/app.config'
-import { cn } from '../utils'
+import { cn } from '@/utils'
 import { Suspense } from 'react'
 import DefaultFallback from '@/components/layouts/DefaultFallback'
 import { Toaster } from 'react-hot-toast'

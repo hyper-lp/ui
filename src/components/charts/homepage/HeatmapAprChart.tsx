@@ -227,8 +227,11 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                                 <span style="font-size: 13px; color: ${tertiaryColor};">1/3 Short Perp Funding</span>
                                 <span style="font-size: 15px; color: ${secondaryColor}; font-weight: 600;">${tooltipData.fundingApr}</span>
                             </div>
-                            <div style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: ${primaryColor};">
+                            <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: ${primaryColor};">
                                 = ${tooltipData.netApr} Gross APR
+                            </div>
+                            <div style="font-size: 11px; color: ${tertiaryColor}; margin-bottom: 12px; font-style: italic;">
+                                *Account for possible IL and minor execution costs
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
                                 <span style="font-size: 13px; color: ${tertiaryColor};">Time to 2x</span>

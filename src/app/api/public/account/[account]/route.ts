@@ -59,16 +59,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             .filter((p) => p.asset === 'HYPE')
             .reduce((sum, p) => {
                 // Size is already in HYPE units, negative means short
-                console.log(`Perp ${p.asset}: size=${p.size} HYPE`)
                 return sum + p.size
             }, 0)
 
         // Net Delta in HYPE units
         const netDelta = lpDelta + spotDelta + perpDelta + hyperEvmDelta
-
-        console.log(
-            `Delta Summary (HYPE units): LP=${lpDelta.toFixed(4)}, Perp=${perpDelta.toFixed(4)}, Spot=${spotDelta.toFixed(4)}, EVM=${hyperEvmDelta.toFixed(4)}, Net=${netDelta.toFixed(4)}`,
-        )
 
         // Calculate APR components (annualized)
         const lpFeeAPR = 0 // Would need to track fees over time

@@ -123,3 +123,25 @@ export const APP_FONT_FAMILIES: Record<AppFontFamilies, string> = {
     [AppFontFamilies.LATO]: LATO_FONT.className,
     [AppFontFamilies.PVP_TRADE]: PVP_TRADE_FONT.className,
 }
+
+/**
+ * Cache Configuration
+ */
+export const CACHE_DURATION = {
+    POOL_STATE: 60000, // 60 seconds
+    TOKEN_PRICE: 60000, // 60 seconds
+    DEFAULT: 300000, // 5 minutes
+}
+
+/**
+ * Refresh Intervals
+ */
+export const REFRESH_INTERVALS = {
+    DEV: 300000, // 5 minutes
+    PROD: 30000, // 30 seconds
+}
+
+/**
+ * Multicall Configuration
+ */
+export const MULTICALL3_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'

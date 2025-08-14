@@ -19,6 +19,8 @@ import {
     StrategyMonitoring,
     TransactionHistory,
 } from '@/components/app/account'
+import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
+import { AccountCard } from '@/components/app/account/layout/AccountCard'
 
 async function fetchAccountData(evmAddress: string, coreAddress: string): Promise<AccountData> {
     // If both addresses are the same, use the old single-address API for backward compatibility
@@ -202,9 +204,118 @@ export default function AccountPage() {
 
     return (
         <PageWrapper>
+            <AccountTemplate
+                summary={{
+                    address: <AccountCard>Address</AccountCard>,
+                    aum: <AccountCard>AUM</AccountCard>,
+                    netDelta: <AccountCard>Net Delta</AccountCard>,
+                    apr: <AccountCard>APR</AccountCard>,
+                }}
+                hyperEvm={{
+                    lp: (
+                        <AccountCard>
+                            <CollapsibleSection
+                                title="HyperEVM"
+                                sectionKey="hyperEvm"
+                                badge={`Δ: ${totalHyperEvmDelta >= 0 ? '+' : ''}${totalHyperEvmDelta.toFixed(4)} HYPE`}
+                                subtitle={`$${totalHyperEvmValue.toFixed(2)} • ${data.positions?.lp?.length || 0} LP positions • ${data.positions?.hyperEvm?.length || 0} tokens`}
+                                lastRefresh={refreshTimeDisplay}
+                            >
+                                <div className="space-y-6">
+                                    {/* LP Positions grouped by DEX */}
+                                    {data.positions?.lp && data.positions.lp.length > 0 && (
+                                        <div>
+                                            <h3 className="mb-4 text-lg font-semibold">
+                                                Liquidity Positions (Δ: {hyperEvmLpDelta >= 0 ? '+' : ''}
+                                                {hyperEvmLpDelta.toFixed(4)} HYPE)
+                                            </h3>
+                                            <LPPositionsByDex positions={data.positions.lp} />
+                                        </div>
+                                    )}
+
+                                    {!data.positions?.lp?.length && !data.positions?.hyperEvm?.length && (
+                                        <div className="py-4 text-center text-gray-500">No HyperEVM positions found</div>
+                                    )}
+                                </div>
+                            </CollapsibleSection>
+                        </AccountCard>
+                    ),
+                    balances: (
+                        <AccountCard>
+                            {/* HyperEVM Spot Balances */}
+                            {data.positions?.hyperEvm && data.positions.hyperEvm.length > 0 && (
+                                <div>
+                                    <h3 className="mb-4 text-lg font-semibold">
+                                        Spot Balances (Δ: {hyperEvmSpotDelta >= 0 ? '+' : ''}
+                                        {hyperEvmSpotDelta.toFixed(4)} HYPE)
+                                    </h3>
+                                    <HyperEvmBalancesTable balances={data.positions.hyperEvm} />
+                                </div>
+                            )}
+                        </AccountCard>
+                    ),
+                    txs: (
+                        <AccountCard>
+                            {/* Transaction History */}
+                            <CollapsibleSection
+                                title="Transaction History"
+                                sectionKey="transactions"
+                                subtitle="DEX interactions on HyperEVM"
+                                lastRefresh={refreshTimeDisplay}
+                            >
+                                <TransactionHistory account={evmAddress} />
+                            </CollapsibleSection>
+                        </AccountCard>
+                    ),
+                }}
+                hyperCore={{
+                    short: (
+                        <AccountCard>
+                            {/* HyperCore Section */}
+                            <CollapsibleSection
+                                title="HyperCore"
+                                sectionKey="hyperCore"
+                                badge={`Δ: ${totalHyperCoreDelta >= 0 ? '+' : ''}${totalHyperCoreDelta.toFixed(4)} HYPE`}
+                                subtitle={`$${totalHyperCoreValue.toFixed(2)} • ${data.positions?.perp?.length || 0} perp positions • ${data.positions?.spot?.length || 0} tokens`}
+                                lastRefresh={refreshTimeDisplay}
+                            >
+                                <div className="space-y-6">
+                                    {/* Perp Positions */}
+                                    {data.positions?.perp && data.positions.perp.length > 0 && (
+                                        <div>
+                                            <h3 className="mb-4 text-lg font-semibold">
+                                                Perpetual Positions (Δ: {hyperCorePerpDelta >= 0 ? '+' : ''}
+                                                {hyperCorePerpDelta.toFixed(4)} HYPE)
+                                            </h3>
+                                            <PerpPositionsTable positions={data.positions.perp} />
+                                        </div>
+                                    )}
+
+                                    {/* Spot Balances */}
+                                    {data.positions?.spot && data.positions.spot.length > 0 && (
+                                        <div>
+                                            <h3 className="mb-4 text-lg font-semibold">
+                                                Spot Balances (Δ: {hyperCoreSpotDelta >= 0 ? '+' : ''}
+                                                {hyperCoreSpotDelta.toFixed(4)} HYPE)
+                                            </h3>
+                                            <SpotBalancesTable balances={data.positions.spot} />
+                                        </div>
+                                    )}
+
+                                    {!data.positions?.perp?.length && !data.positions?.spot?.length && (
+                                        <div className="py-4 text-center text-gray-500">No HyperCore positions found</div>
+                                    )}
+                                </div>
+                            </CollapsibleSection>
+                        </AccountCard>
+                    ),
+                    spot: <AccountCard>Spot</AccountCard>,
+                    txs: <AccountCard>TXs</AccountCard>,
+                }}
+            />
+
             {/* Header */}
             <AccountHeader onRefresh={() => refetch()} isFetching={isFetching} />
-
             {/* Display timing information if available */}
             {data?.timings && (
                 <div className="mb-4 rounded-lg bg-gray-50 p-3">
@@ -218,7 +329,6 @@ export default function AccountPage() {
                     </div>
                 </div>
             )}
-
             <div className="space-y-4">
                 {/* Charts Section */}
                 <CollapsibleSection
@@ -259,90 +369,6 @@ export default function AccountPage() {
                             <APRDisplay lastSnapshot={data.summary.lastSnapshot} currentAPR={data.summary.currentAPR} />
                         </div>
                     )}
-                </CollapsibleSection>
-
-                {/* HyperEVM Section */}
-                <CollapsibleSection
-                    title="HyperEVM"
-                    sectionKey="hyperEvm"
-                    badge={`Δ: ${totalHyperEvmDelta >= 0 ? '+' : ''}${totalHyperEvmDelta.toFixed(4)} HYPE`}
-                    subtitle={`$${totalHyperEvmValue.toFixed(2)} • ${data.positions?.lp?.length || 0} LP positions • ${data.positions?.hyperEvm?.length || 0} tokens`}
-                    lastRefresh={refreshTimeDisplay}
-                >
-                    <div className="space-y-6">
-                        {/* LP Positions grouped by DEX */}
-                        {data.positions?.lp && data.positions.lp.length > 0 && (
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">
-                                    Liquidity Positions (Δ: {hyperEvmLpDelta >= 0 ? '+' : ''}
-                                    {hyperEvmLpDelta.toFixed(4)} HYPE)
-                                </h3>
-                                <LPPositionsByDex positions={data.positions.lp} />
-                            </div>
-                        )}
-
-                        {/* HyperEVM Spot Balances */}
-                        {data.positions?.hyperEvm && data.positions.hyperEvm.length > 0 && (
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">
-                                    Spot Balances (Δ: {hyperEvmSpotDelta >= 0 ? '+' : ''}
-                                    {hyperEvmSpotDelta.toFixed(4)} HYPE)
-                                </h3>
-                                <HyperEvmBalancesTable balances={data.positions.hyperEvm} />
-                            </div>
-                        )}
-
-                        {!data.positions?.lp?.length && !data.positions?.hyperEvm?.length && (
-                            <div className="py-4 text-center text-gray-500">No HyperEVM positions found</div>
-                        )}
-                    </div>
-                </CollapsibleSection>
-
-                {/* HyperCore Section */}
-                <CollapsibleSection
-                    title="HyperCore"
-                    sectionKey="hyperCore"
-                    badge={`Δ: ${totalHyperCoreDelta >= 0 ? '+' : ''}${totalHyperCoreDelta.toFixed(4)} HYPE`}
-                    subtitle={`$${totalHyperCoreValue.toFixed(2)} • ${data.positions?.perp?.length || 0} perp positions • ${data.positions?.spot?.length || 0} tokens`}
-                    lastRefresh={refreshTimeDisplay}
-                >
-                    <div className="space-y-6">
-                        {/* Perp Positions */}
-                        {data.positions?.perp && data.positions.perp.length > 0 && (
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">
-                                    Perpetual Positions (Δ: {hyperCorePerpDelta >= 0 ? '+' : ''}
-                                    {hyperCorePerpDelta.toFixed(4)} HYPE)
-                                </h3>
-                                <PerpPositionsTable positions={data.positions.perp} />
-                            </div>
-                        )}
-
-                        {/* Spot Balances */}
-                        {data.positions?.spot && data.positions.spot.length > 0 && (
-                            <div>
-                                <h3 className="mb-4 text-lg font-semibold">
-                                    Spot Balances (Δ: {hyperCoreSpotDelta >= 0 ? '+' : ''}
-                                    {hyperCoreSpotDelta.toFixed(4)} HYPE)
-                                </h3>
-                                <SpotBalancesTable balances={data.positions.spot} />
-                            </div>
-                        )}
-
-                        {!data.positions?.perp?.length && !data.positions?.spot?.length && (
-                            <div className="py-4 text-center text-gray-500">No HyperCore positions found</div>
-                        )}
-                    </div>
-                </CollapsibleSection>
-
-                {/* Transaction History */}
-                <CollapsibleSection
-                    title="Transaction History"
-                    sectionKey="transactions"
-                    subtitle="DEX interactions on HyperEVM"
-                    lastRefresh={refreshTimeDisplay}
-                >
-                    <TransactionHistory account={evmAddress} />
                 </CollapsibleSection>
 
                 {/* Debug Section */}

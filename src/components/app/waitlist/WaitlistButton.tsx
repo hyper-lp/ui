@@ -3,7 +3,7 @@
 import { useLoginWithOAuth, usePrivy } from '@privy-io/react-auth'
 import { cn } from '@/utils'
 import { IconIds } from '@/enums'
-import IconWrapper from '../icons/IconWrapper'
+import IconWrapper from '../../icons/IconWrapper'
 import { useState } from 'react'
 import { SITE_NAME } from '@/config/app.config'
 

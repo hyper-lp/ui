@@ -36,7 +36,7 @@ interface TVLData {
 }
 
 async function fetchPoolTVL(): Promise<TVLData> {
-    const response = await fetch('/api/pools/tvl')
+    const response = await fetch('/api/public/pools/tvl')
     if (!response.ok) {
         throw new Error('Failed to fetch TVL data')
     }

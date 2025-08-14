@@ -5,7 +5,7 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { cn } from '@/utils'
 import { toast } from 'react-hot-toast'
 import { IconIds } from '@/enums'
-import IconWrapper from '../icons/IconWrapper'
+import IconWrapper from '../../icons/IconWrapper'
 import Image from 'next/image'
 import { generateReferralUrl } from '@/utils/referral.util'
 

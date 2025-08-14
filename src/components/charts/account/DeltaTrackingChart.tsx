@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, memo } from 'react'
 import type { EChartsOption } from 'echarts'
 import { useTheme } from 'next-themes'
-import EchartWrapper from './EchartWrapperOptimized'
+import EchartWrapper from '../shared/EchartWrapperOptimized'
 import { getThemeColors } from '@/config'
 import { cn } from '@/utils'
 import type { DeltaHistory } from '@/stores/delta-history.store'

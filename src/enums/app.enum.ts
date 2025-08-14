@@ -3,7 +3,7 @@ export enum AppUrls {
     HOME = '/',
 
     // API routes
-    API_USERS = '/api/users',
+    API_USERS = '/api/waitlist/users',
 
     // External links
     TAIKAI = 'https://taikai.network/hl-hackathon-organizers/hackathons/hl-hackathon/projects/cmdnbxv990721dcc359icaqvr/idea',
@@ -36,4 +36,5 @@ export enum DexProtocol {
     HYPERSWAP = 'hyperswap',
     PRJTX = 'prjtx',
     HYBRA = 'hybra',
+    HYPERBRICK = 'hyperbrick',
 }

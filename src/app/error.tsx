@@ -30,11 +30,11 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                     </button>
 
                     <p className="text-sm text-default">
-                        Please try again or
+                        Reload the page or
                         <LinkWrapper href={AppUrls.CONTACT_US} target="_blank" className="px-1 underline hover:text-primary">
                             contact us
                         </LinkWrapper>
-                        if the problem persists.
+                        if the problem persists
                     </p>
                 </div>
             </div>

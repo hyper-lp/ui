@@ -3,10 +3,9 @@
 import { useEffect, useState, useMemo, memo } from 'react'
 import type { EChartsOption } from 'echarts'
 import { ErrorBoundary } from 'react-error-boundary'
-import { Suspense } from 'react'
 import { useTheme } from 'next-themes'
-import EchartWrapper, { CustomFallback } from './EchartWrapperOptimized'
-import { ErrorBoundaryFallback } from '../common/ErrorBoundaryFallback'
+import EchartWrapper, { CustomFallback } from '../shared/EchartWrapperOptimized'
+import { ErrorBoundaryFallback } from '../../common/ErrorBoundaryFallback'
 
 /**
  * Utility functions for generating and formatting heatmap data
@@ -385,16 +384,14 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
     }
 
     return (
-        <Suspense fallback={<CustomFallback />}>
-            <ErrorBoundary FallbackComponent={ErrorBoundaryFallback}>
-                <div className={cn('relative mx-auto w-full', className)}>
-                    <EchartWrapper
-                        options={options}
-                        className="mx-auto h-full max-h-[300px] min-h-[450px] w-full min-w-[300px] max-w-[900px] md:max-h-[600px] md:min-h-[550px]"
-                    />
-                </div>
-            </ErrorBoundary>
-        </Suspense>
+        <ErrorBoundary FallbackComponent={ErrorBoundaryFallback}>
+            <div className={cn('relative mx-auto w-full', className)}>
+                <EchartWrapper
+                    options={options}
+                    className="mx-auto h-full max-h-[300px] min-h-[450px] w-full min-w-[300px] max-w-[900px] md:max-h-[600px] md:min-h-[500px]"
+                />
+            </div>
+        </ErrorBoundary>
     )
 }
 

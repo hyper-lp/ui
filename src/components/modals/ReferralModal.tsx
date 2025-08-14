@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { usePrivy } from '@privy-io/react-auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { decodeReferralCode } from '@/utils/referral.util'
-import { WaitlistButton } from '@/components/app/WaitlistButton'
+import { WaitlistButton } from '@/components/app/waitlist/WaitlistButton'
 
 interface ReferralModalProps {
     referralCode?: string | null

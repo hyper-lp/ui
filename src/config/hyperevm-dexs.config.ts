@@ -22,7 +22,19 @@ export interface V3ContractAddresses {
 }
 
 /**
- * Complete DEX configuration including V3 contracts
+ * Liquidity Book (LB) Contract addresses interface
+ * Used by DEXs like HyperBrick (Trader Joe v2 fork)
+ */
+export interface LBContractAddresses {
+    factory: Address
+    router: Address
+    quoter?: Address
+    pairImplementation?: Address
+    liquidityHelper?: Address
+}
+
+/**
+ * Complete DEX configuration including V3 or LB contracts
  */
 export interface DexConfig {
     protocol: DexProtocol
@@ -33,8 +45,10 @@ export interface DexConfig {
     positionManagerAddress?: Address
     routerAddress?: Address
     isUniswapV3Fork: boolean
-    // Full V3 contract details
+    isLiquidityBook?: boolean // For Trader Joe v2 forks like HyperBrick
+    // Contract details (V3 or LB)
     contracts?: V3ContractAddresses
+    lbContracts?: LBContractAddresses
     audited?: boolean
     auditReports?: string[]
     subgraphUrl?: string
@@ -107,6 +121,21 @@ const PRJTX_V3_CONTRACTS: V3ContractAddresses = {
 }
 
 /**
+ * HyperBrick - Liquidity Book AMM (Trader Joe v2/LFJ fork)
+ * Not a Uniswap V3 fork - uses bin-based AMM with zero slippage within bins
+ * Features: constant-sum within bins, fungible LP tokens, surge fees
+ * Source: HyperBrick documentation
+ */
+const HYPERBRICK_LB_CONTRACTS: LBContractAddresses = {
+    // Core LB Contracts
+    factory: '0x4A1EFb00B4Ad1751FC870C6125d917C3f1586600', // LB Factory
+    router: '0x4044e34336e41B9653931C4E0717587837993cA2', // LB Router
+    quoter: '0x55375D4aA7F33583a75190D6991781De06BA85b0', // LB Quoter
+    pairImplementation: '0x984769768D4cbbc58c45ce7bFc0b22a4650236BD', // LB Pair Implementation
+    liquidityHelper: '0x4f9Ad8Fb8E1250fDcdd45d9ED23B6993E5177C54', // LB Liquidity Helper
+}
+
+/**
  * Main DEX configurations with all contract addresses
  */
 export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
@@ -148,6 +177,18 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         portfolioUrl: 'https://www.hybra.finance/dashboard',
         docsUrl: 'https://docs.hyperswap.exchange/hyperswap/contracts/or-hyper-evm/v3#amm-v3',
     },
+    [DexProtocol.HYPERBRICK]: {
+        protocol: DexProtocol.HYPERBRICK,
+        name: 'HyperBrick',
+        factoryAddress: HYPERBRICK_LB_CONTRACTS.factory,
+        routerAddress: HYPERBRICK_LB_CONTRACTS.router,
+        isUniswapV3Fork: false, // It's a Liquidity Book (Trader Joe v2) fork
+        isLiquidityBook: true,
+        lbContracts: HYPERBRICK_LB_CONTRACTS,
+        audited: true, // Inherits audits from Trader Joe v2
+        portfolioUrl: 'https://hyperbrick.xyz',
+        docsUrl: 'https://docs.hyperbrick.xyz',
+    },
 }
 
 /**
@@ -165,6 +206,7 @@ export const getDefaultDexConfig = (dex: DexProtocol): DexConfig => {
 
 /**
  * Helper function to get position manager address by protocol
+ * Note: Liquidity Book DEXs don't have position managers (they use fungible LP tokens)
  */
 export function getPositionManagerAddress(protocol: string): Address | undefined {
     const config = HYPEREVM_DEXS[protocol as DexProtocol]
@@ -173,9 +215,11 @@ export function getPositionManagerAddress(protocol: string): Address | undefined
 
 /**
  * Helper function to get all position manager addresses
+ * Note: Only returns V3 DEXs (Liquidity Book DEXs use fungible LP tokens)
  */
 export function getAllPositionManagers(): { protocol: string; address: Address }[] {
     return Object.entries(HYPEREVM_DEXS)
+        .filter(([, config]) => config.isUniswapV3Fork) // Only V3 DEXs have position managers
         .map(([protocol, config]) => ({
             protocol,
             address: config.positionManagerAddress!,

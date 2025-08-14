@@ -2,6 +2,7 @@
 
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import type { LPPosition } from '@/interfaces'
+import { ImageWrapper } from '@/components/common/ImageWrapper'
 
 interface LPPositionsTableProps {
     positions: LPPosition[]
@@ -40,11 +41,18 @@ export function LPPositionsTable({ positions }: LPPositionsTableProps) {
                     <tbody>
                         {positions.map((position) => {
                             const typedDex = position.dex.toLowerCase() as keyof typeof HYPEREVM_DEXS
-                            const positionUrl = HYPEREVM_DEXS[typedDex]?.portfolioUrl || '#'
+                            const dexConfig = HYPEREVM_DEXS[typedDex]
+                            const positionUrl = dexConfig?.portfolioUrl || '#'
+                            const logoUrl = dexConfig?.logoUrl
                             return (
                                 <tr key={position.id}>
                                     <td className="border p-2 font-mono">{position.tokenId}</td>
-                                    <td className="border p-2">{position.dex}</td>
+                                    <td className="border p-2">
+                                        <div className="flex items-center gap-2">
+                                            <ImageWrapper src={logoUrl} alt={`${position.dex} logo`} size={20} className="rounded-full" />
+                                            <span>{position.dex}</span>
+                                        </div>
+                                    </td>
                                     <td className="border p-2">
                                         {position.token0Symbol}/{position.token1Symbol}
                                     </td>
@@ -85,72 +93,80 @@ export function LPPositionsTable({ positions }: LPPositionsTableProps) {
             {/* Detailed LP Data */}
             <div className="space-y-2">
                 <h3 className="text-lg font-semibold">LP Position Details</h3>
-                {positions.map((position) => (
-                    <div key={position.id} className="space-y-2 border p-4">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <div className="font-mono text-lg">Position #{position.tokenId}</div>
-                                <div className="text-sm text-gray-600">
-                                    {position.dex} - {position.token0Symbol}/{position.token1Symbol}
+                {positions.map((position) => {
+                    const typedDex = position.dex.toLowerCase() as keyof typeof HYPEREVM_DEXS
+                    const dexConfig = HYPEREVM_DEXS[typedDex]
+                    const logoUrl = dexConfig?.logoUrl
+                    return (
+                        <div key={position.id} className="space-y-2 border p-4">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <div className="font-mono text-lg">Position #{position.tokenId}</div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <ImageWrapper src={logoUrl} alt={`${position.dex} logo`} size={16} className="rounded-full" />
+                                        <span>
+                                            {position.dex} - {position.token0Symbol}/{position.token1Symbol}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-bold">${formatNumber(position.valueUSD)}</div>
+                                    <div className={`text-sm ${position.inRange ? 'text-green-600' : 'text-red-600'}`}>
+                                        {position.inRange ? 'In Range' : 'Out of Range'}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="font-bold">${formatNumber(position.valueUSD)}</div>
-                                <div className={`text-sm ${position.inRange ? 'text-green-600' : 'text-red-600'}`}>
-                                    {position.inRange ? 'In Range' : 'Out of Range'}
+
+                            <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
+                                <div>
+                                    <span className="text-gray-600">Token0 Address:</span>
+                                    <div className="truncate font-mono text-xs">{position.token0}</div>
+                                </div>
+                                <div>
+                                    <span className="text-gray-600">Token1 Address:</span>
+                                    <div className="truncate font-mono text-xs">{position.token1}</div>
+                                </div>
+                                <div>
+                                    <span className="text-gray-600">Liquidity:</span>
+                                    <div className="font-mono">{position.liquidity.toString()}</div>
+                                </div>
+                                <div>
+                                    <span className="text-gray-600">Fee Tier:</span>
+                                    <div>{position.feeTier || `${position.fee ? (position.fee / 10000).toFixed(2) + '%' : 'N/A'}`}</div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
-                            <div>
-                                <span className="text-gray-600">Token0 Address:</span>
-                                <div className="truncate font-mono text-xs">{position.token0}</div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Token1 Address:</span>
-                                <div className="truncate font-mono text-xs">{position.token1}</div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Liquidity:</span>
-                                <div className="font-mono">{position.liquidity.toString()}</div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">Fee Tier:</span>
-                                <div>{position.feeTier || `${position.fee ? (position.fee / 10000).toFixed(2) + '%' : 'N/A'}`}</div>
-                            </div>
-                        </div>
+                            {(position.tickLower !== undefined || position.tickUpper !== undefined) && (
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                        <span className="text-gray-600">Tick Range:</span>
+                                        <div className="font-mono">
+                                            {position.tickLower ?? 'N/A'} → {position.tickUpper ?? 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">Price Range:</span>
+                                        <div className="font-mono text-xs">
+                                            {position.tickLower ? Math.pow(1.0001, position.tickLower).toFixed(4) : 'N/A'} →{' '}
+                                            {position.tickUpper ? Math.pow(1.0001, position.tickUpper).toFixed(4) : 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
-                        {(position.tickLower !== undefined || position.tickUpper !== undefined) && (
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div>
-                                    <span className="text-gray-600">Tick Range:</span>
-                                    <div className="font-mono">
-                                        {position.tickLower ?? 'N/A'} → {position.tickUpper ?? 'N/A'}
-                                    </div>
+                                    <span className="text-gray-600">{position.token0Symbol} Amount:</span>
+                                    <div className="font-mono">{position.token0Amount ? formatNumber(position.token0Amount, 6) : '0'}</div>
                                 </div>
                                 <div>
-                                    <span className="text-gray-600">Price Range:</span>
-                                    <div className="font-mono text-xs">
-                                        {position.tickLower ? Math.pow(1.0001, position.tickLower).toFixed(4) : 'N/A'} →{' '}
-                                        {position.tickUpper ? Math.pow(1.0001, position.tickUpper).toFixed(4) : 'N/A'}
-                                    </div>
+                                    <span className="text-gray-600">{position.token1Symbol} Amount:</span>
+                                    <div className="font-mono">{position.token1Amount ? formatNumber(position.token1Amount, 6) : '0'}</div>
                                 </div>
                             </div>
-                        )}
-
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                                <span className="text-gray-600">{position.token0Symbol} Amount:</span>
-                                <div className="font-mono">{position.token0Amount ? formatNumber(position.token0Amount, 6) : '0'}</div>
-                            </div>
-                            <div>
-                                <span className="text-gray-600">{position.token1Symbol} Amount:</span>
-                                <div className="font-mono">{position.token1Amount ? formatNumber(position.token1Amount, 6) : '0'}</div>
-                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
         </div>
     )

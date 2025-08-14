@@ -39,6 +39,7 @@ export interface LBContractAddresses {
 export interface DexConfig {
     protocol: DexProtocol
     name: string
+    logoUrl: string
     portfolioUrl?: string
     // Legacy fields for backward compatibility
     factoryAddress?: Address
@@ -142,6 +143,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
     [DexProtocol.HYPERSWAP]: {
         protocol: DexProtocol.HYPERSWAP,
         name: 'Hyperswap V3',
+        logoUrl: 'https://app.hyperbeat.org/hyperfolio/hyperswap.jpg',
         factoryAddress: HYPERSWAP_V3_CONTRACTS.factory,
         positionManagerAddress: HYPERSWAP_V3_CONTRACTS.positionManager,
         routerAddress: HYPERSWAP_V3_CONTRACTS.swapRouter02 || HYPERSWAP_V3_CONTRACTS.swapRouter,
@@ -154,6 +156,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
     [DexProtocol.PRJTX]: {
         protocol: DexProtocol.PRJTX,
         name: 'Project X',
+        logoUrl: 'https://app.hyperbeat.org/hyperfolio/project-x.jpg',
         factoryAddress: PRJTX_V3_CONTRACTS.factory,
         positionManagerAddress: PRJTX_V3_CONTRACTS.positionManager,
         routerAddress: PRJTX_V3_CONTRACTS.swapRouter,
@@ -167,6 +170,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
     [DexProtocol.HYBRA]: {
         protocol: DexProtocol.HYBRA,
         name: 'Hybra Finance',
+        logoUrl: 'https://app.hyperbeat.org/hyperfolio/hybra.jpg',
         factoryAddress: HYBRA_V3_CONTRACTS.factory,
         positionManagerAddress: HYBRA_V3_CONTRACTS.positionManager,
         routerAddress: HYBRA_V3_CONTRACTS.swapRouter,
@@ -180,6 +184,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
     [DexProtocol.HYPERBRICK]: {
         protocol: DexProtocol.HYPERBRICK,
         name: 'HyperBrick',
+        logoUrl: 'https://icons.llamao.fi/icons/protocols/hyperbrick?w=48&h=48',
         factoryAddress: HYPERBRICK_LB_CONTRACTS.factory,
         routerAddress: HYPERBRICK_LB_CONTRACTS.router,
         isUniswapV3Fork: false, // It's a Liquidity Book (Trader Joe v2) fork

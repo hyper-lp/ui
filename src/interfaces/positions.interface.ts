@@ -6,6 +6,7 @@ export interface LPPosition {
     id: string
     tokenId: string
     dex: string
+    pool?: string
     token0: string
     token1: string
     token0Symbol: string
@@ -13,7 +14,9 @@ export interface LPPosition {
     fee?: number
     tickLower?: number
     tickUpper?: number
+    tickCurrent?: number
     liquidity: string | number
+    sqrtPriceX96?: string | bigint
     inRange: boolean
     valueUSD: number
     token0Amount?: number
@@ -21,6 +24,8 @@ export interface LPPosition {
     token0ValueUSD?: number
     token1ValueUSD?: number
     feeTier?: string | null
+    fees0Uncollected?: number
+    fees1Uncollected?: number
 }
 
 export interface SpotBalance {

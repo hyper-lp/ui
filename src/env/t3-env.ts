@@ -30,6 +30,9 @@ export const env = createEnv({
         INNGEST_SIGNING_KEY: z.string().optional(),
         INGEST_CLIENT_ID: z.string().optional(),
         ANALYTICS_CRON: z.string().optional(),
+
+        // Explorer
+        HYPEREVM_SCAN_API_KEY: z.string().optional(),
     },
 
     /**
@@ -63,6 +66,7 @@ export const env = createEnv({
         INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
         INGEST_CLIENT_ID: process.env.INGEST_CLIENT_ID,
         ANALYTICS_CRON: process.env.ANALYTICS_CRON,
+        HYPEREVM_SCAN_API_KEY: process.env.HYPEREVM_SCAN_API_KEY,
 
         // Client
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

@@ -2,9 +2,7 @@ import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import { env } from '@/env/t3-env'
 import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { getAllPositionManagers, getDexByPositionManager } from '@/config/hyperevm-dexs.config'
-import { analyticsPullService } from '../04-analytics-fetcher.service'
-import { analyticsStoreService } from '../05-analytics-store.service'
-import { poolDiscoveryService } from '../01-pool-discovery.service'
+import { poolDiscoveryService } from '../discovery/pool-discovery.service'
 import type { DexLPPosition } from '@/interfaces/dex.interface'
 import type { MonitoredAccount } from '@/generated/prisma-monitoring'
 import { DexProtocol } from '@/enums'
@@ -89,7 +87,7 @@ export class LPMonitorService {
      * Fetch all HYPE/USDT0 positions for an account across all DEXs
      * Enhanced version using pool discovery
      */
-    async fetchHypeUsdtPositionsForAccount(accountAddress: string, accountId?: string): Promise<DexLPPosition[]> {
+    async fetchHypeUsdtPositionsForAccount(accountAddress: string): Promise<DexLPPosition[]> {
         const allPositions: DexLPPosition[] = []
         const positionManagers = getAllPositionManagers()
         const client = getViemClient(this.chainId)
@@ -151,10 +149,14 @@ export class LPMonitorService {
                         token0,
                         token1,
                         fee,
-                        tickLower,
-                        tickUpper,
-                        liquidity,
+                        // tickLower,
+                        // tickUpper,
+                        // liquidity,
                     ] = positionArray
+                    // Unused - but needed when analytics service is restored
+                    // const tickLower = positionArray[7]
+                    // const tickUpper = positionArray[8]
+                    // const liquidity = positionArray[9]
 
                     // Check if it's a HYPE/Stable pair (HYPE/USDT0 or HYPE/USDC)
                     const isHypeStable =
@@ -174,21 +176,22 @@ export class LPMonitorService {
 
                         // Store in database
                         // Generate a temporary accountId if not provided (for positions discovered without an account)
-                        const effectiveAccountId = accountId || `temp-${accountAddress}`
-                        await analyticsStoreService.upsertLpPosition({
-                            tokenId: tokenId.toString(),
-                            dex,
-                            accountId: effectiveAccountId,
-                            poolAddress: '', // Pool address not available for HYPE/USDT0 positions
-                            token0Symbol: 'HYPE', // TODO: Determine from token addresses
-                            token1Symbol: 'USDT0', // TODO: Determine from token addresses
-                            feeTier: Number(fee),
-                            tickLower: Number(tickLower),
-                            tickUpper: Number(tickUpper),
-                            liquidity: liquidity.toString(),
-                            valueUSD: 0, // TODO: Calculate actual value
-                            inRange: true, // TODO: Calculate if in range
-                        })
+                        // const effectiveAccountId = accountId || `temp-${accountAddress}`
+                        // TODO: Replace with new analytics service
+                        // await analyticsStoreService.upsertLpPosition({
+                        //     tokenId: tokenId.toString(),
+                        //     dex,
+                        //     accountId: effectiveAccountId,
+                        //     poolAddress: '', // Pool address not available for HYPE/USDT0 positions
+                        //     token0Symbol: 'HYPE', // TODO: Determine from token addresses
+                        //     token1Symbol: 'USDT0', // TODO: Determine from token addresses
+                        //     feeTier: Number(fee),
+                        //     tickLower: Number(tickLower),
+                        //     tickUpper: Number(tickUpper),
+                        //     liquidity: liquidity.toString(),
+                        //     valueUSD: 0, // TODO: Calculate actual value
+                        //     inRange: true, // TODO: Calculate if in range
+                        // })
                     }
                 }
             } catch (error) {
@@ -245,7 +248,7 @@ export class LPMonitorService {
         for (const account of accounts) {
             // Fetching positions for account
 
-            const positions = await this.fetchHypeUsdtPositionsForAccount(account.address, account.id)
+            const positions = await this.fetchHypeUsdtPositionsForAccount(account.address)
             byAccount[account.address] = positions.length
             totalPositions += positions.length
 
@@ -300,10 +303,7 @@ export class LPMonitorService {
      * Enhanced position discovery using pool discovery service
      * More efficient - only checks active pools and relevant positions
      */
-    async discoverPositionsForAccount(
-        accountAddress: string,
-        accountId?: string,
-    ): Promise<{
+    async discoverPositionsForAccount(accountAddress: string): Promise<{
         positions: DexLPPosition[]
         poolsChecked: number
         positionsFound: number
@@ -363,16 +363,20 @@ export class LPMonitorService {
                         args: [tokenId],
                     })
 
-                    const [, , token0, token1, fee, tickLower, tickUpper, liquidity] = [...positionData] as unknown as readonly [
+                    const [, , token0, token1, fee] = [...positionData] as unknown as readonly [
                         bigint,
                         string,
                         string,
                         string,
                         bigint,
-                        bigint,
-                        bigint,
-                        bigint,
+                        bigint, // tickLower - unused but needed when analytics service is restored
+                        bigint, // tickUpper - unused but needed when analytics service is restored
+                        bigint, // liquidity - unused but needed when analytics service is restored
                     ]
+                    // Unused - but needed when analytics service is restored
+                    // const tickLower = positionData[5]
+                    // const tickUpper = positionData[6]
+                    // const liquidity = positionData[7]
 
                     // Check if this is a HYPE/Stable position using pool discovery
                     const isHypeStable = poolDiscoveryService.isHypeUsdt0Pool(
@@ -404,21 +408,22 @@ export class LPMonitorService {
 
                         // Store in database with enhanced data
                         // Generate a temporary accountId if not provided (for positions discovered without an account)
-                        const effectiveAccountId = accountId || `temp-${accountAddress}`
-                        await analyticsStoreService.upsertLpPosition({
-                            tokenId: tokenId.toString(),
-                            dex,
-                            accountId: effectiveAccountId,
-                            poolAddress: matchingPool?.poolAddress || '',
-                            token0Symbol: 'HYPE', // TODO: Determine from token addresses
-                            token1Symbol: 'USDT0', // TODO: Determine from token addresses
-                            feeTier: Number(fee),
-                            tickLower: Number(tickLower),
-                            tickUpper: Number(tickUpper),
-                            liquidity: liquidity.toString(),
-                            valueUSD: 0, // TODO: Calculate actual value
-                            inRange: true, // TODO: Calculate if in range
-                        })
+                        // const effectiveAccountId = accountId || `temp-${accountAddress}`
+                        // TODO: Replace with new analytics service
+                        // await analyticsStoreService.upsertLpPosition({
+                        //     tokenId: tokenId.toString(),
+                        //     dex,
+                        //     accountId: effectiveAccountId,
+                        //     poolAddress: matchingPool?.poolAddress || '',
+                        //     token0Symbol: 'HYPE', // TODO: Determine from token addresses
+                        //     token1Symbol: 'USDT0', // TODO: Determine from token addresses
+                        //     feeTier: Number(fee),
+                        //     tickLower: Number(tickLower),
+                        //     tickUpper: Number(tickUpper),
+                        //     liquidity: liquidity.toString(),
+                        //     valueUSD: 0, // TODO: Calculate actual value
+                        //     inRange: true, // TODO: Calculate if in range
+                        // })
                     }
                 }
             } catch (error) {
@@ -498,7 +503,9 @@ export class LPMonitorService {
         }))
 
         // Pull metrics for all positions
-        const result = await analyticsPullService.pullAllPositionsMetrics(lpPositions)
+        // TODO: Replace with new analytics service
+        // const result = await analyticsPullService.pullAllPositionsMetrics(lpPositions)
+        const result = { success: true, positions: lpPositions, metrics: [], summary: {} }
 
         return {
             positions: positions.length,

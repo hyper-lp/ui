@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiAuth } from '@/middleware/api-auth'
-import { lpMonitorService } from '@/services/monitors'
+import { lpMonitorService } from '@/services/monitoring'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 
 export const maxDuration = 60 // 60 seconds for Vercel
@@ -64,7 +64,7 @@ export const POST = withApiAuth(async (request: NextRequest) => {
                 const evmAddress = account.hyperEvmAddress || account.address
 
                 // Discover LP positions
-                const discoveryResult = await lpMonitorService.discoverPositionsForAccount(evmAddress, account.id)
+                const discoveryResult = await lpMonitorService.discoverPositionsForAccount(evmAddress)
 
                 results.processed++
                 results.positionsFound += discoveryResult.positionsFound

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiAuth, checkRateLimit } from '@/middleware/api-auth'
-import { orchestratorService } from '@/services/orchestrator.service'
+import { orchestratorService } from '@/services/analytics/orchestrator.service'
 
 export const maxDuration = 300 // 5 minutes max
 

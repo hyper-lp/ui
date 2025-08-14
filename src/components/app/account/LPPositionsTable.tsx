@@ -49,7 +49,13 @@ export function LPPositionsTable({ positions }: LPPositionsTableProps) {
                                     <td className="border p-2 font-mono">{position.tokenId}</td>
                                     <td className="border p-2">
                                         <div className="flex items-center gap-2">
-                                            <ImageWrapper src={logoUrl} alt={`${position.dex} logo`} size={20} className="rounded-full" />
+                                            <ImageWrapper
+                                                src={logoUrl}
+                                                alt={`${position.dex} logo`}
+                                                width={20}
+                                                height={20}
+                                                className="rounded-full"
+                                            />
                                             <span>{position.dex}</span>
                                         </div>
                                     </td>
@@ -103,7 +109,7 @@ export function LPPositionsTable({ positions }: LPPositionsTableProps) {
                                 <div>
                                     <div className="font-mono text-lg">Position #{position.tokenId}</div>
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                                        <ImageWrapper src={logoUrl} alt={`${position.dex} logo`} size={16} className="rounded-full" />
+                                        <ImageWrapper src={logoUrl} alt={`${position.dex} logo`} width={16} height={16} className="rounded-full" />
                                         <span>
                                             {position.dex} - {position.token0Symbol}/{position.token1Symbol}
                                         </span>

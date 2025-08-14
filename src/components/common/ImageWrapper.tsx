@@ -7,15 +7,29 @@ import { useState } from 'react'
 export function ImageWrapper({
     src,
     alt = 'missing alt',
-    size,
+    width = 20,
+    height = 20,
     className = 'rounded-full',
+    priority = false,
 }: {
     src?: string
     alt?: string
-    size: number
+    width?: number
+    height?: number
+    priority?: boolean
     className?: string
 }) {
     const [imgError, setImgError] = useState(false)
-    if (!src || imgError) return <div className={cn('skeleton-loading', className)} style={{ width: size, height: size }} />
-    return <Image src={src} alt={alt} width={size} height={size} className={cn('object-cover', className)} onError={() => setImgError(true)} />
+    if (!src || imgError) return <div className={cn('skeleton-loading', className)} style={{ width, height }} />
+    return (
+        <Image
+            src={src}
+            alt={alt}
+            width={width}
+            height={height}
+            className={cn('object-cover', className)}
+            onError={() => setImgError(true)}
+            priority={priority}
+        />
+    )
 }

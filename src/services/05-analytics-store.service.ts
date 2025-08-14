@@ -1,3 +1,8 @@
+/**
+ * @deprecated This service is deprecated. Use services from /analytics instead.
+ * Kept for backward compatibility with test scripts.
+ */
+
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import type { LpPosition, AccountSnapshot } from '@/generated/prisma-monitoring'
 import { Dex, Prisma } from '@prisma/client-monitoring'

@@ -74,7 +74,7 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                     return (
                         <div key={dex} className="rounded-lg border p-4">
                             <div className="mb-2 flex items-center gap-2">
-                                <ImageWrapper src={dexConfig?.logoUrl} alt={`${dex} logo`} size={24} className="rounded-full" />
+                                <ImageWrapper src={dexConfig?.logoUrl} alt={`${dex} logo`} width={24} height={24} className="rounded-full" />
                                 <h4 className="font-semibold">{dexConfig?.name || dex}</h4>
                             </div>
                             <div className="space-y-1 text-sm">
@@ -106,7 +106,7 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                     return (
                         <div key={dex} className="space-y-4">
                             <div className="flex items-center gap-2">
-                                <ImageWrapper src={dexConfig?.logoUrl} alt={`${dex} logo`} size={20} className="rounded-full" />
+                                <ImageWrapper src={dexConfig?.logoUrl} alt={`${dex} logo`} width={20} height={20} className="rounded-full" />
                                 <h3 className="text-lg font-semibold">
                                     {dexConfig?.name || dex} ({dexPositions.length} position{dexPositions.length !== 1 ? 's' : ''})
                                 </h3>

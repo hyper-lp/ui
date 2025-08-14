@@ -1,14 +1,30 @@
 #!/usr/bin/env tsx
 
-import { analyticsOrchestrator } from '@/services/06-analytics-orchestrator.service'
+import { poolDiscoveryService } from '@/services/discovery/pool-discovery.service'
 import { printSectionHeader, printSuccess, printPoolSummary } from '@/utils/test-helpers.util'
 
 async function main() {
     printSectionHeader('Discovering all HYPE/USDT0 pools on HyperEVM', '🚀')
 
     try {
-        // Use orchestrator to discover pools
-        const { pools, stats } = await analyticsOrchestrator.discoverPools(true) // force refresh
+        // Use pool discovery service to discover pools
+        const pools = await poolDiscoveryService.discoverAllHypeUsdt0Pools(true) // force refresh
+        
+        // Calculate stats from pools
+        const stats = {
+            totalPools: pools.length,
+            activePools: pools.filter(p => p.isActive).length,
+            totalLiquidity: pools.reduce((sum, p) => sum + p.liquidity, 0n),
+            byDex: pools.reduce((acc, p) => {
+                if (!acc[p.dex]) {
+                    acc[p.dex] = { count: 0, active: 0, liquidity: 0n }
+                }
+                acc[p.dex].count++
+                if (p.isActive) acc[p.dex].active++
+                acc[p.dex].liquidity += p.liquidity
+                return acc
+            }, {} as Record<string, { count: number; active: number; liquidity: bigint }>)
+        }
 
         printSuccess(`Found ${stats.totalPools} total pools (${stats.activePools} active)`)
 
@@ -17,10 +33,11 @@ async function main() {
 
         console.log('\n📈 Pools by DEX:')
         for (const [dex, dexStats] of Object.entries(stats.byDex)) {
+            const dexData = dexStats as { count: number; active: number; liquidity: bigint }
             console.log(`\n  ${dex.toUpperCase()}:`)
-            console.log(`    - Total pools: ${dexStats.count}`)
-            console.log(`    - Active pools: ${dexStats.active}`)
-            console.log(`    - Total liquidity: ${dexStats.liquidity}`)
+            console.log(`    - Total pools: ${dexData.count}`)
+            console.log(`    - Active pools: ${dexData.active}`)
+            console.log(`    - Total liquidity: ${dexData.liquidity.toString()}`)
         }
 
         console.log('\n🏊 Active Pools:')

@@ -1,4 +1,4 @@
-import { monitorService } from './monitor.service'
+import { monitorService } from '../monitoring/account-monitor.service'
 import { analyticsService } from './analytics.service'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 

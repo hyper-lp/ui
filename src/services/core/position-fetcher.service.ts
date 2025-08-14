@@ -41,15 +41,36 @@ export class PositionFetcher {
             this.cacheTimestamp = Date.now()
         }
 
-        // Fetch all data types in parallel
-        const [lpData, spotData, perpData, hyperEvmData] = await Promise.all([
-            this.fetchLPPositionsBatched(account),
-            this.fetchSpotBalances(account),
-            this.fetchPerpPositions(account),
-            this.fetchHyperEvmBalances(account),
-        ])
+        // Fetch all data types in parallel with timing
+        const timings: Record<string, number> = {}
 
-        return { lpData, spotData, perpData, hyperEvmData }
+        const lpStart = Date.now()
+        const lpPromise = this.fetchLPPositionsBatched(account).then((data) => {
+            timings.lpFetch = Date.now() - lpStart
+            return data
+        })
+
+        const spotStart = Date.now()
+        const spotPromise = this.fetchSpotBalances(account).then((data) => {
+            timings.spotFetch = Date.now() - spotStart
+            return data
+        })
+
+        const perpStart = Date.now()
+        const perpPromise = this.fetchPerpPositions(account).then((data) => {
+            timings.perpFetch = Date.now() - perpStart
+            return data
+        })
+
+        const evmStart = Date.now()
+        const evmPromise = this.fetchHyperEvmBalances(account).then((data) => {
+            timings.evmFetch = Date.now() - evmStart
+            return data
+        })
+
+        const [lpData, spotData, perpData, hyperEvmData] = await Promise.all([lpPromise, spotPromise, perpPromise, evmPromise])
+
+        return { lpData, spotData, perpData, hyperEvmData, timings }
     }
 
     /**

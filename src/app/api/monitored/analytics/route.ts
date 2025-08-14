@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiAuth } from '@/middleware/api-auth'
-import { analyticsService } from '@/services/analytics.service'
+import { analyticsService } from '@/services/analytics/analytics.service'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 
 /**

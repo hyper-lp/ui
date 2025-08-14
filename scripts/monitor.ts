@@ -11,9 +11,11 @@
  *   pnpm monitor account <address> - Monitor specific account
  */
 
-import { orchestratorService } from '@/services/orchestrator.service'
-import { monitorService } from '@/services/monitor.service'
-import { analyticsService } from '@/services/analytics.service'
+import { orchestratorService } from '@/services/analytics/orchestrator.service'
+// import { monitorService } from '@/services/monitor.service' // Service has been removed
+import { poolDiscoveryService } from '@/services/discovery/pool-discovery.service'
+import { monitorService as accountMonitorService } from '@/services/monitoring/account-monitor.service'
+import { analyticsService } from '@/services/analytics/analytics.service'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 
 async function main() {
@@ -46,7 +48,7 @@ async function main() {
 
             case 'pools':
                 console.log('🔍 Discovering pools...')
-                const pools = await monitorService.discoverHypeUsdtPools(true)
+                const pools = await poolDiscoveryService.discoverAllHypeUsdt0Pools()
                 console.log(`Found ${pools.length} active pools:`)
                 pools.forEach(pool => {
                     console.log(`  ${pool.dex}: ${pool.poolAddress.slice(0, 10)}... (Fee: ${pool.fee / 10000}%)`)
@@ -72,7 +74,7 @@ async function main() {
                 })
 
                 // Fetch positions
-                const positions = await monitorService.fetchAllPositions(account)
+                const positions = await accountMonitorService.fetchAllPositions(account)
                 console.log(`\nPositions found:`)
                 console.log(`  LP: ${positions.lp.length}`)
                 console.log(`  Perp: ${positions.perp.length}`)

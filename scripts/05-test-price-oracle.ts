@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
-import { getTokenPrice } from '@/utils/token-prices.util'
+import { getTokenPrice } from '@/services/core/token-prices.service'
 
 // Colors for console output
 const colors = {

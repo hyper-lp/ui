@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { positionFetcher } from '@/utils'
+import { positionFetcher } from '@/services/core/position-fetcher.service'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ account: string }> }) {
     try {
         const { account } = await params
         const accountAddress = account.toLowerCase()
+
+        // Track timing for each fetch
+        const startTime = Date.now()
 
         // Fetch all positions from blockchain (all accounts are treated as non-monitored)
         const {
@@ -12,7 +15,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             spotData: spotBalances,
             perpData: perpPositions,
             hyperEvmData: hyperEvmBalances,
+            timings: fetchTimings,
         } = await positionFetcher.fetchAllPositions(accountAddress)
+
+        // Merge timings
+        const timings = { ...fetchTimings }
 
         // Calculate totals (in USD)
         const totalLpValue = lpPositions.reduce((sum, p) => sum + p.valueUSD, 0)
@@ -76,6 +83,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             }, 0)
         const netAPR = lpFeeAPR + fundingAPR
 
+        // Calculate total time
+        timings.total = Date.now() - startTime
+
         // Return response with cache headers
         return NextResponse.json(
             {
@@ -85,6 +95,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                     name: null,
                     isActive: false, // All accounts are non-monitored
                 },
+                timings,
                 positions: {
                     lp: lpPositions.map((p) => ({
                         ...p,

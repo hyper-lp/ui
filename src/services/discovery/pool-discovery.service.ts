@@ -1,5 +1,5 @@
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
-import { getPoolAddress, fetchPoolState } from '@/utils/uniswap-v3.util'
+import { getPoolAddress, fetchPoolState } from '@/services/core/uniswap-pool.service'
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import type { Address } from 'viem'
 import type { DexProtocol } from '@/interfaces/dex.interface'

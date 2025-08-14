@@ -1,5 +1,5 @@
 import type { Address } from 'viem'
-import { DexProtocol } from '@/enums'
+import { DexProtocol, FileIds } from '@/enums'
 
 /**
  * V3 Contract addresses interface
@@ -40,6 +40,7 @@ export interface DexConfig {
     protocol: DexProtocol
     name: string
     logoUrl: string
+    fileId?: FileIds
     portfolioUrl?: string
     // Legacy fields for backward compatibility
     factoryAddress?: Address

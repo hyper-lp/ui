@@ -5,7 +5,6 @@ import { useAppStore } from '@/stores/app.store'
 import { cn } from '@/utils'
 import { useRef, useEffect } from 'react'
 import { useKeyboardShortcut } from '@/hooks/helpers/useKeyboardShortcutArgs'
-import Image from 'next/image'
 import { AppUrls, IconIds, FileIds } from '@/enums'
 import IconWrapper from '../icons/IconWrapper'
 import LinkWrapper from '../common/LinkWrapper'
@@ -14,6 +13,7 @@ import { WaitlistButton } from '../app/waitlist/WaitlistButton'
 import { WaitlistForm } from '../app/waitlist/WaitlistForm'
 import { usePrivy } from '@privy-io/react-auth'
 import ThemeSwitcher from '../common/ThemeSwitcher'
+import { ImageWrapper } from '../common/ImageWrapper'
 
 export default function HeaderMobile() {
     const { showMobileMenu, setShowMobileMenu } = useAppStore()
@@ -47,8 +47,7 @@ export default function HeaderMobile() {
                 <div className="z-30 flex grow items-center gap-4">
                     {/* logo */}
                     <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
-                        <Image src={FileIds.APP_LOGO} alt="Logo" width={40} height={40} priority />
-                        {/* <p className="text-2xl font-bold">{SITE_NAME}</p> */}
+                        <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={40} height={40} priority />
                         <p className="text-2xl font-light">
                             Hyper
                             <span className="-ml-0.5 italic">LP</span>

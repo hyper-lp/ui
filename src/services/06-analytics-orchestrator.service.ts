@@ -1,9 +1,14 @@
+/**
+ * @deprecated This service is deprecated. Use services from /analytics/orchestrator.service instead.
+ * Kept for backward compatibility with test scripts.
+ */
+
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
-import { poolDiscoveryService } from './01-pool-discovery.service'
-import { lpMonitorService, perpMonitorService } from './monitors'
+import { poolDiscoveryService } from './discovery/pool-discovery.service'
+import { lpMonitorService, perpMonitorService } from './monitoring'
 import { analyticsPullService } from './04-analytics-fetcher.service'
 import { analyticsStoreService } from './05-analytics-store.service'
-import type { PoolInfo } from './01-pool-discovery.service'
+import type { PoolInfo } from './discovery/pool-discovery.service'
 import type { DexLPPosition } from '@/interfaces/dex.interface'
 import type { MonitoredAccount } from '@/generated/prisma-monitoring'
 
@@ -86,7 +91,7 @@ class AnalyticsOrchestrator {
         let totalPositions = 0
 
         for (const account of accountsToMonitor) {
-            const result = await lpMonitorService.discoverPositionsForAccount(account.address, account.id)
+            const result = await lpMonitorService.discoverPositionsForAccount(account.address)
 
             results.push({
                 account,

@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import LinkWrapper from '../common/LinkWrapper'
 import { AppUrls } from '@/enums'
 import { FileIds } from '@/enums/files.enum'
-import Image from 'next/image'
 import { WaitlistButton } from '../app/waitlist/WaitlistButton'
 import { WaitlistForm } from '../app/waitlist/WaitlistForm'
 import { usePrivy } from '@privy-io/react-auth'
 import ThemeSwitcher from '../common/ThemeSwitcher'
 import { SHOW_WAITLIST } from '@/config/app.config'
+import { ImageWrapper } from '../common/ImageWrapper'
 
 export default function HeaderDesktop(props: { className?: string }) {
     const { authenticated, ready } = usePrivy()
@@ -30,11 +30,14 @@ export default function HeaderDesktop(props: { className?: string }) {
             >
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }}>
                     <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
-                        <Image src={FileIds.APP_LOGO} alt="Logo" width={60} height={60} priority />
-                        <p className="text-2xl font-light">
-                            Hyper
-                            <span className="-ml-0.5 italic">LP</span>
-                        </p>
+                        <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={60} height={60} />
+                        <div className="flex flex-col">
+                            <p className="text-2xl font-light">
+                                Hyper
+                                <span className="-ml-0.5 italic">LP</span>
+                            </p>
+                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={100} height={20} />
+                        </div>
                     </LinkWrapper>
                 </motion.div>
             </motion.div>

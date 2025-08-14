@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useSearchParams, useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import PageWrapper from '@/components/common/PageWrapper'
@@ -20,8 +20,25 @@ import {
     TransactionHistory,
 } from '@/components/app/account'
 
-async function fetchAccountData(account: string): Promise<AccountData> {
-    const response = await fetch(`/api/public/account/${account}`)
+async function fetchAccountData(evmAddress: string, coreAddress: string): Promise<AccountData> {
+    // If both addresses are the same, use the old single-address API for backward compatibility
+    if (evmAddress === coreAddress && evmAddress) {
+        const response = await fetch(`/api/public/account/${evmAddress}`)
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('Account not found')
+            }
+            throw new Error('Failed to fetch account data')
+        }
+        return response.json()
+    }
+
+    // Otherwise use the new dual-address API
+    const params = new URLSearchParams({
+        evm: evmAddress,
+        core: coreAddress,
+    })
+    const response = await fetch(`/api/public/account?${params}`)
     if (!response.ok) {
         if (response.status === 404) {
             throw new Error('Account not found')
@@ -29,13 +46,6 @@ async function fetchAccountData(account: string): Promise<AccountData> {
         throw new Error('Failed to fetch account data')
     }
     return response.json()
-}
-
-interface LoadingStep {
-    name: string
-    status: 'pending' | 'loading' | 'done'
-    startTime?: number
-    endTime?: number
 }
 
 function formatTimeSince(timestamp: number | null): string {
@@ -50,79 +60,33 @@ function formatTimeSince(timestamp: number | null): string {
 }
 
 export default function AccountPage() {
+    const searchParams = useSearchParams()
     const params = useParams()
-    const account = params?.account as string
-    const [timerTick, setTimerTick] = useState(0)
-    const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null)
-    const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>([
-        { name: 'Account info', status: 'pending' },
-        { name: 'HyperEVM LP positions', status: 'pending' },
-        { name: 'HyperEVM balances', status: 'pending' },
-        { name: 'HyperCore perp positions', status: 'pending' },
-        { name: 'HyperCore spot balances', status: 'pending' },
-        { name: 'Delta calculations', status: 'pending' },
-        { name: 'APR metrics', status: 'pending' },
-    ])
 
-    // Delta history store
+    // Support both old URL pattern (/account/[address]) and new pattern with query params
+    const accountFromUrl = params?.account as string
+    const evmAddress = searchParams?.get('evm') || accountFromUrl || ''
+    const coreAddress = searchParams?.get('core') || accountFromUrl || ''
+    const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null)
+    const [, setTick] = useState(0) // Force re-render for time display
+
+    // Delta history store - use combined key for history
     const { addDataPoint, getHistory } = useDeltaHistoryStore()
-    const deltaHistory = getHistory(account)
+    const historyKey = `${evmAddress}-${coreAddress}`
+    const deltaHistory = getHistory(historyKey)
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        queryKey: ['account', account],
-        queryFn: () => fetchAccountData(account),
-        enabled: !!account,
-        staleTime: 30000, // Consider data fresh for 30 seconds
+        queryKey: ['account', evmAddress, coreAddress],
+        queryFn: () => fetchAccountData(evmAddress, coreAddress),
+        enabled: !!evmAddress && !!coreAddress,
+        staleTime: process.env.NODE_ENV === 'development' ? 300000 : 30000, // Dev: 5 min, Prod: 30 sec
         gcTime: 300000, // Keep in cache for 5 minutes
-        refetchInterval: 30000, // Refresh every 30 seconds
+        refetchInterval: process.env.NODE_ENV === 'development' ? 300000 : 30000, // Dev: 5 min, Prod: 30 sec
     })
-
-    // Track if all loading steps are complete
-    const allStepsComplete = loadingSteps.every((step) => step.status === 'done')
-
-    // Simulate progressive loading steps
-    useEffect(() => {
-        if (isLoading) {
-            const startTime = Date.now()
-            const stepDurations = [200, 800, 400, 600, 300, 150, 100] // Different durations for each step
-            let cumulativeDelay = 0
-
-            // Start first step immediately
-            setLoadingSteps((steps) => steps.map((step, i) => (i === 0 ? { ...step, status: 'loading', startTime } : { ...step, status: 'pending' })))
-
-            stepDurations.forEach((duration, index) => {
-                setTimeout(() => {
-                    setLoadingSteps((steps) =>
-                        steps.map((step, i) =>
-                            i === index
-                                ? { ...step, status: 'done', endTime: Date.now() }
-                                : i === index + 1 && i < steps.length
-                                  ? { ...step, status: 'loading', startTime: Date.now() }
-                                  : step,
-                        ),
-                    )
-                }, cumulativeDelay)
-                cumulativeDelay += duration
-            })
-        } else {
-            setLoadingSteps((steps) => steps.map((step) => ({ ...step, status: 'pending', startTime: undefined, endTime: undefined })))
-        }
-    }, [isLoading])
-
-    // Update timer for loading items and refresh time display
-    useEffect(() => {
-        const interval = setInterval(
-            () => {
-                setTimerTick((prev) => prev + 1)
-            },
-            isLoading ? 100 : 1000,
-        ) // Update every 100ms when loading, 1s otherwise
-        return () => clearInterval(interval)
-    }, [isLoading])
 
     // Add data point to history on each refresh and update last refresh time
     useEffect(() => {
-        if (data?.summary && account) {
+        if (data?.summary && evmAddress && coreAddress) {
             const now = Date.now()
             setLastRefreshTime(now)
             const point = {
@@ -133,54 +97,37 @@ export default function AccountPage() {
                 spotDelta: data.summary.spotDelta || 0,
                 hyperEvmDelta: data.summary.hyperEvmDelta || 0,
             }
-            addDataPoint(account, point)
+            addDataPoint(historyKey, point)
         }
-    }, [data?.summary, account, addDataPoint])
+    }, [data?.summary, evmAddress, coreAddress, historyKey, addDataPoint])
+
+    // Update refresh time display every second
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTick((prev) => prev + 1)
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [])
 
     // Show loading screen only while actually loading
     if (isLoading && !data) {
-        // Use timerTick to ensure re-render happens
-        const currentTime = Date.now() + timerTick * 0 // timerTick triggers re-render but doesn't affect time
         return (
             <PageWrapper>
                 <div className="py-8">
-                    <div className="mx-auto max-w-2xl space-y-2 font-mono text-sm">
-                        {loadingSteps.map((step, index) => {
-                            const getStatus = () => {
-                                if (step.status === 'done') {
-                                    const duration = step.endTime && step.startTime ? ((step.endTime - step.startTime) / 1000).toFixed(2) : '0.00'
-                                    return <span className="text-green-500">✓ DONE ({duration}s)</span>
-                                } else if (step.status === 'loading') {
-                                    const elapsed = step.startTime ? ((currentTime - step.startTime) / 1000).toFixed(1) : '0.0'
-                                    return <span className="text-yellow-500">WIP ({elapsed}s)</span>
-                                } else {
-                                    return <span className="text-gray-400">PENDING</span>
-                                }
-                            }
-
-                            return (
-                                <div key={index} className="flex items-center justify-between">
-                                    <span>{step.name}...</span>
-                                    {getStatus()}
-                                </div>
-                            )
-                        })}
-                        {allStepsComplete && (
-                            <div className="mt-4 border-t pt-4">
-                                <div className="flex items-center justify-between">
-                                    <span>Finalizing data...</span>
-                                    <span className="text-blue-500">
-                                        PROCESSING (
-                                        {(() => {
-                                            const lastStep = loadingSteps[loadingSteps.length - 1]
-                                            const finalizingTime = lastStep?.endTime || currentTime
-                                            return ((currentTime - finalizingTime) / 1000).toFixed(1)
-                                        })()}
-                                        s)
-                                    </span>
-                                </div>
+                    <div className="mx-auto max-w-2xl space-y-4">
+                        <div className="text-center">
+                            <h2 className="mb-4 text-xl font-semibold">Fetching account data...</h2>
+                            <div className="mb-4 flex justify-center">
+                                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
                             </div>
-                        )}
+                            <div className="space-y-1 text-sm text-gray-600">
+                                <p>Loading LP positions from HyperEVM...</p>
+                                <p>Loading balances from HyperEVM...</p>
+                                <p>Loading perpetual positions from HyperCore...</p>
+                                <p>Loading spot balances from HyperCore...</p>
+                            </div>
+                            <p className="mt-3 text-xs text-gray-500">Fetching data from multiple blockchain sources</p>
+                        </div>
                     </div>
                 </div>
             </PageWrapper>
@@ -250,13 +197,27 @@ export default function AccountPage() {
     const totalHyperEvmValue = (data.summary?.totalLpValue || 0) + (data.summary?.totalHyperEvmValue || 0)
     const totalHyperCoreValue = (data.summary?.totalPerpValue || 0) + (data.summary?.totalSpotValue || 0)
 
-    // Force re-render to update time display (timerTick changes every second)
-    const refreshTimeDisplay = formatTimeSince(lastRefreshTime) + timerTick * 0
+    // Display refresh time
+    const refreshTimeDisplay = formatTimeSince(lastRefreshTime)
 
     return (
         <PageWrapper>
             {/* Header */}
-            <AccountHeader address={data.account.address} name={data.account.name} onRefresh={() => refetch()} isFetching={isFetching} />
+            <AccountHeader onRefresh={() => refetch()} isFetching={isFetching} />
+
+            {/* Display timing information if available */}
+            {data?.timings && (
+                <div className="mb-4 rounded-lg bg-gray-50 p-3">
+                    <div className="font-mono text-xs text-gray-600">
+                        <span className="font-semibold">Fetch timings:</span>
+                        {data.timings.lpFetch && <span className="ml-3">LP: {(data.timings.lpFetch / 1000).toFixed(2)}s</span>}
+                        {data.timings.evmFetch && <span className="ml-3">EVM: {(data.timings.evmFetch / 1000).toFixed(2)}s</span>}
+                        {data.timings.perpFetch && <span className="ml-3">Perp: {(data.timings.perpFetch / 1000).toFixed(2)}s</span>}
+                        {data.timings.spotFetch && <span className="ml-3">Spot: {(data.timings.spotFetch / 1000).toFixed(2)}s</span>}
+                        <span className="ml-3 font-semibold">Total: {(data.timings.total / 1000).toFixed(2)}s</span>
+                    </div>
+                </div>
+            )}
 
             <div className="space-y-4">
                 {/* Charts Section */}
@@ -381,7 +342,7 @@ export default function AccountPage() {
                     subtitle="DEX interactions on HyperEVM"
                     lastRefresh={refreshTimeDisplay}
                 >
-                    <TransactionHistory account={account} />
+                    <TransactionHistory account={evmAddress} />
                 </CollapsibleSection>
 
                 {/* Debug Section */}

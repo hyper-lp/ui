@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
-import { getPoolAddress, fetchPoolState } from '@/utils/uniswap-v3.util'
-import { getTokenPrice } from '@/utils/token-prices.util'
+import { getPoolAddress, fetchPoolState } from '@/services/core/uniswap-pool.service'
+import { getTokenPrice } from '@/services/core/token-prices.service'
 import type { Address } from 'viem'
 import { ERC20_ABI } from '@/services/constants/abis'
 

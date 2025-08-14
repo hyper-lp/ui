@@ -1,6 +1,12 @@
+/**
+ * @deprecated This service is deprecated. Use services from /analytics, /monitoring, or /discovery instead.
+ * Kept for backward compatibility with test scripts.
+ */
+
 import { formatUnits } from 'viem'
-import { calculateTokenAmounts, fetchPoolState, fetchPosition, getTokenMetadata } from '@/utils/uniswap-v3.util'
-import { getTokenPrice } from '@/utils/token-prices.util'
+import { calculateTokenAmounts } from '@/utils/uniswap-v3.util'
+import { fetchPoolState, fetchPosition, getTokenMetadata } from '@/services/core/uniswap-pool.service'
+import { getTokenPrice } from '@/services/core/token-prices.service'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import type { DexLPPosition, LPMetrics } from '@/interfaces/dex.interface'

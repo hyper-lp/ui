@@ -7,7 +7,9 @@ import type { LPPosition, PerpPosition, SpotBalance, HyperEvmBalance } from './p
 export interface AccountData {
     success: boolean
     account?: {
-        address: string
+        address?: string
+        evmAddress?: string
+        coreAddress?: string
         name: string | null
         isActive: boolean
     }
@@ -18,6 +20,14 @@ export interface AccountData {
         hyperEvm?: Array<HyperEvmBalance>
     }
     summary?: AccountSummary
+    timings?: {
+        lpFetch?: number
+        perpFetch?: number
+        spotFetch?: number
+        evmFetch?: number
+        total: number
+        totalFetch?: number
+    }
     error?: string
 }
 

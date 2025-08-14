@@ -1,5 +1,5 @@
 import { inngest } from '@/lib/inngest'
-import { orchestratorService } from '@/services/orchestrator.service'
+import { orchestratorService } from '@/services/analytics/orchestrator.service'
 import { env } from '@/env/t3-env'
 
 /**

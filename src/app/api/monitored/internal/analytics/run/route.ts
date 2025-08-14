@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withApiAuth, checkRateLimit } from '@/middleware/api-auth'
-import { analyticsOrchestrator } from '@/services/06-analytics-orchestrator.service'
+import { orchestratorService as analyticsOrchestrator } from '@/services/analytics/orchestrator.service'
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
 
 export const maxDuration = 300 // 5 minutes for full run
@@ -52,14 +52,12 @@ export const POST = withApiAuth(async (request: NextRequest) => {
                 success: true,
                 duration: `${duration}ms`,
                 results: {
-                    accountsMonitored: result.accountsMonitored,
-                    positionsUpdated: result.positionsUpdated,
-                    perpPositions: result.perpPositions,
-                    totalValueUSD: result.totalValueUSD,
-                    averageFeeAPR: result.averageFeeAPR ? `${(result.averageFeeAPR * 100).toFixed(2)}%` : '0%',
-                    oldRunsDeleted: result.oldRunsDeleted,
-                    poolStats: result.poolStats,
-                    netDelta: result.netDelta,
+                    accountsProcessed: result.accountsProcessed,
+                    positionsFound: result.positionsFound,
+                    metricsCalculated: result.metricsCalculated,
+                    snapshotsStored: result.snapshotsStored,
+                    oldSnapshotsDeleted: result.oldSnapshotsDeleted,
+                    aggregatedMetrics: result.aggregatedMetrics,
                 },
             })
         } else {

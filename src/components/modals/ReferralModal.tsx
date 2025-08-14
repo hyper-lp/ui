@@ -84,13 +84,13 @@ export default function ReferralModal({ referralCode: propReferralCode }: Referr
                         onClick={handleClose}
                     >
                         <div
-                            className="relative w-full rounded-xl border border-default/10 bg-background/95 p-8 shadow-2xl backdrop-blur-md min-w-[300px] max-w-[400px]"
+                            className="relative w-full min-w-[300px] max-w-[400px] rounded-xl border border-default/10 bg-background/95 p-8 shadow-2xl backdrop-blur-md"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Close button */}
                             <button
                                 onClick={handleClose}
-                                className="absolute right-4 top-4 text-default/40 hover:text-default/60 transition-colors"
+                                className="absolute right-4 top-4 text-default/40 transition-colors hover:text-default/60"
                                 aria-label="Close modal"
                             >
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

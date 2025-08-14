@@ -9,13 +9,13 @@ import IconWrapper from '../icons/IconWrapper'
 
 export default function Authors(props: { className?: string }) {
     return (
-        <div className={cn('flex flex-wrap gap-x-1 items-center', props.className)}>
+        <div className={cn('flex flex-wrap items-center gap-x-1', props.className)}>
             <p className="text-wrap">
                 <StyledTooltip placement="top" closeDelay={500} content={<IframeWrapper src={AppUrls.MERSO_WEBSITE} />}>
                     <LinkWrapper
                         href={AppUrls.MERSO_WEBSITE}
                         target="_blank"
-                        className="underline-offset-2 cursor-alias hover:underline hover:text-primary"
+                        className="cursor-alias underline-offset-2 hover:text-primary hover:underline"
                     >
                         xMerso,
                     </LinkWrapper>
@@ -26,7 +26,7 @@ export default function Authors(props: { className?: string }) {
                     placement="top"
                     closeDelay={500}
                     content={
-                        <div className="flex flex-col gap-4 bg-background p-2 rounded-lg">
+                        <div className="flex flex-col gap-4 rounded-lg bg-background p-2">
                             {[
                                 {
                                     name: 'Telegram',
@@ -48,9 +48,9 @@ export default function Authors(props: { className?: string }) {
                                     <LinkWrapper
                                         href={social.description}
                                         target="_blank"
-                                        className="underline-offset-2 cursor-alias hover:underline hover:text-primary flex items-center gap-1"
+                                        className="flex cursor-alias items-center gap-1 underline-offset-2 hover:text-primary hover:underline"
                                     >
-                                        <IconWrapper id={social.iconIds} className="w-4 h-4 mr-1" />
+                                        <IconWrapper id={social.iconIds} className="mr-1 h-4 w-4" />
                                         {social.name}
                                     </LinkWrapper>
                                 </div>
@@ -61,7 +61,7 @@ export default function Authors(props: { className?: string }) {
                     <LinkWrapper
                         href={AppUrls.KATALYSTER_TWITTER}
                         target="_blank"
-                        className="underline-offset-2 cursor-alias hover:underline hover:text-primary"
+                        className="cursor-alias underline-offset-2 hover:text-primary hover:underline"
                     >
                         Katalyster
                     </LinkWrapper>
@@ -73,7 +73,7 @@ export default function Authors(props: { className?: string }) {
                     <LinkWrapper
                         href={AppUrls.FBERGER_WEBSITE}
                         target="_blank"
-                        className="underline-offset-2 cursor-alias hover:underline hover:text-primary"
+                        className="cursor-alias underline-offset-2 hover:text-primary hover:underline"
                     >
                         fberger
                     </LinkWrapper>

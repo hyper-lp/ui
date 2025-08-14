@@ -11,19 +11,19 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
     useEffect(() => console.error(error), [error])
     return (
         <PageWrapper>
-            <div className="mx-auto mt-10 flex flex-col items-center gap-4 w-full max-w-lg">
-                <p className="font-semibold text-lg">
+            <div className="mx-auto mt-10 flex w-full max-w-lg flex-col items-center gap-4">
+                <p className="text-lg font-semibold">
                     Sorry, something went <span className="text-primary">wrong</span>
                 </p>
                 <div className="flex w-full flex-col items-center gap-2 rounded-xl">
-                    <pre className="text-primary max-h-96 overflow-y-auto border border-dashed border-primary/20 rounded-xl px-8 py-10 w-full text-xs text-center text-wrap">
+                    <pre className="max-h-96 w-full overflow-y-auto text-wrap rounded-xl border border-dashed border-primary/20 px-8 py-10 text-center text-xs text-primary">
                         {extractErrorMessage(error)}
                     </pre>
                 </div>
                 <div className="flex w-full flex-col items-center gap-3">
                     <button
                         onClick={() => reset()}
-                        className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-default/20 hover:bg-background/10 px-4 py-4 font-semibold sm:py-2"
+                        className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-default/20 px-4 py-4 font-semibold hover:bg-background/10 sm:py-2"
                     >
                         <p className="font-semibold">Reload page</p>
                         <IconWrapper id={IconIds.UPDATE_NOW} className="size-5" />
@@ -31,7 +31,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
                     <p className="text-sm text-default">
                         Please try again or
-                        <LinkWrapper href={AppUrls.CONTACT_US} target="_blank" className="underline hover:text-primary px-1">
+                        <LinkWrapper href={AppUrls.CONTACT_US} target="_blank" className="px-1 underline hover:text-primary">
                             contact us
                         </LinkWrapper>
                         if the problem persists.

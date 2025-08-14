@@ -10,7 +10,8 @@ export enum AppUrls {
     GITHUB = 'https://github.com/hyperlp',
     PRIVY = 'https://www.privy.io/',
     // DOCS = 'https://arxiv.org/pdf/2407.05146',
-    DOCS = 'https://hyperliquid.gitbook.io/hyperliquid-docs',
+    // DOCS = 'https://hyperliquid.gitbook.io/hyperliquid-docs',
+    DOCS = 'https://en.wikipedia.org/wiki/PnL_explained',
     CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
 
     // Authors

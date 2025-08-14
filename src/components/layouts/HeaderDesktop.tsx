@@ -20,20 +20,20 @@ export default function HeaderDesktop(props: { className?: string }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className={cn('hidden md:flex justify-between items-start w-full px-6 pb-4 pt-6', props.className)}
+            className={cn('hidden w-full items-start justify-between px-6 pb-4 pt-6 md:flex', props.className)}
         >
             <motion.div
-                className="flex gap-4 items-center"
+                className="flex items-center gap-4"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
             >
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }}>
-                    <LinkWrapper href={AppUrls.HOME} className="cursor-pointer flex items-center gap-2">
+                    <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
                         <Image src={FileIds.APP_LOGO} alt="Logo" width={60} height={60} priority />
                         <p className="text-2xl font-light">
                             Hyper
-                            <span className="italic -ml-0.5">LP</span>
+                            <span className="-ml-0.5 italic">LP</span>
                         </p>
                     </LinkWrapper>
                 </motion.div>
@@ -47,7 +47,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                 >
                     <AnimatePresence mode="wait">
                         {!ready ? (
-                            <div className="h-10 w-40 skeleton-loading" />
+                            <div className="skeleton-loading h-10 w-40" />
                         ) : authenticated ? (
                             <motion.div
                                 key="waitlist-form"
@@ -61,7 +61,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                         ) : (
                             <motion.div
                                 key="waitlist-button"
-                                className="flex flex-col gap-1 items-center group w-full"
+                                className="group flex w-full flex-col items-center gap-1"
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
@@ -72,7 +72,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                                     <LinkWrapper
                                         href={AppUrls.PRIVY}
                                         target="_blank"
-                                        className="opacity-50 hover:opacity-100 transition-all duration-500 ease-in-out hover:underline underline-offset-1 cursor-alias"
+                                        className="cursor-alias underline-offset-1 opacity-50 transition-all duration-500 ease-in-out hover:underline hover:opacity-100"
                                     >
                                         <p className="text-xs italic">Powered by Privy</p>
                                     </LinkWrapper>

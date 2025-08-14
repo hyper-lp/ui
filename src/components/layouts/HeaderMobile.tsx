@@ -41,17 +41,17 @@ export default function HeaderMobile() {
     }, [showMobileMenu])
 
     return (
-        <header className="flex justify-center z-50 w-full">
-            <div className="w-full md:hidden flex justify-between px-5 py-4 ">
+        <header className="z-50 flex w-full justify-center">
+            <div className="flex w-full justify-between px-5 py-4 md:hidden">
                 {/* left */}
-                <div className="flex gap-4 items-center z-30 grow">
+                <div className="z-30 flex grow items-center gap-4">
                     {/* logo */}
-                    <LinkWrapper href={AppUrls.HOME} className="cursor-pointer flex items-center gap-2">
+                    <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
                         <Image src={FileIds.APP_LOGO} alt="Logo" width={40} height={40} priority />
                         {/* <p className="text-2xl font-bold">{SITE_NAME}</p> */}
                         <p className="text-2xl font-light">
                             Hyper
-                            <span className="italic -ml-0.5">LP</span>
+                            <span className="-ml-0.5 italic">LP</span>
                         </p>
                     </LinkWrapper>
                 </div>
@@ -62,7 +62,7 @@ export default function HeaderMobile() {
                     <button
                         ref={menuDropdown}
                         onClick={() => setShowMobileMenu(!showMobileMenu)}
-                        className="flex items-center gap-1 transition-colors duration-300 rounded-xl h-9 px-2.5"
+                        className="flex h-9 items-center gap-1 rounded-xl px-2.5 transition-colors duration-300"
                     >
                         <IconWrapper id={showMobileMenu ? IconIds.CLOSE : IconIds.MENU} className="size-8" />
                     </button>
@@ -76,7 +76,7 @@ export default function HeaderMobile() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="fixed md:hidden z-20 inset-0 flex w-full items-center justify-center px-4 backdrop-blur-xl bg-background/40 h-[calc(100vh-0px)]"
+                        className="fixed inset-0 z-20 flex h-[calc(100vh-0px)] w-full items-center justify-center bg-background/40 px-4 backdrop-blur-xl md:hidden"
                         onClick={(e) => {
                             if (e.target === e.currentTarget) {
                                 setShowMobileMenu(false)
@@ -88,7 +88,7 @@ export default function HeaderMobile() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
                             transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
-                            className="absolute inset-2 z-30 flex items-center justify-center h-fit flex-col gap-4 pt-28"
+                            className="absolute inset-2 z-30 flex h-fit flex-col items-center justify-center gap-4 pt-28"
                         >
                             {/* Waitlist Button/Form at the top */}
                             <motion.div
@@ -99,7 +99,7 @@ export default function HeaderMobile() {
                                 className="mb-4"
                             >
                                 <LinkWrapper href={AppUrls.TAIKAI} className="flex items-center gap-1" target="_blank">
-                                    <p className="text-lg truncate hover:underline hover:text-primary cursor-alias">
+                                    <p className="cursor-alias truncate text-lg hover:text-primary hover:underline">
                                         Hyperliquid Community Hackathon
                                     </p>
                                     <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-4" />
@@ -114,11 +114,11 @@ export default function HeaderMobile() {
                                     className="mt-10"
                                 >
                                     {!ready ? (
-                                        <div className="h-10 w-40 skeleton-loading" />
+                                        <div className="skeleton-loading h-10 w-40" />
                                     ) : authenticated ? (
                                         <WaitlistForm />
                                     ) : (
-                                        <div className="flex flex-col gap-1 items-center">
+                                        <div className="flex flex-col items-center gap-1">
                                             <WaitlistButton />
                                             <LinkWrapper href={AppUrls.PRIVY}>
                                                 <p className="text-xs italic">Powered by Privy</p>
@@ -144,10 +144,10 @@ export default function HeaderMobile() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
                             transition={{ duration: 0.4, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 2) }}
-                            className="absolute bottom-32 text-center max-w-[300px]"
+                            className="absolute bottom-32 max-w-[300px] text-center"
                         >
                             {/* <Authors /> */}
-                            <LinkWrapper href={AppUrls.CONTACT_US} className="underline-offset-2 cursor-alias hover:underline hover:text-primary">
+                            <LinkWrapper href={AppUrls.CONTACT_US} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">
                                 Contact
                             </LinkWrapper>
                         </motion.div>

@@ -100,6 +100,7 @@
         "postcss": "^8.5.6",
         "prettier": "^3.6.2",
         "prettier-eslint": "^16.4.2",
+        "prettier-plugin-tailwindcss": "^0.6.14",
         "prisma": "^6.13.0",
         "tailwindcss": "^3.4.17",
         "ts-prune": "^0.10.3",

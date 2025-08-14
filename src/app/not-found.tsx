@@ -8,10 +8,10 @@ export default function NotFound() {
     redirect(APP_PAGES[0].path)
     return (
         <PageWrapper>
-            <div className="mt-40 mx-auto">
+            <div className="mx-auto mt-40">
                 <p>Not found.</p>
 
-                <LinkWrapper href={APP_PAGES[0].path} className={cn('w-full p-4 rounded-xl cursor-pointer flex justify-center font-light')}>
+                <LinkWrapper href={APP_PAGES[0].path} className={cn('flex w-full cursor-pointer justify-center rounded-xl p-4 font-light')}>
                     <p>Go back</p>
                 </LinkWrapper>
             </div>

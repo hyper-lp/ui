@@ -23,9 +23,9 @@ export default function Footer(props: { className?: string }) {
     }, [])
     if (!commitDate) return null
     return (
-        <footer className={cn('w-full flex justify-between px-6 font-light text-xs gap-2 md:gap-0', props.className)}>
+        <footer className={cn('flex w-full justify-between gap-2 px-6 text-xs font-light md:gap-0', props.className)}>
             {/* left */}
-            <div className="flex gap-8 flex-row">
+            <div className="flex flex-row gap-8">
                 <div className="hidden md:flex">
                     <StyledTooltip closeDelay={500} content={<p>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</p>}>
                         <p className="truncate">Aug. 2025</p>
@@ -33,16 +33,16 @@ export default function Footer(props: { className?: string }) {
                 </div>
 
                 <LinkWrapper href={AppUrls.TAIKAI} target="_blank" className="hidden md:flex">
-                    <p className="truncate hover:underline hover:text-primary cursor-alias">Hyperliquid Community Hackathon</p>
+                    <p className="cursor-alias truncate hover:text-primary hover:underline">Hyperliquid Community Hackathon</p>
                 </LinkWrapper>
                 <LinkWrapper href={AppUrls.DOCS} target="_blank">
-                    <p className="truncate hover:underline hover:text-primary cursor-alias">Docs</p>
+                    <p className="cursor-alias truncate hover:text-primary hover:underline">Docs</p>
                 </LinkWrapper>
             </div>
 
             {/* right */}
-            <LinkWrapper href={AppUrls.CONTACT_US} className="underline-offset-2 cursor-alias hover:underline hover:text-primary">
-                Contact
+            <LinkWrapper href={AppUrls.CONTACT_US} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">
+                Contact us
             </LinkWrapper>
             {/* <Authors className="justify-start md:justify-end" /> */}
         </footer>

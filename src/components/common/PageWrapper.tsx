@@ -18,7 +18,7 @@ export default function PageWrapper({
             <div
                 {...props}
                 className={cn(
-                    'mx-auto flex min-h-[calc(100vh-230px)] md:min-h-[calc(100vh-192px)] w-full flex-col overflow-x-hidden overflow-y-scroll mt-4 md:mt-12',
+                    'mx-auto mt-4 flex min-h-[calc(100vh-230px)] w-full flex-col overflow-x-hidden overflow-y-scroll md:mt-12 md:min-h-[calc(100vh-192px)]',
                     paddingX,
                     className,
                 )}

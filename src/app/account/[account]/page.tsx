@@ -63,7 +63,7 @@ export default function AccountPage() {
     if (isLoading) {
         return (
             <PageWrapper>
-                <div className="text-center py-8">Loading account data...</div>
+                <div className="py-8 text-center">Loading account data...</div>
             </PageWrapper>
         )
     }
@@ -71,7 +71,7 @@ export default function AccountPage() {
     if (error) {
         return (
             <PageWrapper>
-                <div className="text-center py-8 text-red-500">Error: {error instanceof Error ? error.message : 'Failed to load account'}</div>
+                <div className="py-8 text-center text-red-500">Error: {error instanceof Error ? error.message : 'Failed to load account'}</div>
             </PageWrapper>
         )
     }
@@ -79,7 +79,7 @@ export default function AccountPage() {
     if (!data?.success || !data.account) {
         return (
             <PageWrapper>
-                <div className="text-center py-8">No data available for this account</div>
+                <div className="py-8 text-center">No data available for this account</div>
             </PageWrapper>
         )
     }
@@ -109,17 +109,17 @@ export default function AccountPage() {
         <PageWrapper>
             {/* Header */}
             <div className="border-b pb-4">
-                <h1 className="text-2xl font-mono">Account: {data.account.address}</h1>
+                <h1 className="font-mono text-2xl">Account: {data.account.address}</h1>
                 {data.account.name && <p className="text-gray-600">Name: {data.account.name}</p>}
                 <p className="text-sm">Status: {data.account.isActive ? 'Monitored Account' : 'Non-Monitored Account (Spot balances only)'}</p>
                 <button
                     onClick={() => refetch()}
                     disabled={isFetching}
-                    className="mt-2 px-4 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="mt-2 flex items-center gap-2 rounded border border-gray-300 px-4 py-1 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {isFetching ? (
                         <>
-                            <span className="inline-block w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
                             Refreshing...
                         </>
                     ) : (
@@ -134,8 +134,8 @@ export default function AccountPage() {
                     <h2 className="text-xl font-semibold">Live Strategy Monitoring</h2>
 
                     {/* Main charts row */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="border rounded-lg p-4 h-[400px]">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <div className="h-[400px] rounded-lg border p-4">
                             <DeltaTrackingChart
                                 history={deltaHistory}
                                 showSpotDelta={true}
@@ -144,7 +144,7 @@ export default function AccountPage() {
                                 className="h-full"
                             />
                         </div>
-                        <div className="border rounded-lg p-4 h-[400px]">
+                        <div className="h-[400px] rounded-lg border p-4">
                             <APRBreakdownChart
                                 lpFeeAPR={(data.summary.lastSnapshot?.lpFeeAPR || data.summary.currentAPR?.lpFeeAPR || 0) * 100}
                                 fundingAPR={(data.summary.lastSnapshot?.fundingAPR || data.summary.currentAPR?.fundingAPR || 0) * 100}
@@ -155,11 +155,11 @@ export default function AccountPage() {
                     </div>
 
                     {/* Secondary charts row */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="border rounded-lg p-4 h-[300px]">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div className="h-[300px] rounded-lg border p-4">
                             <DeltaThresholdGauge currentDelta={data.summary.netDelta} threshold={100} warningThreshold={200} className="h-full" />
                         </div>
-                        <div className="border rounded-lg p-4 h-[300px]">
+                        <div className="h-[300px] rounded-lg border p-4">
                             <PositionCompositionBar
                                 lpValue={data.summary.totalLpValue}
                                 perpMargin={data.summary.totalPerpValue}
@@ -169,7 +169,7 @@ export default function AccountPage() {
                                 className="h-full"
                             />
                         </div>
-                        <div className="border rounded-lg p-4 h-[300px]">
+                        <div className="h-[300px] rounded-lg border p-4">
                             <RebalancingLog events={deltaHistory.rebalanceEvents} maxEvents={5} className="h-full" />
                         </div>
                     </div>
@@ -185,7 +185,7 @@ export default function AccountPage() {
             {data.summary && (
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold">Summary</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                         <div className="border p-3">
                             <div className="text-sm text-gray-600">Total Value</div>
                             <div className="font-mono">${formatNumber(data.summary.totalValue)}</div>
@@ -210,8 +210,8 @@ export default function AccountPage() {
 
                     {/* Delta Breakdown */}
                     <div className="border p-4">
-                        <h3 className="font-semibold mb-2">Delta Exposure (HYPE)</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+                        <h3 className="mb-2 font-semibold">Delta Exposure (HYPE)</h3>
+                        <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-5">
                             <div title="HYPE exposure from LP positions">
                                 <span className="text-gray-600">LP Delta:</span>
                                 <div className={`font-mono font-semibold ${getDeltaColor(data.summary.lpDelta)}`}>
@@ -237,13 +237,13 @@ export default function AccountPage() {
                                 </div>
                             </div>
                             <div title="Net HYPE exposure">
-                                <span className="text-gray-600 font-semibold">Net Delta:</span>
-                                <div className={`font-mono font-bold text-lg ${getDeltaColor(data.summary.netDelta)}`}>
+                                <span className="font-semibold text-gray-600">Net Delta:</span>
+                                <div className={`font-mono text-lg font-bold ${getDeltaColor(data.summary.netDelta)}`}>
                                     {formatDelta(data.summary.netDelta)}
                                 </div>
                             </div>
                         </div>
-                        <div className="text-xs text-gray-600 mt-3 pt-3 border-t">
+                        <div className="mt-3 border-t pt-3 text-xs text-gray-600">
                             <div>Formula: Net Delta = LP Delta + Perp Delta + Spot Delta + EVM Delta</div>
                             <div className="mt-1">
                                 {Math.abs(data.summary.netDelta) < 100 && <span className="text-green-600">✓ Near delta neutral</span>}
@@ -255,7 +255,7 @@ export default function AccountPage() {
                                 )}
                             </div>
                             {data.summary.perpDelta >= 0 && data.summary.lpDelta > 0 && (
-                                <div className="text-red-600 font-semibold mt-1">
+                                <div className="mt-1 font-semibold text-red-600">
                                     ⚠ WARNING: Perp position is not hedging LP exposure! Expected negative perp delta for short hedge.
                                 </div>
                             )}
@@ -265,9 +265,9 @@ export default function AccountPage() {
                     {/* APRs */}
                     {(data.summary.lastSnapshot || data.summary.currentAPR) && (
                         <div className="border p-4">
-                            <h3 className="font-semibold mb-2">Current APRs</h3>
+                            <h3 className="mb-2 font-semibold">Current APRs</h3>
                             {data.summary.lastSnapshot ? (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
                                     <div>LP Fee APR: {formatPercent(data.summary.lastSnapshot.lpFeeAPR)}</div>
                                     <div>Funding APR: {formatPercent(data.summary.lastSnapshot.fundingAPR)}</div>
                                     <div className="font-semibold">Net APR: {formatPercent(data.summary.lastSnapshot.netAPR)}</div>
@@ -275,13 +275,13 @@ export default function AccountPage() {
                                 </div>
                             ) : data.summary.currentAPR ? (
                                 <div className="space-y-2">
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                                    <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-3">
                                         <div>LP Fee APR: {formatPercent(data.summary.currentAPR.lpFeeAPR)}</div>
                                         <div>Funding APR: {formatPercent(data.summary.currentAPR.fundingAPR)}</div>
                                         <div className="font-semibold">Net APR: {formatPercent(data.summary.currentAPR.netAPR)}</div>
                                     </div>
-                                    <div className="text-xs text-gray-600 border-t pt-2">
-                                        <div className="font-mono bg-gray-100 p-2 rounded">{data.summary.currentAPR.formula}</div>
+                                    <div className="border-t pt-2 text-xs text-gray-600">
+                                        <div className="rounded bg-gray-100 p-2 font-mono">{data.summary.currentAPR.formula}</div>
                                         <div className="mt-1">{data.summary.currentAPR.note}</div>
                                     </div>
                                 </div>
@@ -345,7 +345,7 @@ export default function AccountPage() {
                                                     href={positionUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:text-blue-800 underline"
+                                                    className="text-blue-600 underline hover:text-blue-800"
                                                 >
                                                     View ↗
                                                 </a>
@@ -361,8 +361,8 @@ export default function AccountPage() {
                     <div className="space-y-2">
                         <h3 className="text-lg font-semibold">LP Position Details</h3>
                         {data.positions.lp.map((position) => (
-                            <div key={position.id} className="border p-4 space-y-2">
-                                <div className="flex justify-between items-start">
+                            <div key={position.id} className="space-y-2 border p-4">
+                                <div className="flex items-start justify-between">
                                     <div>
                                         <div className="font-mono text-lg">Position #{position.tokenId}</div>
                                         <div className="text-sm text-gray-600">
@@ -377,14 +377,14 @@ export default function AccountPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
                                     <div>
                                         <span className="text-gray-600">Token0 Address:</span>
-                                        <div className="font-mono text-xs truncate">{position.token0}</div>
+                                        <div className="truncate font-mono text-xs">{position.token0}</div>
                                     </div>
                                     <div>
                                         <span className="text-gray-600">Token1 Address:</span>
-                                        <div className="font-mono text-xs truncate">{position.token1}</div>
+                                        <div className="truncate font-mono text-xs">{position.token1}</div>
                                     </div>
                                     <div>
                                         <span className="text-gray-600">Liquidity:</span>
@@ -538,7 +538,7 @@ export default function AccountPage() {
 
             {/* No positions message */}
             {!data.positions?.lp?.length && !data.positions?.perp?.length && !data.positions?.spot?.length && !data.positions?.hyperEvm?.length && (
-                <div className="text-center py-8 text-gray-500">No positions found for this account</div>
+                <div className="py-8 text-center text-gray-500">No positions found for this account</div>
             )}
 
             {/* Raw Data Section (for debugging) */}
@@ -546,42 +546,42 @@ export default function AccountPage() {
                 <summary className="cursor-pointer font-semibold text-gray-700 hover:text-gray-900">Raw API Response (Debug)</summary>
                 <div className="mt-4 space-y-4">
                     <div>
-                        <h3 className="font-semibold mb-2">Account Info</h3>
-                        <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.account, null, 2)}</pre>
+                        <h3 className="mb-2 font-semibold">Account Info</h3>
+                        <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.account, null, 2)}</pre>
                     </div>
 
                     {data.summary && (
                         <div>
-                            <h3 className="font-semibold mb-2">Summary</h3>
-                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.summary, null, 2)}</pre>
+                            <h3 className="mb-2 font-semibold">Summary</h3>
+                            <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.summary, null, 2)}</pre>
                         </div>
                     )}
 
                     {data.positions?.lp && data.positions.lp.length > 0 && (
                         <div>
-                            <h3 className="font-semibold mb-2">LP Positions (Raw)</h3>
-                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.lp, null, 2)}</pre>
+                            <h3 className="mb-2 font-semibold">LP Positions (Raw)</h3>
+                            <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.positions.lp, null, 2)}</pre>
                         </div>
                     )}
 
                     {data.positions?.perp && data.positions.perp.length > 0 && (
                         <div>
-                            <h3 className="font-semibold mb-2">Perp Positions (Raw)</h3>
-                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.perp, null, 2)}</pre>
+                            <h3 className="mb-2 font-semibold">Perp Positions (Raw)</h3>
+                            <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.positions.perp, null, 2)}</pre>
                         </div>
                     )}
 
                     {data.positions?.spot && data.positions.spot.length > 0 && (
                         <div>
-                            <h3 className="font-semibold mb-2">Spot Balances (Raw)</h3>
-                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.spot, null, 2)}</pre>
+                            <h3 className="mb-2 font-semibold">Spot Balances (Raw)</h3>
+                            <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.positions.spot, null, 2)}</pre>
                         </div>
                     )}
 
                     {data.positions?.hyperEvm && data.positions.hyperEvm.length > 0 && (
                         <div>
-                            <h3 className="font-semibold mb-2">HyperEVM Balances (Raw)</h3>
-                            <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{JSON.stringify(data.positions.hyperEvm, null, 2)}</pre>
+                            <h3 className="mb-2 font-semibold">HyperEVM Balances (Raw)</h3>
+                            <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.positions.hyperEvm, null, 2)}</pre>
                         </div>
                     )}
                 </div>

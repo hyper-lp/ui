@@ -11,13 +11,13 @@ const HeatmapAprChart = lazy(() => import('@/components/charts/HeatmapAprChart')
 // Loading fallback for chart with animation
 const ChartSkeleton = () => (
     <motion.div
-        className="w-full h-[500px] bg-background/20 rounded-lg flex items-center justify-center"
+        className="flex h-[450px] w-full items-center justify-center rounded-lg bg-background/20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
     >
         <motion.p
-            className="text-default/40 text-sm"
+            className="text-sm text-default/40"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -39,11 +39,11 @@ export default function HomePage() {
                     delay: 0.2,
                     ease: [0.4, 0, 0.2, 1],
                 }}
-                className="flex flex-col gap-2 justify-center items-center"
+                className="flex flex-col items-center justify-center gap-2"
             >
                 {/* Explanation of APR calculation */}
                 <motion.div
-                    className="flex flex-col gap-1 md:flex-row md:gap-2 items-center text-sm text-center"
+                    className="flex flex-col items-center gap-1 text-center text-sm md:flex-row md:gap-2"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3, duration: 0.5 }}
@@ -69,7 +69,7 @@ export default function HomePage() {
                             delay: 0.4,
                             ease: [0.4, 0, 0.2, 1],
                         }}
-                        className="w-full mx-auto"
+                        className="mx-auto w-full"
                     >
                         <HeatmapAprChart />
                     </motion.div>

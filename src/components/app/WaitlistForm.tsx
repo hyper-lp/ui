@@ -117,16 +117,16 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
     // Remove handleSubmit since we're using auto-join only
 
     if (!ready || !authenticated || !user?.twitter) {
-        return <div className="h-10 w-40 skeleton-loading" />
+        return <div className="skeleton-loading h-10 w-40" />
     }
 
     if (isSubmitted) {
         return (
             <div className={cn('rounded-xl bg-background/20 px-3 py-2.5', className)}>
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-6">
+                <div className="flex flex-col items-center justify-between gap-2 sm:flex-row sm:gap-6">
                     {/* Left: Checkmark and waitlist confirmation */}
                     <div className="flex items-center gap-2">
-                        <IconWrapper id={IconIds.CHECKMARK} className="h-5 w-5 text-primary flex-shrink-0" />
+                        <IconWrapper id={IconIds.CHECKMARK} className="h-5 w-5 flex-shrink-0 text-primary" />
                         <div className="flex flex-col items-center">
                             {/* <p className="text-sm font-medium text-default">
                                 {user.twitter.name} #{position || '...'} on the waitlist
@@ -149,22 +149,22 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                                 console.log('Referral URL copied:', url)
                                 setTimeout(() => setCopySuccess(false), 2000)
                             }}
-                            className="flex items-center gap-1.5 text-xs text-default/60 hover:text-default transition-colors group"
+                            className="group flex items-center gap-1.5 text-xs text-default/60 transition-colors hover:text-default"
                             title={`${referralCount} referrals | Click to copy your referral link`}
                         >
                             <span>Referral</span>
                             {referralCount > 0 && <span className="text-primary">({referralCount})</span>}
                             <IconWrapper
                                 id={copySuccess ? IconIds.CHECKMARK : IconIds.COPY}
-                                className="h-3.5 w-3.5 group-hover:text-primary transition-colors"
+                                className="h-3.5 w-3.5 transition-colors group-hover:text-primary"
                             />
                         </button>
 
                         {/* Separator */}
-                        <div className="w-px h-4 bg-default/20" />
+                        <div className="h-4 w-px bg-default/20" />
 
                         {/* Sign out */}
-                        <button onClick={logout} className="text-xs text-default/60 hover:text-default transition-colors">
+                        <button onClick={logout} className="text-xs text-default/60 transition-colors hover:text-default">
                             Sign out
                         </button>
                     </div>
@@ -194,7 +194,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                         <p className="text-xs text-default/60">@{user.twitter.username}</p>
                     </div>
                     <div className="ml-auto">
-                        <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
                     </div>
                 </div>
             </div>
@@ -202,7 +202,7 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
     }
 
     // This shouldn't normally render due to auto-join, but return loading state as fallback
-    return <div className="h-10 w-40 skeleton-loading" />
+    return <div className="skeleton-loading h-10 w-40" />
 }
 
 export const WaitlistForm = memo(WaitlistFormComponent)

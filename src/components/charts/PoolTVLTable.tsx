@@ -69,44 +69,44 @@ function PoolTVLTable({ className }: { className?: string }) {
 
     if (isLoading) {
         return (
-            <div className={cn('border rounded-lg p-4', className)}>
-                <h3 className="text-sm font-semibold mb-3">HYPE/USDT0 Pool Liquidity</h3>
-                <div className="text-sm text-muted">Loading TVL data...</div>
+            <div className={cn('rounded-lg border p-4', className)}>
+                <h3 className="mb-3 text-sm font-semibold">HYPE/USDT0 Pool Liquidity</h3>
+                <div className="text-muted text-sm">Loading TVL data...</div>
             </div>
         )
     }
 
     if (error || !data?.success) {
         return (
-            <div className={cn('border rounded-lg p-4', className)}>
-                <h3 className="text-sm font-semibold mb-3">HYPE/USDT0 Pool Liquidity</h3>
+            <div className={cn('rounded-lg border p-4', className)}>
+                <h3 className="mb-3 text-sm font-semibold">HYPE/USDT0 Pool Liquidity</h3>
                 <div className="text-sm text-red-500">Failed to load TVL data</div>
             </div>
         )
     }
 
     return (
-        <div className={cn('border rounded-lg p-4', className)}>
-            <div className="flex justify-between items-center mb-3">
+        <div className={cn('rounded-lg border p-4', className)}>
+            <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold">HYPE/USDT0 Pool Liquidity</h3>
-                <div className="text-xs text-muted">
-                    Total: <span className="font-bold text-foreground">{formatUSD(data.grandTotalTVL)}</span>
+                <div className="text-muted text-xs">
+                    Total: <span className="text-foreground font-bold">{formatUSD(data.grandTotalTVL)}</span>
                 </div>
             </div>
 
             <div className="space-y-3">
                 {data.dexes.map((dex) => (
                     <div key={dex.dex} className="space-y-1">
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                             <span className="text-sm font-medium capitalize">{dex.dex}</span>
-                            <span className="text-sm font-mono">{formatUSD(dex.totalTVL)}</span>
+                            <span className="font-mono text-sm">{formatUSD(dex.totalTVL)}</span>
                         </div>
                         <div className="space-y-0.5">
                             {dex.pools.map((pool) => (
-                                <div key={pool.poolAddress} className="flex justify-between items-center text-xs text-muted pl-4">
+                                <div key={pool.poolAddress} className="text-muted flex items-center justify-between pl-4 text-xs">
                                     <span>
                                         {pool.feeLabel} tier
-                                        {pool.isActive && <span className="text-green-600 ml-1">●</span>}
+                                        {pool.isActive && <span className="ml-1 text-green-600">●</span>}
                                     </span>
                                     <div className="flex gap-3">
                                         <span className="font-mono">{formatNumber(pool.token0Balance, 2)} HYPE</span>
@@ -119,10 +119,10 @@ function PoolTVLTable({ className }: { className?: string }) {
                     </div>
                 ))}
 
-                {data.dexes.length === 0 && <div className="text-sm text-muted text-center py-2">No pools found</div>}
+                {data.dexes.length === 0 && <div className="text-muted py-2 text-center text-sm">No pools found</div>}
             </div>
 
-            <div className="mt-3 pt-3 border-t text-xs text-muted">
+            <div className="text-muted mt-3 border-t pt-3 text-xs">
                 <div className="flex justify-between">
                     <span>HYPE Price: ${formatNumber(data.prices.HYPE, 2)}</span>
                     <span>Last updated: {new Date(data.timestamp).toLocaleTimeString()}</span>

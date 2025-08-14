@@ -179,7 +179,7 @@ function DeltaThresholdGauge({ className, currentDelta = 0, threshold = 100, war
 
     if (!options) {
         return (
-            <div className="flex h-[300px] w-full items-center justify-center rounded-lg bg-card">
+            <div className="bg-card flex h-[300px] w-full items-center justify-center rounded-lg">
                 <div className="text-muted">Loading gauge...</div>
             </div>
         )
@@ -187,8 +187,8 @@ function DeltaThresholdGauge({ className, currentDelta = 0, threshold = 100, war
 
     return (
         <div className={cn('relative flex flex-col', className)}>
-            <h3 className="text-sm font-semibold mb-2">Delta Threshold</h3>
-            <div className="flex-1 min-h-[250px]">
+            <h3 className="mb-2 text-sm font-semibold">Delta Threshold</h3>
+            <div className="min-h-[250px] flex-1">
                 <EchartWrapper options={options} className="size-full" />
             </div>
         </div>

@@ -48,7 +48,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
 
         // Calculate max delta for symmetric scale on both axes
         const showRatioAxis = totalCapital && totalCapital > 0
-        
+
         const allDeltas = [
             ...history.lpDeltas,
             ...history.perpDeltas,
@@ -56,11 +56,11 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             ...(showSpotDelta ? history.spotDeltas : []),
             ...(showHyperEvmDelta ? history.hyperEvmDeltas : []),
         ]
-        
+
         // Find max absolute delta for symmetric USD scale
         const maxAbsDelta = Math.max(...allDeltas.map(Math.abs), 100) // At least $100 scale
         const paddedMaxDelta = maxAbsDelta * 1.1 // Add 10% padding
-        
+
         // Calculate max ratio for percentage scale
         let maxRatio = 1 // Default to 100%
         if (showRatioAxis) {
@@ -360,7 +360,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
 
     if (!options) {
         return (
-            <div className="flex h-[300px] w-full items-center justify-center rounded-lg bg-card">
+            <div className="bg-card flex h-[300px] w-full items-center justify-center rounded-lg">
                 <div className="text-muted">Loading chart...</div>
             </div>
         )
@@ -368,8 +368,8 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
 
     return (
         <div className={cn('relative flex flex-col', className)}>
-            <h3 className="text-sm font-semibold mb-2">Delta Tracking (Live)</h3>
-            <div className="flex-1 min-h-[300px]">
+            <h3 className="mb-2 text-sm font-semibold">Delta Tracking (Live)</h3>
+            <div className="min-h-[300px] flex-1">
                 <EchartWrapper options={options} className="size-full" />
             </div>
         </div>

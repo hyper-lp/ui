@@ -213,26 +213,27 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                     const secondaryColor = isDarkMode ? '#9ca3af' : '#4b5563'
                     const tertiaryColor = '#6b7280'
 
+                    // <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
+                    //             <span style="font-size: 13px; color: ${tertiaryColor};">Time to 5x</span>
+                    //             <span style="font-size: 13px; color: ${secondaryColor};">${tooltipData.yearsTo5x}</span>
+                    //         </div >
+
                     return `
                         <div style="font-family: ${TEODOR_LIGHT_FONT.style.fontFamily}; min-width: ${isMobile ? '180' : '220'}px; padding: 3px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <span style="font-size: 13px; color: ${tertiaryColor};">LP Fees</span>
+                                <span style="font-size: 13px; color: ${tertiaryColor};">2/3 LP Fees</span>
                                 <span style="font-size: 15px; color: ${secondaryColor}; font-weight: 600;">${tooltipData.lpApr}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                <span style="font-size: 13px; color: ${tertiaryColor};">Short Perp Funding</span>
+                                <span style="font-size: 13px; color: ${tertiaryColor};">1/3 Short Perp Funding</span>
                                 <span style="font-size: 15px; color: ${secondaryColor}; font-weight: 600;">${tooltipData.fundingApr}</span>
                             </div>
                             <div style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: ${primaryColor};">
-                                = ${tooltipData.netApr} APR
+                                = ${tooltipData.netApr} Gross APR
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
                                 <span style="font-size: 13px; color: ${tertiaryColor};">Time to 2x</span>
                                 <span style="font-size: 13px; color: ${secondaryColor};">${tooltipData.yearsTo2x}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;">
-                                <span style="font-size: 13px; color: ${tertiaryColor};">Time to 5x</span>
-                                <span style="font-size: 13px; color: ${secondaryColor};">${tooltipData.yearsTo5x}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="font-size: 13px; color: ${tertiaryColor};">Time to 10x</span>
@@ -389,9 +390,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 <div className={cn('relative mx-auto w-full', className)}>
                     <EchartWrapper
                         options={options}
-                        className={cn(
-                            'min-w-[300px] w-full min-h-[450px] md:min-h-[550px] h-full max-h-[300px] md:max-h-[700px] max-w-[900px] mx-auto',
-                        )}
+                        className="mx-auto h-full max-h-[300px] min-h-[450px] w-full min-w-[300px] max-w-[900px] md:max-h-[600px] md:min-h-[550px]"
                     />
                 </div>
             </ErrorBoundary>

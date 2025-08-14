@@ -161,7 +161,7 @@ function APRBreakdownChart({ className, lpFeeAPR = 0, fundingAPR = 0, rebalancin
 
     if (!options) {
         return (
-            <div className="flex h-[300px] w-full items-center justify-center rounded-lg bg-card">
+            <div className="bg-card flex h-[300px] w-full items-center justify-center rounded-lg">
                 <div className="text-muted">Loading chart...</div>
             </div>
         )
@@ -169,8 +169,8 @@ function APRBreakdownChart({ className, lpFeeAPR = 0, fundingAPR = 0, rebalancin
 
     return (
         <div className={cn('relative flex flex-col', className)}>
-            <h3 className="text-sm font-semibold mb-2">APR Breakdown</h3>
-            <div className="flex-1 min-h-[300px]">
+            <h3 className="mb-2 text-sm font-semibold">APR Breakdown</h3>
+            <div className="min-h-[300px] flex-1">
                 <EchartWrapper options={options} className="size-full" />
             </div>
         </div>

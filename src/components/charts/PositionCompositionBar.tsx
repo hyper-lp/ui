@@ -247,7 +247,7 @@ function PositionCompositionBar({
 
     if (!options) {
         return (
-            <div className="flex h-[400px] w-full items-center justify-center rounded-lg bg-card">
+            <div className="bg-card flex h-[400px] w-full items-center justify-center rounded-lg">
                 <div className="text-muted">Loading chart...</div>
             </div>
         )
@@ -255,8 +255,8 @@ function PositionCompositionBar({
 
     return (
         <div className={cn('relative flex flex-col', className)}>
-            <h3 className="text-sm font-semibold mb-2">Capital Allocation</h3>
-            <div className="flex-1 min-h-[250px]">
+            <h3 className="mb-2 text-sm font-semibold">Capital Allocation</h3>
+            <div className="min-h-[250px] flex-1">
                 <EchartWrapper options={options} className="size-full" />
             </div>
         </div>

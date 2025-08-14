@@ -62,9 +62,9 @@ function RebalancingLog({ className, events = [], maxEvents = 5 }: RebalancingLo
     if (events.length === 0) {
         return (
             <div className={cn('flex flex-col', className)}>
-                <h3 className="text-sm font-semibold mb-3">Rebalancing Activity</h3>
-                <div className="flex-1 flex items-center justify-center min-h-[250px]">
-                    <div className="text-sm text-muted">No rebalancing events yet</div>
+                <h3 className="mb-3 text-sm font-semibold">Rebalancing Activity</h3>
+                <div className="flex min-h-[250px] flex-1 items-center justify-center">
+                    <div className="text-muted text-sm">No rebalancing events yet</div>
                 </div>
             </div>
         )
@@ -72,18 +72,18 @@ function RebalancingLog({ className, events = [], maxEvents = 5 }: RebalancingLo
 
     return (
         <div className={cn('flex flex-col', className)}>
-            <h3 className="text-sm font-semibold mb-3">Rebalancing Activity</h3>
+            <h3 className="mb-3 text-sm font-semibold">Rebalancing Activity</h3>
             <div className="flex-1 overflow-y-auto">
                 <div className="space-y-3">
                     {sortedEvents.map((event, index) => (
-                        <div key={`${event.timestamp}-${index}`} className="relative pl-6 pb-3 last:pb-0">
+                        <div key={`${event.timestamp}-${index}`} className="relative pb-3 pl-6 last:pb-0">
                             {/* Timeline line */}
-                            {index < sortedEvents.length - 1 && <div className="absolute left-2 top-6 bottom-0 w-0.5 bg-border" />}
+                            {index < sortedEvents.length - 1 && <div className="bg-border absolute bottom-0 left-2 top-6 w-0.5" />}
 
                             {/* Timeline dot */}
                             <div
                                 className={cn(
-                                    'absolute left-0 top-1 w-4 h-4 rounded-full border-2 bg-background',
+                                    'absolute left-0 top-1 h-4 w-4 rounded-full border-2 bg-background',
                                     getMethodColor(event.method).replace('text-', 'border-'),
                                 )}
                             >
@@ -92,12 +92,12 @@ function RebalancingLog({ className, events = [], maxEvents = 5 }: RebalancingLo
 
                             {/* Event content */}
                             <div className="ml-2">
-                                <div className="flex items-center gap-2 mb-1">
+                                <div className="mb-1 flex items-center gap-2">
                                     <span className={cn('text-xs font-semibold uppercase', getMethodColor(event.method))}>{event.method}</span>
-                                    <span className="text-xs text-muted">{formatTimestamp(event.timestamp)}</span>
+                                    <span className="text-muted text-xs">{formatTimestamp(event.timestamp)}</span>
                                 </div>
 
-                                <div className="text-xs space-y-0.5">
+                                <div className="space-y-0.5 text-xs">
                                     <div className="flex justify-between">
                                         <span className="text-muted">Size:</span>
                                         <span className="font-mono">
@@ -123,7 +123,7 @@ function RebalancingLog({ className, events = [], maxEvents = 5 }: RebalancingLo
                                                 href={`https://explorer.hyperliquid.xyz/tx/${event.txHash}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-blue-500 hover:text-blue-600 text-xs"
+                                                className="text-xs text-blue-500 hover:text-blue-600"
                                             >
                                                 {event.txHash.slice(0, 8)}...{event.txHash.slice(-6)} ↗
                                             </a>
@@ -136,7 +136,7 @@ function RebalancingLog({ className, events = [], maxEvents = 5 }: RebalancingLo
                 </div>
 
                 {events.length > maxEvents && (
-                    <div className="text-xs text-muted text-center mt-3 pt-3 border-t">+{events.length - maxEvents} more events</div>
+                    <div className="text-muted mt-3 border-t pt-3 text-center text-xs">+{events.length - maxEvents} more events</div>
                 )}
             </div>
         </div>

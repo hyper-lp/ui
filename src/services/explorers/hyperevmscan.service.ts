@@ -54,7 +54,9 @@ export class HyperEVMScanService {
             const data: HyperEVMScanResponse = await response.json()
 
             if (data.status === '0' && data.message !== 'No transactions found') {
-                throw new Error(`HyperEVMScan API error: ${data.message}`)
+                console.warn(`HyperEVMScan API warning: ${data.message}`)
+                // Return empty array instead of throwing error
+                return []
             }
 
             // Handle case where no transactions are found
@@ -112,7 +114,9 @@ export class HyperEVMScanService {
             const data: HyperEVMScanResponse = await response.json()
 
             if (data.status === '0' && data.message !== 'No transactions found') {
-                throw new Error(`HyperEVMScan API error: ${data.message}`)
+                console.warn(`HyperEVMScan API warning: ${data.message}`)
+                // Return empty array instead of throwing error
+                return []
             }
 
             if (data.message === 'No transactions found' || !data.result || typeof data.result === 'string') {
@@ -159,7 +163,9 @@ export class HyperEVMScanService {
             const data: HyperEVMScanResponse = await response.json()
 
             if (data.status === '0' && data.message !== 'No transactions found') {
-                throw new Error(`HyperEVMScan API error: ${data.message}`)
+                console.warn(`HyperEVMScan API warning: ${data.message}`)
+                // Return empty array instead of throwing error
+                return []
             }
 
             if (data.message === 'No transactions found' || !data.result || typeof data.result === 'string') {

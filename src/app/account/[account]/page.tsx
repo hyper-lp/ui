@@ -38,10 +38,22 @@ interface LoadingStep {
     endTime?: number
 }
 
+function formatTimeSince(timestamp: number | null): string {
+    if (!timestamp) return ''
+    const seconds = Math.floor((Date.now() - timestamp) / 1000)
+    if (seconds < 60) return `${seconds}s ago`
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    return `${Math.floor(hours / 24)}d ago`
+}
+
 export default function AccountPage() {
     const params = useParams()
     const account = params?.account as string
     const [timerTick, setTimerTick] = useState(0)
+    const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null)
     const [loadingSteps, setLoadingSteps] = useState<LoadingStep[]>([
         { name: 'Account info', status: 'pending' },
         { name: 'HyperEVM LP positions', status: 'pending' },
@@ -64,6 +76,9 @@ export default function AccountPage() {
         gcTime: 300000, // Keep in cache for 5 minutes
         refetchInterval: 30000, // Refresh every 30 seconds
     })
+
+    // Track if all loading steps are complete
+    const allStepsComplete = loadingSteps.every((step) => step.status === 'done')
 
     // Simulate progressive loading steps
     useEffect(() => {
@@ -94,23 +109,24 @@ export default function AccountPage() {
         }
     }, [isLoading])
 
-    // Update timer for loading items
+    // Update timer for loading items and refresh time display
     useEffect(() => {
-        if (isLoading) {
-            const interval = setInterval(() => {
+        const interval = setInterval(
+            () => {
                 setTimerTick((prev) => prev + 1)
-            }, 100)
-            return () => clearInterval(interval)
-        } else {
-            setTimerTick(0)
-        }
+            },
+            isLoading ? 100 : 1000,
+        ) // Update every 100ms when loading, 1s otherwise
+        return () => clearInterval(interval)
     }, [isLoading])
 
-    // Add data point to history on each refresh
+    // Add data point to history on each refresh and update last refresh time
     useEffect(() => {
         if (data?.summary && account) {
+            const now = Date.now()
+            setLastRefreshTime(now)
             const point = {
-                timestamp: Date.now(),
+                timestamp: now,
                 lpDelta: data.summary.lpDelta || 0,
                 perpDelta: data.summary.perpDelta || 0,
                 netDelta: data.summary.netDelta || 0,
@@ -121,7 +137,8 @@ export default function AccountPage() {
         }
     }, [data?.summary, account, addDataPoint])
 
-    if (isLoading) {
+    // Show loading screen only while actually loading
+    if (isLoading && !data) {
         // Use timerTick to ensure re-render happens
         const currentTime = Date.now() + timerTick * 0 // timerTick triggers re-render but doesn't affect time
         return (
@@ -148,6 +165,22 @@ export default function AccountPage() {
                                 </div>
                             )
                         })}
+                        {allStepsComplete && (
+                            <div className="mt-4 border-t pt-4">
+                                <div className="flex items-center justify-between">
+                                    <span>Finalizing data...</span>
+                                    <span className="text-blue-500">
+                                        PROCESSING (
+                                        {(() => {
+                                            const lastStep = loadingSteps[loadingSteps.length - 1]
+                                            const finalizingTime = lastStep?.endTime || currentTime
+                                            return ((currentTime - finalizingTime) / 1000).toFixed(1)
+                                        })()}
+                                        s)
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </PageWrapper>
@@ -217,6 +250,9 @@ export default function AccountPage() {
     const totalHyperEvmValue = (data.summary?.totalLpValue || 0) + (data.summary?.totalHyperEvmValue || 0)
     const totalHyperCoreValue = (data.summary?.totalPerpValue || 0) + (data.summary?.totalSpotValue || 0)
 
+    // Force re-render to update time display (timerTick changes every second)
+    const refreshTimeDisplay = formatTimeSince(lastRefreshTime) + timerTick * 0
+
     return (
         <PageWrapper>
             {/* Header */}
@@ -224,7 +260,12 @@ export default function AccountPage() {
 
             <div className="space-y-4">
                 {/* Charts Section */}
-                <CollapsibleSection title="Strategy Monitoring" sectionKey="charts" subtitle="Live delta tracking and historical performance">
+                <CollapsibleSection
+                    title="Strategy Monitoring"
+                    sectionKey="charts"
+                    subtitle="Live delta tracking and historical performance"
+                    lastRefresh={refreshTimeDisplay}
+                >
                     {data.summary && <StrategyMonitoring summary={data.summary} deltaHistory={deltaHistory} />}
                 </CollapsibleSection>
 
@@ -234,6 +275,7 @@ export default function AccountPage() {
                     sectionKey="summary"
                     badge={`Net Δ: ${totalNetDelta >= 0 ? '+' : ''}${totalNetDelta.toFixed(4)} HYPE`}
                     subtitle="Portfolio overview and current APRs"
+                    lastRefresh={refreshTimeDisplay}
                 >
                     {data.summary && (
                         <div className="space-y-4">
@@ -264,6 +306,7 @@ export default function AccountPage() {
                     sectionKey="hyperEvm"
                     badge={`Δ: ${totalHyperEvmDelta >= 0 ? '+' : ''}${totalHyperEvmDelta.toFixed(4)} HYPE`}
                     subtitle={`$${totalHyperEvmValue.toFixed(2)} • ${data.positions?.lp?.length || 0} LP positions • ${data.positions?.hyperEvm?.length || 0} tokens`}
+                    lastRefresh={refreshTimeDisplay}
                 >
                     <div className="space-y-6">
                         {/* LP Positions grouped by DEX */}
@@ -300,6 +343,7 @@ export default function AccountPage() {
                     sectionKey="hyperCore"
                     badge={`Δ: ${totalHyperCoreDelta >= 0 ? '+' : ''}${totalHyperCoreDelta.toFixed(4)} HYPE`}
                     subtitle={`$${totalHyperCoreValue.toFixed(2)} • ${data.positions?.perp?.length || 0} perp positions • ${data.positions?.spot?.length || 0} tokens`}
+                    lastRefresh={refreshTimeDisplay}
                 >
                     <div className="space-y-6">
                         {/* Perp Positions */}
@@ -331,12 +375,22 @@ export default function AccountPage() {
                 </CollapsibleSection>
 
                 {/* Transaction History */}
-                <CollapsibleSection title="Transaction History" sectionKey="transactions" subtitle="DEX interactions on HyperEVM">
+                <CollapsibleSection
+                    title="Transaction History"
+                    sectionKey="transactions"
+                    subtitle="DEX interactions on HyperEVM"
+                    lastRefresh={refreshTimeDisplay}
+                >
                     <TransactionHistory account={account} />
                 </CollapsibleSection>
 
                 {/* Debug Section */}
-                <CollapsibleSection title="Raw API Response (Debug)" sectionKey="debug" subtitle="Complete API response data">
+                <CollapsibleSection
+                    title="Raw API Response (Debug)"
+                    sectionKey="debug"
+                    subtitle="Complete API response data"
+                    lastRefresh={refreshTimeDisplay}
+                >
                     <div className="space-y-4">
                         <div>
                             <h3 className="mb-2 font-semibold">Account Info</h3>

@@ -29,7 +29,7 @@ interface TransactionResponse {
     message?: string // Optional message for API key not configured
 }
 
-async function fetchTransactions(account: string, onlyHypeUsdt: boolean, limit: number = 1000): Promise<TransactionResponse> {
+async function fetchTransactions(account: string, onlyHypeUsdt: boolean, limit: number = 100): Promise<TransactionResponse> {
     const params = new URLSearchParams({
         limit: limit.toString(),
         onlyHypeUsdt: onlyHypeUsdt.toString(),
@@ -45,20 +45,28 @@ async function fetchTransactions(account: string, onlyHypeUsdt: boolean, limit: 
 export function TransactionHistory({ account }: TransactionHistoryProps) {
     const [onlyHypeUsdt, setOnlyHypeUsdt] = useState(true)
     const [showStats, setShowStats] = useState(false)
+    const [displayCount, setDisplayCount] = useState(25)
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['transactions', account, onlyHypeUsdt],
-        queryFn: () => fetchTransactions(account, onlyHypeUsdt, 1000),
+        queryFn: () => fetchTransactions(account, onlyHypeUsdt, 100),
         enabled: !!account,
         staleTime: 60000, // 1 minute
         gcTime: 300000, // 5 minutes
+        refetchOnWindowFocus: false, // Don't refetch on window focus to avoid unnecessary API calls
     })
 
     if (isLoading) {
         return (
             <div className="border p-4">
                 <h2 className="mb-4 text-xl font-semibold">Transaction History</h2>
-                <div className="text-center text-gray-500">Loading transactions...</div>
+                <div className="space-y-2">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="animate-pulse">
+                            <div className="h-10 rounded bg-gray-200"></div>
+                        </div>
+                    ))}
+                </div>
             </div>
         )
     }
@@ -200,7 +208,7 @@ export function TransactionHistory({ account }: TransactionHistoryProps) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.transactions.slice(0, 50).map((tx) => (
+                                {data.transactions.slice(0, displayCount).map((tx) => (
                                     <tr key={tx.txHash} className="border-b hover:bg-gray-50">
                                         <td className={`py-2 ${getTypeColor(tx.type)}`}>{tx.type}</td>
                                         <td className="py-2">{getDexName(tx.dex)}</td>
@@ -229,8 +237,18 @@ export function TransactionHistory({ account }: TransactionHistoryProps) {
                                 ))}
                             </tbody>
                         </table>
-                        {data.transactions.length > 50 && (
-                            <div className="mt-2 text-center text-sm text-gray-500">Showing first 50 of {data.transactions.length} transactions</div>
+                        {data.transactions.length > displayCount && (
+                            <div className="mt-4 text-center">
+                                <div className="mb-2 text-sm text-gray-500">
+                                    Showing {displayCount} of {data.transactions.length} transactions
+                                </div>
+                                <button
+                                    onClick={() => setDisplayCount((prev) => Math.min(prev + 25, data.transactions.length))}
+                                    className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                                >
+                                    Load More
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}

@@ -36,36 +36,36 @@ export interface AccountData {
     metrics: {
         hyperEvm: {
             values: {
-                lp: number
-                balances: number
-                total: number
+                lpUSD: number // LP positions value in USD
+                balancesUSD: number // Wallet balances value in USD
+                totalUSD: number // Total HyperEVM value in USD
             }
             deltas: {
-                lp: number
-                balances: number
-                total: number
+                lpHYPE: number // LP delta in HYPE units
+                balancesHYPE: number // Wallet delta in HYPE units
+                totalHYPE: number // Total HyperEVM delta in HYPE units
             }
         }
         hyperCore: {
             values: {
-                perp: number
-                spot: number
-                total: number
+                perpUSD: number // Perp positions value in USD
+                spotUSD: number // Spot balances value in USD
+                totalUSD: number // Total HyperCore value in USD
             }
             deltas: {
-                perp: number
-                spot: number
-                total: number
+                perpHYPE: number // Perp delta in HYPE units (negative for shorts)
+                spotHYPE: number // Spot delta in HYPE units
+                totalHYPE: number // Total HyperCore delta in HYPE units
             }
-            leverage?: number
-            healthFactor?: number
+            leverageRatio?: number // Leverage ratio (e.g., 2.5 for 2.5x)
+            healthFactorPercent?: number // Health factor as percentage
         }
         portfolio: {
-            totalValue: number
-            netDelta: number
-            netAPR: number
-            lpFeeAPR: number
-            fundingAPR: number
+            totalValueUSD: number // Total portfolio value in USD
+            netDeltaHYPE: number // Net delta exposure in HYPE units
+            netAPRPercent: number // Net APR as percentage (e.g., 25.5 for 25.5%)
+            lpFeeAPRPercent: number // LP fee APR as percentage
+            fundingAPRPercent: number // Funding APR as percentage
         }
     }
 
@@ -73,29 +73,29 @@ export interface AccountData {
     snapshots: {
         last: {
             timestamp: string
-            netAPR: number
-            lpFeeAPR: number
-            fundingAPR: number
+            netAPRPercent: number // Net APR as percentage
+            lpFeeAPRPercent: number // LP fee APR as percentage
+            fundingAPRPercent: number // Funding APR as percentage
         } | null
         current: {
-            lpFeeAPR: number
-            fundingAPR: number
-            netAPR: number
-            formula: string
-            note: string
+            lpFeeAPRPercent: number // LP fee APR as percentage
+            fundingAPRPercent: number // Funding APR as percentage
+            netAPRPercent: number // Net APR as percentage
+            formula?: string // Optional formula description
+            note?: string // Optional note
         } | null
     }
 
     // Performance timings
     timings: {
         hyperEvm: {
-            lp?: number
-            balances?: number
+            lpMs?: number // LP fetch time in milliseconds
+            balancesMs?: number // Balances fetch time in milliseconds
         }
         hyperCore: {
-            perp?: number
-            spot?: number
+            perpMs?: number // Perp fetch time in milliseconds
+            spotMs?: number // Spot fetch time in milliseconds
         }
-        total: number
+        totalMs: number // Total fetch time in milliseconds
     }
 }

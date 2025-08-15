@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import type { HyperCoreTransaction } from '@/services/explorers/hypercore.service'
+import type { HyperCoreTransactionResponse } from '@/interfaces/api.interface'
 import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
 import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
 
@@ -10,16 +10,7 @@ interface HyperCoreTransactionHistoryProps {
     limit?: number
 }
 
-interface TransactionResponse {
-    success: boolean
-    transactions: HyperCoreTransaction[]
-    pagination: {
-        limit: number
-        total: number
-    }
-}
-
-async function fetchTransactions(account: string, limit: number): Promise<TransactionResponse> {
+async function fetchTransactions(account: string, limit: number): Promise<HyperCoreTransactionResponse> {
     const params = new URLSearchParams({
         limit: limit.toString(),
     })

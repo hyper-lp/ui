@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { positionFetcher } from '@/services/core/position-fetcher.service'
+import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
 import type { AccountData } from '@/interfaces/account.interface'
 
 export async function GET(request: NextRequest) {
@@ -45,41 +46,10 @@ export async function GET(request: NextRequest) {
         const totalHyperEvmValue = hyperEvmBalances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0
 
         // Calculate delta exposures in HYPE units (not USD)
-        // LP Delta: Sum of actual HYPE/WHYPE amounts in LP positions
-        const lpDelta = lpPositions.reduce((sum, p) => {
-            const token0IsHype = p.token0Symbol === 'WHYPE' || p.token0Symbol === 'HYPE'
-            const token1IsHype = p.token1Symbol === 'WHYPE' || p.token1Symbol === 'HYPE'
-
-            if (token0IsHype && p.token0Amount) {
-                return sum + p.token0Amount
-            } else if (token1IsHype && p.token1Amount) {
-                return sum + p.token1Amount
-            }
-            return sum
-        }, 0)
-
-        // Spot Delta: HYPE balance in spot (already in HYPE units)
-        const spotDelta = spotBalances.filter((b) => b.asset === 'HYPE').reduce((sum, b) => sum + Number(b.balance), 0)
-
-        // HyperEVM Delta: HYPE/WHYPE balance on EVM (convert from wei to HYPE units)
-        const hyperEvmDelta =
-            hyperEvmBalances
-                ?.filter((b) => b.symbol === 'HYPE' || b.symbol === 'WHYPE')
-                .reduce((sum, b) => {
-                    // Balance is in wei, convert to HYPE units
-                    const balance = Number(b.balance) / Math.pow(10, b.decimals)
-                    return sum + balance
-                }, 0) || 0
-
-        // Perp Delta: Perp position size (already in HYPE units for HYPE perps)
-        const perpDelta = perpPositions
-            .filter((p) => p.asset === 'HYPE')
-            .reduce((sum, p) => {
-                // Size is already in HYPE units, negative means short
-                return sum + p.size
-            }, 0)
-
-        // Net Delta in HYPE units
+        const lpDelta = calculateLpDelta(lpPositions)
+        const spotDelta = calculateSpotDelta(spotBalances)
+        const perpDelta = calculatePerpDelta(perpPositions)
+        const hyperEvmDelta = calculateWalletDelta(hyperEvmBalances)
         const netDelta = lpDelta + spotDelta + perpDelta + hyperEvmDelta
 
         // Calculate APR components (annualized)
@@ -121,56 +91,56 @@ export async function GET(request: NextRequest) {
             metrics: {
                 hyperEvm: {
                     values: {
-                        lp: totalLpValue,
-                        balances: totalHyperEvmValue,
-                        total: totalLpValue + totalHyperEvmValue,
+                        lpUSD: totalLpValue,
+                        balancesUSD: totalHyperEvmValue,
+                        totalUSD: totalLpValue + totalHyperEvmValue,
                     },
                     deltas: {
-                        lp: lpDelta,
-                        balances: hyperEvmDelta,
-                        total: lpDelta + hyperEvmDelta,
+                        lpHYPE: lpDelta,
+                        balancesHYPE: hyperEvmDelta,
+                        totalHYPE: lpDelta + hyperEvmDelta,
                     },
                 },
                 hyperCore: {
                     values: {
-                        perp: totalPerpValue,
-                        spot: totalSpotValue,
-                        total: totalPerpValue + totalSpotValue,
+                        perpUSD: totalPerpValue,
+                        spotUSD: totalSpotValue,
+                        totalUSD: totalPerpValue + totalSpotValue,
                     },
                     deltas: {
-                        perp: perpDelta,
-                        spot: spotDelta,
-                        total: perpDelta + spotDelta,
+                        perpHYPE: perpDelta,
+                        spotHYPE: spotDelta,
+                        totalHYPE: perpDelta + spotDelta,
                     },
                 },
                 portfolio: {
-                    totalValue,
-                    netDelta,
-                    netAPR,
-                    lpFeeAPR,
-                    fundingAPR,
+                    totalValueUSD: totalValue,
+                    netDeltaHYPE: netDelta,
+                    netAPRPercent: netAPR,
+                    lpFeeAPRPercent: lpFeeAPR,
+                    fundingAPRPercent: fundingAPR,
                 },
             },
             snapshots: {
                 last: null,
                 current: {
-                    lpFeeAPR,
-                    fundingAPR,
-                    netAPR,
+                    lpFeeAPRPercent: lpFeeAPR,
+                    fundingAPRPercent: fundingAPR,
+                    netAPRPercent: netAPR,
                     formula: 'Net APR = LP Fee APR + Funding APR',
                     note: 'Real-time APR calculation requires historical data tracking',
                 },
             },
             timings: {
                 hyperEvm: {
-                    lp: timings.lpFetch,
-                    balances: timings.evmFetch,
+                    lpMs: timings.lpFetch,
+                    balancesMs: timings.evmFetch,
                 },
                 hyperCore: {
-                    perp: timings.perpFetch,
-                    spot: timings.spotFetch,
+                    perpMs: timings.perpFetch,
+                    spotMs: timings.spotFetch,
                 },
-                total: timings.total,
+                totalMs: timings.total,
             },
         }
 

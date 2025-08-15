@@ -35,14 +35,14 @@ export function StrategyMonitoring({ metrics, snapshots, deltaHistory }: Strateg
                         history={deltaHistory}
                         showSpotDelta={true}
                         showHyperEvmDelta={true}
-                        totalCapital={metrics.portfolio.totalValue}
+                        totalCapital={metrics.portfolio.totalValueUSD}
                         className="h-full"
                     />
                 </div>
                 <div className="h-[400px] rounded-lg border p-4">
                     <APRBreakdownChart
-                        lpFeeAPR={(snapshots.last?.lpFeeAPR || snapshots.current?.lpFeeAPR || 0) * 100}
-                        fundingAPR={(snapshots.last?.fundingAPR || snapshots.current?.fundingAPR || 0) * 100}
+                        lpFeeAPR={(snapshots.last?.lpFeeAPRPercent || snapshots.current?.lpFeeAPRPercent || 0) * 100}
+                        fundingAPR={(snapshots.last?.fundingAPRPercent || snapshots.current?.fundingAPRPercent || 0) * 100}
                         rebalancingCost={0.2} // Example 0.2% cost
                         className="h-full"
                     />
@@ -52,15 +52,15 @@ export function StrategyMonitoring({ metrics, snapshots, deltaHistory }: Strateg
             {/* Secondary charts row */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="h-[300px] rounded-lg border p-4">
-                    <DeltaThresholdGauge currentDelta={metrics.portfolio.netDelta} threshold={100} warningThreshold={200} className="h-full" />
+                    <DeltaThresholdGauge currentDelta={metrics.portfolio.netDeltaHYPE} threshold={100} warningThreshold={200} className="h-full" />
                 </div>
                 <div className="h-[300px] rounded-lg border p-4">
                     <PositionCompositionBar
-                        lpValue={metrics.hyperEvm.values.lp}
-                        perpMargin={metrics.hyperCore.values.perp}
-                        spotValue={metrics.hyperCore.values.spot}
-                        hyperEvmValue={metrics.hyperEvm.values.balances}
-                        totalValue={metrics.portfolio.totalValue}
+                        lpValue={metrics.hyperEvm.values.lpUSD}
+                        perpMargin={metrics.hyperCore.values.perpUSD}
+                        spotValue={metrics.hyperCore.values.spotUSD}
+                        hyperEvmValue={metrics.hyperEvm.values.balancesUSD}
+                        totalValue={metrics.portfolio.totalValueUSD}
                         className="h-full"
                     />
                 </div>

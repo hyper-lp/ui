@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import type { ParsedDexTransaction } from '@/interfaces/explorers'
+import type { DexTransactionResponse } from '@/interfaces/api.interface'
 import { DexProtocol } from '@/enums'
 import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
 
@@ -11,27 +11,7 @@ interface TransactionHistoryProps {
     limit?: number
 }
 
-interface TransactionResponse {
-    success: boolean
-    transactions: ParsedDexTransaction[]
-    stats: {
-        total: number
-        byType: Record<string, number>
-        byDex: Record<DexProtocol, number>
-        successful: number
-        failed: number
-    }
-    pagination: {
-        limit: number
-        startBlock?: number
-        endBlock?: number
-        total: number
-        filteredCount: number
-    }
-    message?: string // Optional message for API key not configured
-}
-
-async function fetchTransactions(account: string, limit: number = 10): Promise<TransactionResponse> {
+async function fetchTransactions(account: string, limit: number = 10): Promise<DexTransactionResponse> {
     const params = new URLSearchParams({
         limit: limit.toString(),
     })

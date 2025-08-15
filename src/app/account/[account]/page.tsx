@@ -15,8 +15,9 @@ import { AccountCard } from '@/components/app/account/layout/AccountCard'
 import { CollapsibleSection as CollapsibleCard } from '@/components/app/account/CollapsibleCard'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
 import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
-import { DEFAULT_TRANSACTION_LIMIT, DEFAULT_HYPE_PRICE } from '@/config/app.config'
+import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
 import { formatUSD, getDeltaStatus } from '@/utils/format.util'
+import { calculateHypePrice, calculateTokenBreakdown } from '@/utils/token.util'
 import { HypeIcon } from '@/components/common/HypeIcon'
 import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
 import { DeltaDisplay } from '@/components/common/DeltaDisplay'
@@ -51,42 +52,7 @@ export default function AccountPage() {
 
     // Calculate HyperEVM capital breakdown (HYPE vs Stable) - must be before early returns
     const hyperEvmBreakdown = useMemo(() => {
-        let hypeValue = 0
-        let stableValue = 0
-
-        // LP positions
-        positions.lp?.forEach((p) => {
-            // Token 0
-            if (p.token0Symbol === 'HYPE' || p.token0Symbol === 'WHYPE') {
-                hypeValue += p.token0ValueUSD || 0
-            } else if (p.token0Symbol === 'USDT0' || p.token0Symbol === 'USD₮0' || p.token0Symbol === 'USDC') {
-                stableValue += p.token0ValueUSD || 0
-            }
-            // Token 1
-            if (p.token1Symbol === 'HYPE' || p.token1Symbol === 'WHYPE') {
-                hypeValue += p.token1ValueUSD || 0
-            } else if (p.token1Symbol === 'USDT0' || p.token1Symbol === 'USD₮0' || p.token1Symbol === 'USDC') {
-                stableValue += p.token1ValueUSD || 0
-            }
-        })
-
-        // Wallet balances
-        positions.wallet?.forEach((b) => {
-            if (b.symbol === 'HYPE' || b.symbol === 'WHYPE') {
-                hypeValue += b.valueUSD || 0
-            } else if (b.symbol === 'USDT0' || b.symbol === 'USD₮0' || b.symbol === 'USDC') {
-                stableValue += b.valueUSD || 0
-            }
-        })
-
-        const total = hypeValue + stableValue
-        return {
-            total,
-            hypeValue,
-            stableValue,
-            hypePercent: total > 0 ? (hypeValue / total) * 100 : 0,
-            stablePercent: total > 0 ? (stableValue / total) * 100 : 0,
-        }
+        return calculateTokenBreakdown(positions.lp, positions.wallet)
     }, [positions.lp, positions.wallet])
 
     // Calculate HyperCore capital and leverage metrics - must be before early returns
@@ -107,6 +73,11 @@ export default function AccountPage() {
             spotValue,
         }
     }, [metrics.perp, positions.spot])
+
+    // Calculate HYPE price from LP or spot balances - must be before early returns
+    const hypePrice = useMemo(() => {
+        return calculateHypePrice({ lp: positions.lp, wallet: positions.wallet })
+    }, [positions.lp, positions.wallet])
 
     // Loading state
     if (meta.isLoading && !accountInfo) {
@@ -174,43 +145,6 @@ export default function AccountPage() {
             </PageWrapper>
         )
     }
-
-    // Calculate HYPE price from LP or spot balances
-    const getHypePrice = () => {
-        // Try to get from LP positions
-        if (positions.lp && positions.lp.length > 0) {
-            const hypePosition = positions.lp.find(
-                (p) => p.token0Symbol === 'HYPE' || p.token1Symbol === 'HYPE' || p.token0Symbol === 'WHYPE' || p.token1Symbol === 'WHYPE',
-            )
-            if (hypePosition) {
-                const hypeAmount =
-                    hypePosition.token0Symbol === 'HYPE' || hypePosition.token0Symbol === 'WHYPE'
-                        ? hypePosition.token0Amount
-                        : hypePosition.token1Amount
-                const hypeValue =
-                    hypePosition.token0Symbol === 'HYPE' || hypePosition.token0Symbol === 'WHYPE'
-                        ? hypePosition.token0ValueUSD
-                        : hypePosition.token1ValueUSD
-                if (hypeAmount && hypeValue && hypeAmount > 0) {
-                    return hypeValue / hypeAmount
-                }
-            }
-        }
-
-        // Try to get from wallet balances
-        if (positions.wallet && positions.wallet.length > 0) {
-            const hypeBalance = positions.wallet.find((b) => b.symbol === 'HYPE')
-            if (hypeBalance && hypeBalance.balance && hypeBalance.valueUSD) {
-                const amount = Number(hypeBalance.balance) / 10 ** hypeBalance.decimals
-                if (amount > 0) return hypeBalance.valueUSD / amount
-            }
-        }
-
-        // Default fallback price
-        return DEFAULT_HYPE_PRICE
-    }
-
-    const hypePrice = getHypePrice()
 
     // Account Header handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -306,7 +240,7 @@ export default function AccountPage() {
                                 {formatUSD(metrics.values.totalLp)}
                             </RoundedAmount>
                             <span className="text-sm text-default/50">
-                                {accountSummary?.currentAPR?.lpFeeAPR ? `${accountSummary.currentAPR.lpFeeAPR.toFixed(1)}% APR` : 'N/A'}
+                                {accountSummary?.currentAPR?.lpFeeAPRPercent ? `${accountSummary.currentAPR.lpFeeAPRPercent.toFixed(1)}% APR` : 'N/A'}
                             </span>
                         </AccountCard>
                     ),
@@ -317,7 +251,9 @@ export default function AccountPage() {
                                 {formatUSD(Math.abs(metrics.values.totalPerp))}
                             </RoundedAmount>
                             <span className="text-sm text-default/50">
-                                {accountSummary?.currentAPR?.fundingAPR ? `${accountSummary.currentAPR.fundingAPR.toFixed(1)}% APR` : 'N/A'}
+                                {accountSummary?.currentAPR?.fundingAPRPercent
+                                    ? `${accountSummary.currentAPR.fundingAPRPercent.toFixed(1)}% APR`
+                                    : 'N/A'}
                             </span>
                         </AccountCard>
                     ),

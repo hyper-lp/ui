@@ -197,11 +197,11 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
         // Aggregated metrics
         metrics: {
             values: {
-                totalPortfolio: data?.metrics?.portfolio?.totalValue || 0,
-                totalLp: data?.metrics?.hyperEvm?.values?.lp || 0,
-                totalWallet: data?.metrics?.hyperEvm?.values?.balances || 0,
-                totalPerp: data?.metrics?.hyperCore?.values?.perp || 0,
-                totalSpot: data?.metrics?.hyperCore?.values?.spot || 0,
+                totalPortfolio: data?.metrics?.portfolio?.totalValueUSD || 0,
+                totalLp: data?.metrics?.hyperEvm?.values?.lpUSD || 0,
+                totalWallet: data?.metrics?.hyperEvm?.values?.balancesUSD || 0,
+                totalPerp: data?.metrics?.hyperCore?.values?.perpUSD || 0,
+                totalSpot: data?.metrics?.hyperCore?.values?.spotUSD || 0,
             },
             deltas: {
                 lp: deltas.hyperEvmLp,
@@ -236,16 +236,16 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
         accountInfo: data?.account,
         accountSummary: data?.snapshots?.current
             ? {
-                  totalLpValue: data.metrics.hyperEvm.values.lp,
-                  totalPerpValue: data.metrics.hyperCore.values.perp,
-                  totalSpotValue: data.metrics.hyperCore.values.spot,
-                  totalHyperEvmValue: data.metrics.hyperEvm.values.balances,
-                  totalValue: data.metrics.portfolio.totalValue,
-                  netDelta: data.metrics.portfolio.netDelta,
-                  lpDelta: data.metrics.hyperEvm.deltas.lp,
-                  perpDelta: data.metrics.hyperCore.deltas.perp,
-                  spotDelta: data.metrics.hyperCore.deltas.spot,
-                  hyperEvmDelta: data.metrics.hyperEvm.deltas.balances,
+                  totalLpValue: data.metrics.hyperEvm.values.lpUSD,
+                  totalPerpValue: data.metrics.hyperCore.values.perpUSD,
+                  totalSpotValue: data.metrics.hyperCore.values.spotUSD,
+                  totalHyperEvmValue: data.metrics.hyperEvm.values.balancesUSD,
+                  totalValue: data.metrics.portfolio.totalValueUSD,
+                  netDelta: data.metrics.portfolio.netDeltaHYPE,
+                  lpDelta: data.metrics.hyperEvm.deltas.lpHYPE,
+                  perpDelta: data.metrics.hyperCore.deltas.perpHYPE,
+                  spotDelta: data.metrics.hyperCore.deltas.spotHYPE,
+                  hyperEvmDelta: data.metrics.hyperEvm.deltas.balancesHYPE,
                   lastSnapshot: data.snapshots.last,
                   currentAPR: data.snapshots.current,
               }
@@ -253,9 +253,9 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
         deltaHistory,
 
         // Direct access to values for convenience
-        totalPortfolioValue: data?.metrics?.portfolio?.totalValue || 0,
-        totalLpValue: data?.metrics?.hyperEvm?.values?.lp || 0,
-        totalPerpValue: data?.metrics?.hyperCore?.values?.perp || 0,
+        totalPortfolioValue: data?.metrics?.portfolio?.totalValueUSD || 0,
+        totalLpValue: data?.metrics?.hyperEvm?.values?.lpUSD || 0,
+        totalPerpValue: data?.metrics?.hyperCore?.values?.perpUSD || 0,
         evmAddress,
         coreAddress,
     }

@@ -5,6 +5,16 @@ import { AppFontFamilies } from '@/enums/app.enum'
 import localFont from 'next/font/local'
 import { Lato } from 'next/font/google'
 
+// Re-export from constants for backward compatibility
+export {
+    DEFAULT_TRANSACTION_LIMIT,
+    DEFAULT_HYPE_PRICE,
+    DELTA_THRESHOLDS,
+    CACHE_DURATION,
+    REFRESH_INTERVALS,
+    MULTICALL3_ADDRESS,
+} from './constants.config'
+
 /**
  * meta
  * https://github.com/propeller-heads/tycho-x/blob/main/TAP-5.md
@@ -124,42 +134,4 @@ export const APP_FONT_FAMILIES: Record<AppFontFamilies, string> = {
     [AppFontFamilies.PVP_TRADE]: PVP_TRADE_FONT.className,
 }
 
-/**
- * Cache Configuration
- */
-export const CACHE_DURATION = {
-    POOL_STATE: 60000, // 60 seconds
-    TOKEN_PRICE: 60000, // 60 seconds
-    DEFAULT: 300000, // 5 minutes
-}
-
-/**
- * Refresh Intervals
- */
-export const REFRESH_INTERVALS = {
-    DEV: 300000, // 5 minutes
-    PROD: 30000, // 30 seconds
-}
-
-/**
- * Multicall Configuration
- */
-export const MULTICALL3_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
-
-/**
- * Transaction Display Configuration
- */
-export const DEFAULT_TRANSACTION_LIMIT = 10
-
-/**
- * Delta Thresholds for Account Page
- */
-export const DELTA_THRESHOLDS = {
-    NEUTRAL: 0.1,
-    NEAR_NEUTRAL: 1,
-} as const
-
-/**
- * Default HYPE Price Fallback
- */
-export const DEFAULT_HYPE_PRICE = 30
+// Constants moved to constants.config.ts

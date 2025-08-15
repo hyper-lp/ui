@@ -1,10 +1,10 @@
 export { DeltaBreakdown } from './DeltaBreakdown'
 export { ValueSummary } from './ValueSummary'
-export { LPPositionsTable } from './LPPositionsTable'
 export { LPPositionsByDex } from './LPPositionsByDex'
 export { CollapsibleLPPositions } from './CollapsibleLPPositions'
-export { PerpPositionsTable } from './PerpPositionsTable'
-export { SpotBalancesTable } from './SpotBalancesTable'
-export { HyperEvmBalancesTable } from './HyperEvmBalancesTable'
 export { StrategyMonitoring } from './StrategyMonitoring'
 export { TransactionHistory } from './TransactionHistory'
+export { HyperCoreTransactionHistory } from './HyperCoreTransactionHistory'
+
+// Table components are exported from ./tables
+export * from './tables'

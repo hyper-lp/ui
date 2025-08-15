@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, memo } from 'react'
-import * as echarts from 'echarts'
+import echarts, { type EChartsOption } from '@/lib/echarts'
 import { cn } from '@/utils'
 
 /**
@@ -33,7 +33,7 @@ export function CustomFallback() {
  */
 
 interface InterfaceEchartWrapperProps {
-    options: echarts.EChartsOption
+    options: EChartsOption
     id?: string
     onPointClick?: (params: unknown) => void
     onDataZoomChange?: (start: number, end: number) => void

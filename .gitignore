@@ -39,6 +39,7 @@ next-env.d.ts
 
 # generated prisma clients
 src/generated/
+node_modules/.prisma/
 
 # specs
 /specs

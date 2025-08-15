@@ -3,7 +3,12 @@
 import { motion } from 'framer-motion'
 import PageWrapper from '@/components/common/PageWrapper'
 import ReferralModal from '@/components/modals/ReferralModal'
-import HeatmapAprChart from '@/components/charts/homepage/HeatmapAprChart'
+import dynamic from 'next/dynamic'
+
+const HeatmapAprChart = dynamic(() => import('@/components/charts/homepage/HeatmapAprChart'), {
+    ssr: false,
+    loading: () => <div className="h-[500px] animate-pulse rounded-xl bg-default/5" />,
+})
 
 export default function HomePage() {
     return (

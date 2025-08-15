@@ -114,7 +114,7 @@ export function PerpPositionsTable({ positions, className }: PerpPositionsTableP
                                                 </span>
                                                 <span className={`ml-1 text-xs ${position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                     ({pnlPercentage >= 0 ? '+' : ''}
-                                                    {pnlPercentage.toFixed(1)}%)
+                                                    {Math.abs(pnlPercentage) < 0.05 ? '0' : pnlPercentage.toFixed(1)}%)
                                                 </span>
                                             </div>
                                         }
@@ -184,7 +184,7 @@ export function PerpPositionsTable({ positions, className }: PerpPositionsTableP
                                                 <p className="text-xs text-default/50">PnL %</p>
                                                 <p className={`font-medium ${pnlPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                     {pnlPercentage >= 0 ? '+' : ''}
-                                                    {pnlPercentage.toFixed(2)}%
+                                                    {Math.abs(pnlPercentage) < 0.005 ? '0' : pnlPercentage.toFixed(2)}%
                                                 </p>
                                             </div>
 

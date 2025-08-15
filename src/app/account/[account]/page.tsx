@@ -13,7 +13,6 @@ import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { AccountCard } from '@/components/app/account/layout/AccountCard'
 import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
-import { getTokenBySymbol } from '@/config/hyperevm-tokens.config'
 import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
 import { DEFAULT_TRANSACTION_LIMIT, DEFAULT_HYPE_PRICE } from '@/config/app.config'
 import { formatUSD, getDeltaStatus } from '@/utils/format.util'
@@ -280,11 +279,18 @@ export default function AccountPage() {
                             title="Liquidity Positions"
                             defaultExpanded={true}
                             headerRight={
-                                <DeltaDisplay
-                                    delta={hyperEvmLpDelta}
-                                    hypePrice={hypePrice}
-                                    decimals={getTokenBySymbol('HYPE')?.decimalsForRounding ?? 1}
-                                />
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1 text-base text-default/60">
+                                        <span className="font-medium text-default">{formatUSD(totalLpValue)}</span>
+                                        <span>•</span>
+                                        <span>{hyperEvmLpPositions?.length || 0} position{hyperEvmLpPositions?.length !== 1 ? 's' : ''}</span>
+                                    </div>
+                                    <DeltaDisplay
+                                        delta={hyperEvmLpDelta}
+                                        hypePrice={hypePrice}
+                                        decimals={1}
+                                    />
+                                </div>
                             }
                         >
                             <LPPositionsTable positions={hyperEvmLpPositions || []} />
@@ -295,11 +301,16 @@ export default function AccountPage() {
                             title="Wallet"
                             defaultExpanded={false}
                             headerRight={
-                                <DeltaDisplay
-                                    delta={hyperEvmSpotDelta}
-                                    hypePrice={hypePrice}
-                                    decimals={getTokenBySymbol('HYPE')?.decimalsForRounding ?? 1}
-                                />
+                                <div className="flex items-center gap-2">
+                                    <span className="text-base font-medium text-default">
+                                        {formatUSD(hyperEvmTokenBalances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
+                                    </span>
+                                    <DeltaDisplay
+                                        delta={hyperEvmSpotDelta}
+                                        hypePrice={hypePrice}
+                                        decimals={1}
+                                    />
+                                </div>
                             }
                         >
                             <WalletBalancesTable balances={hyperEvmTokenBalances || []} />
@@ -317,11 +328,28 @@ export default function AccountPage() {
                             title="Perpetuals"
                             defaultExpanded={true}
                             headerRight={
-                                <DeltaDisplay
-                                    delta={hyperCorePerpDelta}
-                                    hypePrice={hypePrice}
-                                    decimals={getHyperCoreAssetBySymbol('HYPE')?.decimalsForRounding ?? 1}
-                                />
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5 text-base">
+                                        {(() => {
+                                            const totalMargin = hyperCorePerpPositions?.reduce((sum, p) => sum + p.marginUsed, 0) || 0
+                                            const totalNotional = hyperCorePerpPositions?.reduce((sum, p) => sum + Math.abs(p.notionalValue), 0) || 0
+                                            const avgLeverage = totalMargin > 0 ? totalNotional / totalMargin : 0
+                                            
+                                            return (
+                                                <>
+                                                    <span className="text-default/60">{formatUSD(totalMargin)} margin</span>
+                                                    <span className="text-default/40">•</span>
+                                                    <span className="text-default/60">{avgLeverage.toFixed(1)}x</span>
+                                                </>
+                                            )
+                                        })()}
+                                    </div>
+                                    <DeltaDisplay
+                                        delta={hyperCorePerpDelta}
+                                        hypePrice={hypePrice}
+                                        decimals={1}
+                                    />
+                                </div>
                             }
                         >
                             <PerpPositionsTable positions={hyperCorePerpPositions || []} />
@@ -332,11 +360,16 @@ export default function AccountPage() {
                             title="Spot"
                             defaultExpanded={false}
                             headerRight={
-                                <DeltaDisplay
-                                    delta={hyperCoreSpotDelta}
-                                    hypePrice={hypePrice}
-                                    decimals={getHyperCoreAssetBySymbol('HYPE')?.decimalsForRounding ?? 1}
-                                />
+                                <div className="flex items-center gap-2">
+                                    <span className="text-base font-medium text-default">
+                                        {formatUSD(hyperCoreSpotBalances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
+                                    </span>
+                                    <DeltaDisplay
+                                        delta={hyperCoreSpotDelta}
+                                        hypePrice={hypePrice}
+                                        decimals={1}
+                                    />
+                                </div>
                             }
                         >
                             <SpotBalancesTable balances={hyperCoreSpotBalances || []} />

@@ -36,7 +36,6 @@ export function formatNumber(value: number, decimals = 2): string {
 export const formatUSD = (amount: number | string) => {
     try {
         const isNegative = Number(amount) < 0
-        if (isNegative) return 'n/a'
         const absAmount = Math.abs(Number(amount))
         if (absAmount < 1.15)
             return `${numeral(absAmount)

@@ -16,6 +16,7 @@ export function ErrorBoundaryTemplate(props: { error: string }) {
 }
 
 export default function AccountTemplate(props: {
+    header?: ReactNode
     summary: {
         address: ReactNode
         aum: ReactNode
@@ -26,16 +27,21 @@ export default function AccountTemplate(props: {
         lp: ReactNode
         balances: ReactNode
         txs: ReactNode
+        capital?: ReactNode
     }
     hyperCore: {
         short: ReactNode
         spot: ReactNode
         txs: ReactNode
+        capital?: ReactNode
     }
     className?: string
 }) {
     return (
         <div className={cn('flex flex-col gap-8', props.className)}>
+            {/* --------------- Header */}
+            {props.header && props.header}
+
             {/* --------------- Summary */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
                 {/* Address */}
@@ -54,11 +60,14 @@ export default function AccountTemplate(props: {
             {/* All */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* --------------- HyperEvm */}
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <FileMapper id={FileIds.HYPER_EVM_DARK} width={140} height={20} className="rounded-none" />
+                <div className="flex flex-col rounded-lg bg-default/5">
+                    <div className="flex items-center justify-between px-4 pt-2">
+                        <FileMapper id={FileIds.HYPER_EVM_DARK} width={160} height={20} className="rounded-none" />
+                        {props.hyperEvm.capital}
                     </div>
-                    <div className="flex flex-col gap-2 rounded-xl bg-default/5 p-2">
+
+                    {/* sections */}
+                    <div className="flex flex-col gap-2 p-2">
                         {/* HYPE LPs */}
                         <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm LPs" />}>{props.hyperEvm.lp}</ErrorBoundary>
 
@@ -73,11 +82,14 @@ export default function AccountTemplate(props: {
                 </div>
 
                 {/* --------------- HyperCore */}
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <FileMapper id={FileIds.HYPER_CORE_DARK} width={140} height={20} />
+                <div className="flex flex-col rounded-lg bg-default/5">
+                    <div className="flex items-center justify-between px-4 pt-2">
+                        <FileMapper id={FileIds.HYPER_CORE_DARK} width={160} height={20} />
+                        {props.hyperCore.capital}
                     </div>
-                    <div className="flex flex-col gap-2 rounded-xl bg-default/5 p-2">
+
+                    {/* sections */}
+                    <div className="flex flex-col gap-2 p-2">
                         {/* HYPE Short */}
                         <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperCore Short" />}>
                             {props.hyperCore.short}

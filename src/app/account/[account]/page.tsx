@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useParams } from 'next/navigation'
 import { useQueryState } from 'nuqs'
 import { isAddress } from 'viem'
@@ -11,16 +11,16 @@ import { HyperCoreTransactionHistory } from '@/components/app/account/HyperCoreT
 import { LPPositionsTable, WalletBalancesTable, PerpPositionsTable, SpotBalancesTable } from '@/components/app/account/tables'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { AccountCard } from '@/components/app/account/layout/AccountCard'
-import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
+import { CollapsibleSection as CollapsibleCard } from '@/components/app/account/CollapsibleCard'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
 import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
 import { DEFAULT_TRANSACTION_LIMIT, DEFAULT_HYPE_PRICE } from '@/config/app.config'
 import { formatUSD, getDeltaStatus } from '@/utils/format.util'
-import { CardSkeleton, SectionSkeleton } from '@/components/common/SkeletonLoader'
 import { HypeIcon } from '@/components/common/HypeIcon'
 import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
 import { DeltaDisplay } from '@/components/common/DeltaDisplay'
 import { DateWrapperAccurate } from '@/components/common/DateWrapper'
+import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { IconIds } from '@/enums'
 
@@ -39,65 +39,107 @@ export default function AccountPage() {
     }, [address, accountFromUrl])
 
     const addressParam = searchParams?.get('address') || accountFromUrl || ''
-    const {
-        accountInfo,
-        hyperEvmLpPositions,
-        hyperEvmTokenBalances,
-        hyperCorePerpPositions,
-        hyperCoreSpotBalances,
-        accountSummary,
-        isSuccess,
-        hyperEvmLpDelta,
-        hyperEvmSpotDelta,
-        hyperCorePerpDelta,
-        hyperCoreSpotDelta,
-        totalNetDelta,
-        totalPortfolioValue,
-        totalLpValue,
-        totalPerpValue,
-        isLoading,
-        error,
-        isFetching,
-        refetch,
-        lastRefreshTime,
-        evmAddress,
-        coreAddress,
-    } = useAccountData(addressParam, addressParam)
+    const accountData = useAccountData(addressParam, addressParam)
+    const { positions, metrics, meta, actions, accountInfo, accountSummary } = accountData
+
+    // Calculate HyperEVM capital breakdown (HYPE vs Stable) - must be before early returns
+    const hyperEvmBreakdown = useMemo(() => {
+        let hypeValue = 0
+        let stableValue = 0
+
+        // LP positions
+        positions.lp?.forEach((p) => {
+            // Token 0
+            if (p.token0Symbol === 'HYPE' || p.token0Symbol === 'WHYPE') {
+                hypeValue += p.token0ValueUSD || 0
+            } else if (p.token0Symbol === 'USDT0' || p.token0Symbol === 'USD₮0' || p.token0Symbol === 'USDC') {
+                stableValue += p.token0ValueUSD || 0
+            }
+            // Token 1
+            if (p.token1Symbol === 'HYPE' || p.token1Symbol === 'WHYPE') {
+                hypeValue += p.token1ValueUSD || 0
+            } else if (p.token1Symbol === 'USDT0' || p.token1Symbol === 'USD₮0' || p.token1Symbol === 'USDC') {
+                stableValue += p.token1ValueUSD || 0
+            }
+        })
+
+        // Wallet balances
+        positions.wallet?.forEach((b) => {
+            if (b.symbol === 'HYPE' || b.symbol === 'WHYPE') {
+                hypeValue += b.valueUSD || 0
+            } else if (b.symbol === 'USDT0' || b.symbol === 'USD₮0' || b.symbol === 'USDC') {
+                stableValue += b.valueUSD || 0
+            }
+        })
+
+        const total = hypeValue + stableValue
+        return {
+            total,
+            hypeValue,
+            stableValue,
+            hypePercent: total > 0 ? (hypeValue / total) * 100 : 0,
+            stablePercent: total > 0 ? (stableValue / total) * 100 : 0,
+        }
+    }, [positions.lp, positions.wallet])
+
+    // Calculate HyperCore capital and leverage metrics - must be before early returns
+    const hyperCoreBreakdown = useMemo(() => {
+        const margin = metrics.perp.totalMargin
+        const notional = metrics.perp.totalNotional
+        const leverage = metrics.perp.avgLeverage
+
+        // Spot balances
+        const spotValue = positions.spot?.reduce((sum, b) => sum + b.valueUSD, 0) || 0
+        const total = margin + spotValue
+
+        return {
+            total,
+            margin,
+            notional,
+            leverage,
+            spotValue,
+        }
+    }, [metrics.perp, positions.spot])
 
     // Loading state
-    if (isLoading && !accountInfo) {
+    if (meta.isLoading && !accountInfo) {
         return (
             <PageWrapper className="px-4">
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-                        <CardSkeleton />
-                        <CardSkeleton />
-                        <CardSkeleton />
-                        <CardSkeleton />
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        <div className="space-y-4">
-                            <SectionSkeleton title="Liquidity Positions" rows={2} />
-                            <SectionSkeleton title="Wallet Balances" rows={3} />
+                <AccountTemplate
+                    header={
+                        <div className="mb-4 w-full">
+                            <div className="h-10 w-full animate-pulse rounded bg-default/20" />
                         </div>
-                        <div className="space-y-4">
-                            <SectionSkeleton title="Perpetual Positions" rows={2} />
-                            <SectionSkeleton title="Spot" rows={3} />
-                        </div>
-                    </div>
-                </div>
+                    }
+                    summary={{
+                        address: <AccountCard isLoading />,
+                        aum: <AccountCard isLoading />,
+                        netDelta: <AccountCard isLoading />,
+                        apr: <AccountCard isLoading />,
+                    }}
+                    hyperEvm={{
+                        lp: <CollapsibleCard title="Liquidity Positions" defaultExpanded={false} isLoading />,
+                        balances: <CollapsibleCard title="Wallet" defaultExpanded={false} isLoading />,
+                        txs: <CollapsibleCard title="Transactions" defaultExpanded={false} isLoading />,
+                    }}
+                    hyperCore={{
+                        short: <CollapsibleCard title="Perpetuals" defaultExpanded={false} isLoading />,
+                        spot: <CollapsibleCard title="Spot" defaultExpanded={false} isLoading />,
+                        txs: <CollapsibleCard title="Trades" defaultExpanded={false} isLoading />,
+                    }}
+                />
             </PageWrapper>
         )
     }
 
     // Error state
-    if (error) {
+    if (meta.error) {
         return (
             <PageWrapper className="px-4">
                 <div className="space-y-4 py-12 text-center">
-                    <p className="text-default/50">{error instanceof Error ? error.message : 'Failed to load account'}</p>
+                    <p className="text-default/50">{meta.error instanceof Error ? meta.error.message : 'Failed to load account'}</p>
                     <button
-                        onClick={() => refetch()}
+                        onClick={() => actions.refetch()}
                         className="rounded border border-default/20 px-4 py-2 text-sm transition-colors hover:bg-default/5"
                     >
                         Retry
@@ -108,7 +150,7 @@ export default function AccountPage() {
     }
 
     // No data state
-    if (!isSuccess || !accountInfo) {
+    if (!meta.isSuccess || !accountInfo) {
         return (
             <PageWrapper className="px-4">
                 <div className="space-y-4 py-12 text-center">
@@ -116,7 +158,7 @@ export default function AccountPage() {
                         No data for <code className="font-mono text-sm">{addressParam}</code>
                     </p>
                     <button
-                        onClick={() => refetch()}
+                        onClick={() => actions.refetch()}
                         className="rounded border border-default/20 px-4 py-2 text-sm transition-colors hover:bg-default/5"
                     >
                         Refresh
@@ -129,8 +171,8 @@ export default function AccountPage() {
     // Calculate HYPE price from LP or spot balances
     const getHypePrice = () => {
         // Try to get from LP positions
-        if (hyperEvmLpPositions && hyperEvmLpPositions.length > 0) {
-            const hypePosition = hyperEvmLpPositions.find(
+        if (positions.lp && positions.lp.length > 0) {
+            const hypePosition = positions.lp.find(
                 (p) => p.token0Symbol === 'HYPE' || p.token1Symbol === 'HYPE' || p.token0Symbol === 'WHYPE' || p.token1Symbol === 'WHYPE',
             )
             if (hypePosition) {
@@ -149,8 +191,8 @@ export default function AccountPage() {
         }
 
         // Try to get from wallet balances
-        if (hyperEvmTokenBalances && hyperEvmTokenBalances.length > 0) {
-            const hypeBalance = hyperEvmTokenBalances.find((b) => b.symbol === 'HYPE')
+        if (positions.wallet && positions.wallet.length > 0) {
+            const hypeBalance = positions.wallet.find((b) => b.symbol === 'HYPE')
             if (hypeBalance && hypeBalance.balance && hypeBalance.valueUSD) {
                 const amount = Number(hypeBalance.balance) / 10 ** hypeBalance.decimals
                 if (amount > 0) return hypeBalance.valueUSD / amount
@@ -178,7 +220,7 @@ export default function AccountPage() {
                 setAddress(trimmedValue)
                 // Trigger refresh when valid address is entered
                 if (trimmedValue !== (address || accountFromUrl)) {
-                    refetch()
+                    actions.refetch()
                 }
             }
         }
@@ -191,55 +233,57 @@ export default function AccountPage() {
             setAddress(trimmedValue)
             // Trigger refresh when valid address is entered
             if (trimmedValue !== (address || accountFromUrl)) {
-                refetch()
+                actions.refetch()
             }
         }
     }
 
     return (
         <PageWrapper className="px-4">
-            {/* Account Header */}
-            <div className="mb-4 w-full">
-                <div className="flex items-center gap-2">
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        onKeyDown={handleKeyDown}
-                        onBlur={handleBlur}
-                        placeholder="Enter address (0x...)"
-                        className="flex-1 border-b border-default/20 bg-background px-1 py-2 font-mono text-sm focus:border-default/50 focus:outline-none"
-                    />
-                    {lastRefreshTime && <DateWrapperAccurate date={lastRefreshTime} className="whitespace-nowrap text-xs text-default/50" />}
-                    <button
-                        onClick={() => refetch()}
-                        disabled={isFetching}
-                        className="rounded p-1 hover:bg-default/10 disabled:opacity-50"
-                        title="Refresh all data"
-                    >
-                        <IconWrapper id={IconIds.REFRESH} className={`size-4 text-default/50 ${isFetching ? 'animate-spin' : ''}`} />
-                    </button>
-                </div>
-            </div>
-
             <AccountTemplate
+                header={
+                    <div className="mb-4 w-full">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={handleInputChange}
+                                onKeyDown={handleKeyDown}
+                                onBlur={handleBlur}
+                                placeholder="Enter address (0x...)"
+                                className="flex-1 border-b border-default/20 bg-background px-1 py-2 font-mono text-sm focus:border-default/50 focus:outline-none"
+                            />
+                            {meta.lastRefreshTime && (
+                                <DateWrapperAccurate date={meta.lastRefreshTime} className="whitespace-nowrap text-xs text-default/50" />
+                            )}
+                            <button
+                                onClick={() => actions.refetch()}
+                                disabled={meta.isFetching}
+                                className="rounded p-1 hover:bg-default/10 disabled:opacity-50"
+                                title="Refresh all data"
+                            >
+                                <IconWrapper id={IconIds.REFRESH} className={`size-4 text-default/50 ${meta.isFetching ? 'animate-spin' : ''}`} />
+                            </button>
+                        </div>
+                    </div>
+                }
                 summary={{
                     address: (
                         <AccountCard>
                             <span className="text-xs text-default/50">Capital Deployed</span>
-                            <RoundedAmount amount={totalPortfolioValue} className="text-xl font-semibold">
-                                {formatUSD(totalPortfolioValue)}
+                            <RoundedAmount amount={metrics.values.totalPortfolio} className="text-xl font-semibold">
+                                {formatUSD(metrics.values.totalPortfolio)}
                             </RoundedAmount>
                             <span className="text-xs text-default/50">
-                                {hyperEvmLpPositions?.length || 0} position{hyperEvmLpPositions?.length !== 1 ? 's' : ''}
+                                {positions.lp?.length || 0} position{positions.lp?.length !== 1 ? 's' : ''}
                             </span>
                         </AccountCard>
                     ),
                     aum: (
                         <AccountCard>
                             <span className="text-xs text-default/50">Long LP</span>
-                            <RoundedAmount amount={totalLpValue} className="text-xl font-semibold">
-                                {formatUSD(totalLpValue)}
+                            <RoundedAmount amount={metrics.values.totalLp} className="text-xl font-semibold">
+                                {formatUSD(metrics.values.totalLp)}
                             </RoundedAmount>
                             <span className="text-xs text-default/50">
                                 {accountSummary?.currentAPR?.lpFeeAPR ? `${accountSummary.currentAPR.lpFeeAPR.toFixed(1)}% APR` : 'N/A'}
@@ -249,8 +293,8 @@ export default function AccountPage() {
                     netDelta: (
                         <AccountCard>
                             <span className="text-xs text-default/50">Short Perp</span>
-                            <RoundedAmount amount={Math.abs(totalPerpValue)} className="text-xl font-semibold">
-                                {formatUSD(Math.abs(totalPerpValue))}
+                            <RoundedAmount amount={Math.abs(metrics.values.totalPerp)} className="text-xl font-semibold">
+                                {formatUSD(Math.abs(metrics.values.totalPerp))}
                             </RoundedAmount>
                             <span className="text-xs text-default/50">
                                 {accountSummary?.currentAPR?.fundingAPR ? `${accountSummary.currentAPR.fundingAPR.toFixed(1)}% APR` : 'N/A'}
@@ -263,13 +307,13 @@ export default function AccountPage() {
                             <div className="flex items-center gap-1">
                                 <HypeIcon size={20} />
                                 <HypeDeltaTooltip
-                                    delta={totalNetDelta}
+                                    delta={metrics.deltas.netTotal}
                                     hypePrice={hypePrice}
                                     decimals={getHyperCoreAssetBySymbol('HYPE')?.decimalsForRounding ?? 1}
                                     className="text-xl font-semibold"
                                 />
                             </div>
-                            <span className="text-xs text-default/50">{getDeltaStatus(totalNetDelta)}</span>
+                            <span className="text-xs text-default/50">{getDeltaStatus(metrics.deltas.netTotal)}</span>
                         </AccountCard>
                     ),
                 }}
@@ -277,23 +321,21 @@ export default function AccountPage() {
                     lp: (
                         <CollapsibleCard
                             title="Liquidity Positions"
-                            defaultExpanded={true}
+                            defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1 text-base text-default/60">
-                                        <span className="font-medium text-default">{formatUSD(totalLpValue)}</span>
+                                        <span className="font-medium text-default">{formatUSD(metrics.values.totalLp)}</span>
                                         <span>•</span>
-                                        <span>{hyperEvmLpPositions?.length || 0} position{hyperEvmLpPositions?.length !== 1 ? 's' : ''}</span>
+                                        <span>
+                                            {positions.lp?.length || 0} position{positions.lp?.length !== 1 ? 's' : ''}
+                                        </span>
                                     </div>
-                                    <DeltaDisplay
-                                        delta={hyperEvmLpDelta}
-                                        hypePrice={hypePrice}
-                                        decimals={1}
-                                    />
+                                    <DeltaDisplay delta={metrics.deltas.lp} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
-                            <LPPositionsTable positions={hyperEvmLpPositions || []} />
+                            <LPPositionsTable positions={positions.lp} />
                         </CollapsibleCard>
                     ),
                     balances: (
@@ -303,56 +345,62 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <span className="text-base font-medium text-default">
-                                        {formatUSD(hyperEvmTokenBalances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
+                                        {formatUSD(positions.wallet?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
                                     </span>
-                                    <DeltaDisplay
-                                        delta={hyperEvmSpotDelta}
-                                        hypePrice={hypePrice}
-                                        decimals={1}
-                                    />
+                                    <DeltaDisplay delta={metrics.deltas.wallet} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
-                            <WalletBalancesTable balances={hyperEvmTokenBalances || []} />
+                            <WalletBalancesTable balances={positions.wallet} />
                         </CollapsibleCard>
                     ),
                     txs: (
                         <CollapsibleCard title="Transactions" defaultExpanded={false}>
-                            <TransactionHistory account={evmAddress} limit={DEFAULT_TRANSACTION_LIMIT} />
+                            <TransactionHistory account={meta.addresses.evm} limit={DEFAULT_TRANSACTION_LIMIT} />
                         </CollapsibleCard>
                     ),
+                    capital:
+                        hyperEvmBreakdown.total > 0 ? (
+                            <StyledTooltip
+                                content={
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between gap-8">
+                                            <span className="text-default/60">HYPE:</span>
+                                            <span className="font-medium">
+                                                {formatUSD(hyperEvmBreakdown.hypeValue)} ({hyperEvmBreakdown.hypePercent.toFixed(0)}%)
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-8">
+                                            <span className="text-default/60">Stable:</span>
+                                            <span className="font-medium">
+                                                {formatUSD(hyperEvmBreakdown.stableValue)} ({hyperEvmBreakdown.stablePercent.toFixed(0)}%)
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                                placement="bottom"
+                            >
+                                <div className="cursor-help text-sm font-medium text-default/80">{formatUSD(hyperEvmBreakdown.total)}</div>
+                            </StyledTooltip>
+                        ) : null,
                 }}
                 hyperCore={{
                     short: (
                         <CollapsibleCard
                             title="Perpetuals"
-                            defaultExpanded={true}
+                            defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1.5 text-base">
-                                        {(() => {
-                                            const totalMargin = hyperCorePerpPositions?.reduce((sum, p) => sum + p.marginUsed, 0) || 0
-                                            const totalNotional = hyperCorePerpPositions?.reduce((sum, p) => sum + Math.abs(p.notionalValue), 0) || 0
-                                            const avgLeverage = totalMargin > 0 ? totalNotional / totalMargin : 0
-                                            
-                                            return (
-                                                <>
-                                                    <span className="text-default/60">{formatUSD(totalMargin)} margin</span>
-                                                    <span className="text-default/40">•</span>
-                                                    <span className="text-default/60">{avgLeverage.toFixed(1)}x</span>
-                                                </>
-                                            )
-                                        })()}
+                                        <span className="text-default/60">{formatUSD(metrics.perp.totalMargin)} margin</span>
+                                        <span className="text-default/40">•</span>
+                                        <span className="text-default/60">{metrics.perp.avgLeverage.toFixed(1)}x</span>
                                     </div>
-                                    <DeltaDisplay
-                                        delta={hyperCorePerpDelta}
-                                        hypePrice={hypePrice}
-                                        decimals={1}
-                                    />
+                                    <DeltaDisplay delta={metrics.deltas.perp} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
-                            <PerpPositionsTable positions={hyperCorePerpPositions || []} />
+                            <PerpPositionsTable positions={positions.perp} />
                         </CollapsibleCard>
                     ),
                     spot: (
@@ -362,24 +410,50 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <span className="text-base font-medium text-default">
-                                        {formatUSD(hyperCoreSpotBalances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
+                                        {formatUSD(positions.spot?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
                                     </span>
-                                    <DeltaDisplay
-                                        delta={hyperCoreSpotDelta}
-                                        hypePrice={hypePrice}
-                                        decimals={1}
-                                    />
+                                    <DeltaDisplay delta={metrics.deltas.spot} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
-                            <SpotBalancesTable balances={hyperCoreSpotBalances || []} />
+                            <SpotBalancesTable balances={positions.spot} />
                         </CollapsibleCard>
                     ),
                     txs: (
-                        <CollapsibleCard title={'Trades'} defaultExpanded={false}>
-                            <HyperCoreTransactionHistory account={coreAddress} limit={DEFAULT_TRANSACTION_LIMIT} />
+                        <CollapsibleCard title="Trades" defaultExpanded={false}>
+                            <HyperCoreTransactionHistory account={meta.addresses.core} limit={DEFAULT_TRANSACTION_LIMIT} />
                         </CollapsibleCard>
                     ),
+                    capital:
+                        hyperCoreBreakdown.total > 0 ? (
+                            <StyledTooltip
+                                content={
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between gap-8">
+                                            <span className="text-default/60">Margin:</span>
+                                            <span className="font-medium">{formatUSD(hyperCoreBreakdown.margin)}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-8">
+                                            <span className="text-default/60">Notional:</span>
+                                            <span className="font-medium">{formatUSD(hyperCoreBreakdown.notional)}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-8">
+                                            <span className="text-default/60">Leverage:</span>
+                                            <span className="font-medium">{hyperCoreBreakdown.leverage.toFixed(1)}x</span>
+                                        </div>
+                                        {hyperCoreBreakdown.spotValue > 0 && (
+                                            <div className="flex items-center justify-between gap-8 border-t border-default/20 pt-1">
+                                                <span className="text-default/60">Spot:</span>
+                                                <span className="font-medium">{formatUSD(hyperCoreBreakdown.spotValue)}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                }
+                                placement="bottom"
+                            >
+                                <div className="cursor-help text-sm font-medium text-default/80">{formatUSD(hyperCoreBreakdown.total)}</div>
+                            </StyledTooltip>
+                        ) : null,
                 }}
             />
         </PageWrapper>

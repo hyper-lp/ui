@@ -189,55 +189,95 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
     // Display refresh time
     const refreshTimeDisplay = formatTimeSince(lastRefreshTime)
 
-    return {
-        // Account info
-        accountInfo: data?.account,
+    // Calculate perp metrics
+    const perpMetrics = useMemo(() => {
+        if (!data?.positions?.perp) {
+            return {
+                totalMargin: 0,
+                totalNotional: 0,
+                totalPnl: 0,
+                avgLeverage: 0,
+            }
+        }
 
-        // HyperEVM positions
+        const totalMargin = data.positions.perp.reduce((sum, p) => sum + p.marginUsed, 0)
+        const totalNotional = data.positions.perp.reduce((sum, p) => sum + Math.abs(p.notionalValue), 0)
+        const totalPnl = data.positions.perp.reduce((sum, p) => sum + p.unrealizedPnl, 0)
+        const avgLeverage = totalMargin > 0 ? totalNotional / totalMargin : 0
+
+        return {
+            totalMargin,
+            totalNotional,
+            totalPnl,
+            avgLeverage,
+        }
+    }, [data?.positions?.perp])
+
+    return {
+        // Core position data
+        positions: {
+            lp: data?.positions?.lp || [],
+            wallet: data?.positions?.hyperEvm || [],
+            perp: data?.positions?.perp || [],
+            spot: data?.positions?.spot || [],
+        },
+
+        // Aggregated metrics
+        metrics: {
+            values: {
+                totalPortfolio: values.totalValue,
+                totalLp: data?.summary?.totalLpValue || 0,
+                totalWallet: data?.summary?.totalHyperEvmValue || 0,
+                totalPerp: data?.summary?.totalPerpValue || 0,
+                totalSpot: data?.summary?.totalSpotValue || 0,
+            },
+            deltas: {
+                lp: deltas.hyperEvmLp,
+                wallet: deltas.hyperEvmSpot,
+                perp: deltas.hyperCorePerp,
+                spot: deltas.hyperCoreSpot,
+                netTotal: deltas.totalNet,
+            },
+            perp: perpMetrics,
+        },
+
+        // Meta information
+        meta: {
+            isLoading,
+            isFetching,
+            error,
+            isSuccess: data?.success || false,
+            lastRefreshTime,
+            refreshTimeDisplay,
+            addresses: {
+                evm: evmAddress,
+                core: coreAddress,
+            },
+        },
+
+        // Actions
+        actions: {
+            refetch,
+        },
+
+        // Legacy data (for backward compatibility - to be removed)
+        accountInfo: data?.account,
+        accountSummary: data?.summary,
+        deltaHistory,
+
+        // Legacy individual exports (for backward compatibility - to be removed)
         hyperEvmLpPositions: data?.positions?.lp,
         hyperEvmTokenBalances: data?.positions?.hyperEvm,
-
-        // HyperCore positions
         hyperCorePerpPositions: data?.positions?.perp,
         hyperCoreSpotBalances: data?.positions?.spot,
-
-        // Summary data
-        accountSummary: data?.summary,
-        fetchTimings: data?.timings,
-        isSuccess: data?.success,
-
-        // Computed deltas with explicit names
         hyperEvmLpDelta: deltas.hyperEvmLp,
         hyperEvmSpotDelta: deltas.hyperEvmSpot,
         hyperCorePerpDelta: deltas.hyperCorePerp,
         hyperCoreSpotDelta: deltas.hyperCoreSpot,
-        totalHyperEvmDelta: deltas.totalHyperEvm,
-        totalHyperCoreDelta: deltas.totalHyperCore,
         totalNetDelta: deltas.totalNet,
-
-        // Computed values with explicit names
-        totalHyperEvmValue: values.totalHyperEvmValue,
-        totalHyperCoreValue: values.totalHyperCoreValue,
         totalPortfolioValue: values.totalValue,
-
-        // Section-specific values from summary
         totalLpValue: data?.summary?.totalLpValue || 0,
-        totalHyperEvmBalanceValue: data?.summary?.totalHyperEvmValue || 0,
         totalPerpValue: data?.summary?.totalPerpValue || 0,
-        totalSpotValue: data?.summary?.totalSpotValue || 0,
-
-        // History
-        deltaHistory,
-
-        // Meta information
-        isLoading,
-        error,
-        isFetching,
-        refetch,
-        lastRefreshTime,
-        refreshTimeDisplay,
-
-        // Addresses
         evmAddress,
         coreAddress,
     }

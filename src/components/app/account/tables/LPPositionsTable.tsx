@@ -6,7 +6,7 @@ import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
 import type { LPPosition } from '@/interfaces'
 import { LPRowTemplate } from './TableTemplates'
-import { formatUSD, formatNumber } from '@/utils/format.util'
+import { formatUSD, formatNumber, shortenValue } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 
@@ -138,7 +138,7 @@ export function LPPositionsTable({ positions, className }: LPPositionsTableProps
                                             {/* Position Info */}
                                             <div>
                                                 <p className="text-xs text-default/50">Position ID</p>
-                                                <p className="font-mono text-xs">{position.tokenId || position.id}</p>
+                                                <p className="font-mono text-xs">{shortenValue(position.tokenId || position.id)}</p>
                                             </div>
                                             {/* Pool and DEX info would go here if available */}
 

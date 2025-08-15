@@ -7,7 +7,7 @@ import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
 import { PerpRowTemplate } from './TableTemplates'
-import { formatUSD, formatNumber } from '@/utils/format.util'
+import { formatUSD, formatNumber, shortenValue } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 
@@ -136,7 +136,7 @@ export function PerpPositionsTable({ positions, className }: PerpPositionsTableP
                                             {/* Position Details */}
                                             <div>
                                                 <p className="text-xs text-default/50">Position ID</p>
-                                                <p className="font-mono text-xs">{position.id}</p>
+                                                <p className="font-mono text-xs">{shortenValue(position.id)}</p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-default/50">Direction</p>

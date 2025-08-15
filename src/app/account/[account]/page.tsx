@@ -380,7 +380,9 @@ export default function AccountPage() {
                                 }
                                 placement="bottom"
                             >
-                                <div className="cursor-help text-sm font-medium text-default">{formatUSD(hyperEvmBreakdown.total)}</div>
+                                <div className="cursor-help text-sm font-medium text-default">
+                                    Deployed capital: {formatUSD(hyperEvmBreakdown.total)}
+                                </div>
                             </StyledTooltip>
                         ) : null,
                 }}
@@ -451,7 +453,9 @@ export default function AccountPage() {
                                 }
                                 placement="bottom"
                             >
-                                <div className="cursor-help text-sm font-medium text-default">{formatUSD(hyperCoreBreakdown.total)}</div>
+                                <div className="cursor-help text-sm font-medium text-default">
+                                    Deployed capital: {formatUSD(hyperCoreBreakdown.total)}
+                                </div>
                             </StyledTooltip>
                         ) : null,
                 }}

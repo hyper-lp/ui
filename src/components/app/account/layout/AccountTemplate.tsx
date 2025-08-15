@@ -60,8 +60,8 @@ export default function AccountTemplate(props: {
             {/* All */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* --------------- HyperEvm */}
-                <div className="flex flex-col rounded-lg bg-default/5">
-                    <div className="flex items-center justify-between px-4 pt-2">
+                <div className="flex flex-col rounded-lg bg-default/5 hover:bg-default/10">
+                    <div className="flex items-center justify-between px-4 pt-4">
                         <FileMapper id={FileIds.HYPER_EVM_DARK} width={160} height={20} className="rounded-none" />
                         {props.hyperEvm.capital}
                     </div>
@@ -82,8 +82,8 @@ export default function AccountTemplate(props: {
                 </div>
 
                 {/* --------------- HyperCore */}
-                <div className="flex flex-col rounded-lg bg-default/5">
-                    <div className="flex items-center justify-between px-4 pt-2">
+                <div className="flex flex-col rounded-lg bg-default/5 hover:bg-default/10">
+                    <div className="flex items-center justify-between px-4 pt-4">
                         <FileMapper id={FileIds.HYPER_CORE_DARK} width={160} height={20} />
                         {props.hyperCore.capital}
                     </div>

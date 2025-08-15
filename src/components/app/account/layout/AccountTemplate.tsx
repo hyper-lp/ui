@@ -56,9 +56,9 @@ export default function AccountTemplate(props: {
                 {/* --------------- HyperEvm */}
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
-                        <FileMapper id={FileIds.HYPER_EVM_MINT} width={100} height={20} />
+                        <FileMapper id={FileIds.HYPER_EVM_DARK} width={140} height={20} className="rounded-none" />
                     </div>
-                    <div className="flex flex-col gap-2 rounded-xl border border-hl-dark p-2">
+                    <div className="flex flex-col gap-2 rounded-xl bg-default/5 p-2">
                         {/* HYPE LPs */}
                         <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm LPs" />}>{props.hyperEvm.lp}</ErrorBoundary>
 
@@ -75,9 +75,9 @@ export default function AccountTemplate(props: {
                 {/* --------------- HyperCore */}
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
-                        <FileMapper id={FileIds.HYPER_CORE_MINT} width={100} height={20} />
+                        <FileMapper id={FileIds.HYPER_CORE_DARK} width={140} height={20} />
                     </div>
-                    <div className="flex flex-col gap-2 rounded-xl border border-hl-dark p-2">
+                    <div className="flex flex-col gap-2 rounded-xl bg-default/5 p-2">
                         {/* HYPE Short */}
                         <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperCore Short" />}>
                             {props.hyperCore.short}

@@ -52,11 +52,14 @@ export function PerpPositionsTable({ positions }: PerpPositionsTableProps) {
                         {/* Summary Row */}
                         <button
                             onClick={() => togglePosition(position.id)}
-                            className="w-full border-b border-default/10 py-2 transition-colors hover:bg-default/5"
+                            className="w-full border-b border-default/10 py-3 transition-colors hover:bg-default/5 sm:py-2"
                         >
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex items-center gap-2">
-                                    <IconWrapper id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT} className="size-4 text-default/50" />
+                                    <IconWrapper
+                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                                        className="size-4 flex-shrink-0 text-default/50"
+                                    />
 
                                     {/* Asset Logo */}
                                     {getHyperCoreAssetBySymbol(position.asset)?.fileId && (
@@ -68,31 +71,31 @@ export function PerpPositionsTable({ positions }: PerpPositionsTableProps) {
                                         />
                                     )}
 
-                                    <span className="font-medium">{position.asset}-PERP</span>
+                                    <span className="text-sm font-medium sm:text-base">{position.asset}-PERP</span>
                                     <span
-                                        className={`rounded px-2 py-0.5 text-sm ${isLong ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}
+                                        className={`rounded px-1.5 py-0.5 text-xs sm:px-2 sm:text-sm ${isLong ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}
                                     >
                                         {isLong ? 'LONG' : 'SHORT'}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-4 text-sm">
+                                <div className="ml-6 grid grid-cols-2 gap-3 text-xs sm:ml-0 sm:flex sm:items-center sm:gap-4 sm:text-sm">
                                     <div className="text-right">
-                                        <div className="text-sm text-default/50">Size</div>
+                                        <div className="hidden text-sm text-default/50 sm:block">Size</div>
                                         <div className={`font-medium ${isLong ? 'text-green-600' : 'text-red-600'}`}>
                                             {formatSize(position.size, position.asset)}
                                         </div>
                                     </div>
 
                                     <div className="text-right">
-                                        <div className="text-xs text-default/50">Notional</div>
+                                        <div className="hidden text-xs text-default/50 sm:block">Notional</div>
                                         <RoundedAmount amount={Math.abs(position.notionalValue)} className="font-medium">
                                             {formatUSD(Math.abs(position.notionalValue))}
                                         </RoundedAmount>
                                     </div>
 
                                     <div className="text-right">
-                                        <div className="text-sm text-default/50">Funding APR</div>
+                                        <div className="hidden text-sm text-default/50 sm:block">Funding</div>
                                         <div className={`font-medium ${!isLong ? 'text-green-600' : 'text-red-600'}`}>
                                             {/* Mock funding APR - in production this would come from API */}
                                             {!isLong ? '+' : '-'}8.5%
@@ -100,10 +103,12 @@ export function PerpPositionsTable({ positions }: PerpPositionsTableProps) {
                                     </div>
 
                                     <div className="text-right">
-                                        <div className="text-sm text-default/50">PnL</div>
-                                        <div className={`font-medium ${position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        <div className="hidden text-sm text-default/50 sm:block">PnL</div>
+                                        <div
+                                            className={`font-semibold sm:font-medium ${position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                        >
                                             ${formatNumber(position.unrealizedPnl)}
-                                            <span className="ml-1 text-xs">
+                                            <span className="ml-0.5 hidden text-xs sm:inline">
                                                 ({pnlPercentage >= 0 ? '+' : ''}
                                                 {pnlPercentage.toFixed(2)}%)
                                             </span>
@@ -115,36 +120,36 @@ export function PerpPositionsTable({ positions }: PerpPositionsTableProps) {
 
                         {/* Expanded Details */}
                         {isExpanded && (
-                            <div className="bg-default/5 p-2 text-sm">
-                                <div className="flex items-start justify-between">
-                                    <div className="grid flex-1 grid-cols-2 gap-4 md:grid-cols-3">
+                            <div className="bg-default/5 p-3 text-xs sm:p-2 sm:text-sm">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="grid flex-1 grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
                                         <div>
-                                            <span className="text-default/50">Entry Price:</span>
+                                            <div className="text-default/50">Entry Price</div>
                                             <div className="font-medium">${formatNumber(position.entryPrice)}</div>
                                         </div>
                                         <div>
-                                            <span className="text-default/50">Mark Price:</span>
+                                            <div className="text-default/50">Mark Price</div>
                                             <div className="font-medium">${formatNumber(position.markPrice)}</div>
                                         </div>
                                         <div>
-                                            <span className="text-default/50">Margin Used:</span>
+                                            <div className="text-default/50">Margin Used</div>
                                             <div className="font-medium">${formatNumber(position.marginUsed)}</div>
                                         </div>
                                         <div>
-                                            <span className="text-default/50">Funding Paid:</span>
+                                            <div className="text-default/50">Funding Paid</div>
                                             <div className={`font-medium ${position.fundingPaid >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                 ${formatNumber(position.fundingPaid)}
                                             </div>
                                         </div>
                                         <div>
-                                            <span className="text-default/50">Est. Daily Funding:</span>
+                                            <div className="text-default/50">Est. Daily Fund</div>
                                             <div className={`font-medium ${!isLong ? 'text-green-600' : 'text-red-600'}`}>
                                                 {/* Mock calculation - in production would use actual funding rate */}$
                                                 {formatNumber((Math.abs(position.notionalValue) * 0.085) / 365)}/day
                                             </div>
                                         </div>
                                         <div>
-                                            <span className="text-default/50">Leverage:</span>
+                                            <div className="text-default/50">Leverage</div>
                                             <div className="font-medium">
                                                 {position.marginUsed > 0 ? (Math.abs(position.notionalValue) / position.marginUsed).toFixed(2) : '0'}x
                                             </div>

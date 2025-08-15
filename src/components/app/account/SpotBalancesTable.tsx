@@ -53,11 +53,14 @@ export function SpotBalancesTable({ balances }: SpotBalancesTableProps) {
                         {/* Summary Row */}
                         <button
                             onClick={() => toggleAsset(balance.id)}
-                            className="w-full border-b border-default/10 py-2 transition-colors hover:bg-default/5"
+                            className="w-full border-b border-default/10 py-3 transition-colors hover:bg-default/5 sm:py-2"
                         >
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex items-center gap-2">
-                                    <IconWrapper id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT} className="size-4 text-default/50" />
+                                    <IconWrapper
+                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                                        className="size-4 flex-shrink-0 text-default/50"
+                                    />
 
                                     {/* Asset Logo */}
                                     <FileMapper
@@ -77,15 +80,15 @@ export function SpotBalancesTable({ balances }: SpotBalancesTableProps) {
 
                                     <span className="font-medium">{balance.asset}</span>
                                     {balance.asset === 'HYPE' && (
-                                        <span className="rounded bg-green-100 px-2 py-0.5 text-sm text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-200 sm:px-2 sm:text-sm">
                                             LONG
                                         </span>
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-4 text-sm">
+                                <div className="ml-6 flex items-center gap-3 text-xs sm:ml-0 sm:gap-4 sm:text-sm">
                                     <div className="text-right">
-                                        <div className="text-sm text-default/50">Balance</div>
+                                        <div className="hidden text-sm text-default/50 sm:block">Balance</div>
                                         {balance.asset === 'HYPE' ? (
                                             <StyledTooltip
                                                 content={
@@ -109,8 +112,10 @@ export function SpotBalancesTable({ balances }: SpotBalancesTableProps) {
                                     </div>
 
                                     <div className="text-right">
-                                        <div className="text-sm text-default/50">Value</div>
-                                        <div className="font-medium">${formatNumber(balance.valueUSD)}</div>
+                                        <div className="hidden text-sm text-default/50 sm:block">Value</div>
+                                        <div className="font-semibold text-primary sm:font-medium sm:text-current">
+                                            ${formatNumber(balance.valueUSD)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -118,22 +123,22 @@ export function SpotBalancesTable({ balances }: SpotBalancesTableProps) {
 
                         {/* Expanded Details */}
                         {isExpanded && (
-                            <div className="bg-default/5 p-2 text-sm">
-                                <div className="flex items-start justify-between">
+                            <div className="bg-default/5 p-3 text-xs sm:p-2 sm:text-sm">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                     <div className="flex-1 space-y-2">
-                                        <div className="flex justify-between">
+                                        <div className="flex justify-between gap-2">
                                             <span className="text-default/50">Asset Type:</span>
                                             <span>Spot</span>
                                         </div>
                                         {balance.valueUSD > 0 && displayBalance > 0 && (
-                                            <div className="flex justify-between">
+                                            <div className="flex justify-between gap-2">
                                                 <span className="text-default/50">Price:</span>
                                                 <span>${formatNumber(balance.valueUSD / displayBalance, 4)}</span>
                                             </div>
                                         )}
-                                        <div className="flex justify-between">
+                                        <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                                             <span className="text-default/50">Raw Balance:</span>
-                                            <span className="font-mono text-xs">{balance.balance.toString()}</span>
+                                            <span className="break-all font-mono text-xs">{balance.balance.toString()}</span>
                                         </div>
                                     </div>
                                     <StyledTooltip

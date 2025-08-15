@@ -115,11 +115,14 @@ export function CollapsibleLPPositions({ positions, className }: CollapsibleLPPo
                         {/* Summary Row */}
                         <button
                             onClick={() => toggleDex(summary.dex)}
-                            className="w-full border-b border-default/10 py-2 transition-colors hover:bg-default/5"
+                            className="w-full border-b border-default/10 py-3 transition-colors hover:bg-default/5 sm:py-2"
                         >
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex items-center gap-2">
-                                    <IconWrapper id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT} className="size-4 text-default/50" />
+                                    <IconWrapper
+                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                                        className="size-4 flex-shrink-0 text-default/50"
+                                    />
 
                                     {/* DEX Logo */}
                                     {getDexLogo(summary.dex) && (
@@ -127,22 +130,23 @@ export function CollapsibleLPPositions({ positions, className }: CollapsibleLPPo
                                     )}
 
                                     <span className="font-medium capitalize">{summary.dex}</span>
-                                    <span className="text-sm text-default/50">
+                                    <span className="hidden text-sm text-default/50 sm:inline">
                                         ({summary.positionCount} position{summary.positionCount !== 1 ? 's' : ''})
                                     </span>
+                                    <span className="text-xs text-default/50 sm:hidden">({summary.positionCount})</span>
                                     {summary.hypeBalance > 0 && (
-                                        <span className="rounded bg-green-100 px-2 py-0.5 text-sm text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-200 sm:px-2 sm:text-sm">
                                             LONG
                                         </span>
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-4 text-sm">
+                                <div className="ml-6 flex flex-wrap items-center gap-3 text-xs sm:ml-0 sm:gap-4 sm:text-sm">
                                     {/* HYPE Balance */}
                                     <div className="flex items-center gap-1">
-                                        <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="rounded-full" />
+                                        <FileMapper id={FileIds.TOKEN_HYPE} width={16} height={16} className="rounded-full sm:h-5 sm:w-5" />
                                         <div className="text-right">
-                                            <div className="text-sm text-default/50">HYPE</div>
+                                            <div className="hidden text-sm text-default/50 sm:block">HYPE</div>
                                             <StyledTooltip
                                                 content={
                                                     <div className="space-y-1">
@@ -186,9 +190,9 @@ export function CollapsibleLPPositions({ positions, className }: CollapsibleLPPo
 
                                     {/* USDT0 Balance */}
                                     <div className="flex items-center gap-1">
-                                        <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="rounded-full" />
+                                        <FileMapper id={FileIds.TOKEN_USDT0} width={16} height={16} className="rounded-full sm:h-5 sm:w-5" />
                                         <div className="text-right">
-                                            <div className="text-sm text-default/50">USDT0</div>
+                                            <div className="hidden text-sm text-default/50 sm:block">USDT0</div>
                                             <div className="font-medium">
                                                 {summary.usdtBalance.toFixed(getTokenBySymbol('USD₮0')?.decimalsForRounding ?? 0)}
                                             </div>
@@ -197,8 +201,11 @@ export function CollapsibleLPPositions({ positions, className }: CollapsibleLPPo
 
                                     {/* AUM */}
                                     <div className="text-right">
-                                        <div className="text-sm text-default/50">AUM</div>
-                                        <RoundedAmount amount={summary.totalValue} className="font-medium">
+                                        <div className="hidden text-sm text-default/50 sm:block">AUM</div>
+                                        <RoundedAmount
+                                            amount={summary.totalValue}
+                                            className="font-semibold text-primary sm:font-medium sm:text-current"
+                                        >
                                             {formatUSD(summary.totalValue)}
                                         </RoundedAmount>
                                     </div>
@@ -208,7 +215,7 @@ export function CollapsibleLPPositions({ positions, className }: CollapsibleLPPo
 
                         {/* Expanded Details */}
                         {isExpanded && (
-                            <div className="bg-default/5 p-2">
+                            <div className="bg-default/5 p-3 sm:p-2">
                                 <div className="mb-2 flex justify-end">
                                     <StyledTooltip
                                         content={
@@ -230,10 +237,10 @@ export function CollapsibleLPPositions({ positions, className }: CollapsibleLPPo
 
             {/* Total Summary */}
             {dexSummaries.length > 1 && (
-                <div className="mt-2 border-t border-default/10 pt-2">
-                    <div className="flex justify-between text-sm">
+                <div className="mt-3 border-t border-default/10 pt-3 sm:mt-2 sm:pt-2">
+                    <div className="flex flex-col gap-2 text-xs sm:flex-row sm:justify-between sm:text-sm">
                         <span className="font-medium text-default/50">Total across {dexSummaries.length} DEXes</span>
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-3 sm:gap-4">
                             <div>
                                 <span className="text-default/50">Positions: </span>
                                 <span className="font-medium">{positions.length}</span>

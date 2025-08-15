@@ -42,29 +42,24 @@ export const formatUSD = (amount: number | string) => {
             return `${numeral(absAmount)
                 .multiply(isNegative ? -1 : 1)
                 .format('0,0.[0000]')}$`
-        if (absAmount < 11)
+        if (absAmount < 10)
             return `${numeral(absAmount)
                 .multiply(isNegative ? -1 : 1)
                 .format('0,0.[000]')}$`
-        if (absAmount < 110)
+        if (absAmount < 100)
             return `${numeral(absAmount)
                 .multiply(isNegative ? -1 : 1)
                 .format('0,0.[00]')}$`
-        if (absAmount < 1100)
+        if (absAmount < 10000)
             return `${numeral(absAmount)
                 .multiply(isNegative ? -1 : 1)
-                .format('0,0.[0]')}$`
-        if (absAmount < 11000)
-            return `${numeral(absAmount)
-                .divide(1000)
-                .multiply(isNegative ? -1 : 1)
-                .format('0,0.[0]')}k$`
-        if (absAmount < 1100000)
+                .format('0,0')}$`
+        if (absAmount < 1000000)
             return `${numeral(absAmount)
                 .divide(1000)
                 .multiply(isNegative ? -1 : 1)
                 .format('0,0')}k$`
-        if (absAmount >= 1100000000)
+        if (absAmount >= 1000000000)
             return `${numeral(absAmount)
                 .multiply(isNegative ? -1 : 1)
                 .format('0,0.[0]a')}$`

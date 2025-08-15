@@ -1,11 +1,14 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useSearchParams, useParams } from 'next/navigation'
+import { useQueryState } from 'nuqs'
+import { isAddress } from 'viem'
 import PageWrapper from '@/components/common/PageWrapper'
 import { useAccountData } from '@/hooks/useAccountData'
-import { AccountHeader, PerpPositionsTable, SpotBalancesTable, HyperEvmBalancesTable, TransactionHistory } from '@/components/app/account'
+import { TransactionHistory } from '@/components/app/account'
 import { HyperCoreTransactionHistory } from '@/components/app/account/HyperCoreTransactionHistory'
-import { CollapsibleLPPositions } from '@/components/app/account/CollapsibleLPPositions'
+import { LPPositionsTable, WalletBalancesTable, PerpPositionsTable, SpotBalancesTable } from '@/components/app/account/tables'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { AccountCard } from '@/components/app/account/layout/AccountCard'
 import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
@@ -18,13 +21,25 @@ import { CardSkeleton, SectionSkeleton } from '@/components/common/SkeletonLoade
 import { HypeIcon } from '@/components/common/HypeIcon'
 import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
 import { DeltaDisplay } from '@/components/common/DeltaDisplay'
+import { DateWrapperAccurate } from '@/components/common/DateWrapper'
+import IconWrapper from '@/components/icons/IconWrapper'
+import { IconIds } from '@/enums'
 
 export default function AccountPage() {
     const searchParams = useSearchParams()
     const params = useParams()
     const accountFromUrl = params?.account as string
-    const addressParam = searchParams?.get('address') || accountFromUrl || ''
+    const [address, setAddress] = useQueryState('address')
 
+    // Initialize from URL params or account from URL
+    const initialAddress = address || accountFromUrl || ''
+    const [inputValue, setInputValue] = useState(initialAddress)
+
+    useEffect(() => {
+        setInputValue(address || accountFromUrl || '')
+    }, [address, accountFromUrl])
+
+    const addressParam = searchParams?.get('address') || accountFromUrl || ''
     const {
         accountInfo,
         hyperEvmLpPositions,
@@ -68,7 +83,7 @@ export default function AccountPage() {
                         </div>
                         <div className="space-y-4">
                             <SectionSkeleton title="Perpetual Positions" rows={2} />
-                            <SectionSkeleton title="Spot Balances" rows={3} />
+                            <SectionSkeleton title="Spot" rows={3} />
                         </div>
                     </div>
                 </div>
@@ -149,9 +164,64 @@ export default function AccountPage() {
 
     const hypePrice = getHypePrice()
 
+    // Account Header handlers
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        setInputValue(value)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            const trimmedValue = inputValue.trim()
+
+            if (trimmedValue && isAddress(trimmedValue)) {
+                setAddress(trimmedValue)
+                // Trigger refresh when valid address is entered
+                if (trimmedValue !== (address || accountFromUrl)) {
+                    refetch()
+                }
+            }
+        }
+    }
+
+    const handleBlur = () => {
+        const trimmedValue = inputValue.trim()
+
+        if (trimmedValue && isAddress(trimmedValue)) {
+            setAddress(trimmedValue)
+            // Trigger refresh when valid address is entered
+            if (trimmedValue !== (address || accountFromUrl)) {
+                refetch()
+            }
+        }
+    }
+
     return (
         <PageWrapper className="px-4">
-            <AccountHeader onRefresh={refetch} isFetching={isFetching} lastRefreshTime={lastRefreshTime} />
+            {/* Account Header */}
+            <div className="mb-4 w-full">
+                <div className="flex items-center gap-2">
+                    <input
+                        type="text"
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
+                        onBlur={handleBlur}
+                        placeholder="Enter address (0x...)"
+                        className="flex-1 border-b border-default/20 bg-background px-1 py-2 font-mono text-sm focus:border-default/50 focus:outline-none"
+                    />
+                    {lastRefreshTime && <DateWrapperAccurate date={lastRefreshTime} className="whitespace-nowrap text-xs text-default/50" />}
+                    <button
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                        className="rounded p-1 hover:bg-default/10 disabled:opacity-50"
+                        title="Refresh all data"
+                    >
+                        <IconWrapper id={IconIds.REFRESH} className={`size-4 text-default/50 ${isFetching ? 'animate-spin' : ''}`} />
+                    </button>
+                </div>
+            </div>
 
             <AccountTemplate
                 summary={{
@@ -217,16 +287,12 @@ export default function AccountPage() {
                                 />
                             }
                         >
-                            {hyperEvmLpPositions && hyperEvmLpPositions.length > 0 ? (
-                                <CollapsibleLPPositions positions={hyperEvmLpPositions} />
-                            ) : (
-                                <div className="py-4 text-center text-default/50">No positions</div>
-                            )}
+                            <LPPositionsTable positions={hyperEvmLpPositions || []} />
                         </CollapsibleCard>
                     ),
                     balances: (
                         <CollapsibleCard
-                            title="Wallet Balances"
+                            title="Wallet"
                             defaultExpanded={false}
                             headerRight={
                                 <DeltaDisplay
@@ -236,15 +302,11 @@ export default function AccountPage() {
                                 />
                             }
                         >
-                            {hyperEvmTokenBalances && hyperEvmTokenBalances.length > 0 ? (
-                                <HyperEvmBalancesTable balances={hyperEvmTokenBalances} />
-                            ) : (
-                                <div className="py-4 text-center text-default/50">No balances</div>
-                            )}
+                            <WalletBalancesTable balances={hyperEvmTokenBalances || []} />
                         </CollapsibleCard>
                     ),
                     txs: (
-                        <CollapsibleCard title={`Last ${DEFAULT_TRANSACTION_LIMIT} Transactions`} defaultExpanded={false}>
+                        <CollapsibleCard title="Transactions" defaultExpanded={false}>
                             <TransactionHistory account={evmAddress} limit={DEFAULT_TRANSACTION_LIMIT} />
                         </CollapsibleCard>
                     ),
@@ -252,7 +314,7 @@ export default function AccountPage() {
                 hyperCore={{
                     short: (
                         <CollapsibleCard
-                            title="Perpetual Positions"
+                            title="Perpetuals"
                             defaultExpanded={true}
                             headerRight={
                                 <DeltaDisplay
@@ -262,16 +324,12 @@ export default function AccountPage() {
                                 />
                             }
                         >
-                            {hyperCorePerpPositions && hyperCorePerpPositions.length > 0 ? (
-                                <PerpPositionsTable positions={hyperCorePerpPositions} />
-                            ) : (
-                                <div className="py-4 text-center text-default/50">No positions</div>
-                            )}
+                            <PerpPositionsTable positions={hyperCorePerpPositions || []} />
                         </CollapsibleCard>
                     ),
                     spot: (
                         <CollapsibleCard
-                            title="Spot Balances"
+                            title="Spot"
                             defaultExpanded={false}
                             headerRight={
                                 <DeltaDisplay
@@ -281,15 +339,11 @@ export default function AccountPage() {
                                 />
                             }
                         >
-                            {hyperCoreSpotBalances && hyperCoreSpotBalances.length > 0 ? (
-                                <SpotBalancesTable balances={hyperCoreSpotBalances} />
-                            ) : (
-                                <div className="py-4 text-center text-default/50">No balances</div>
-                            )}
+                            <SpotBalancesTable balances={hyperCoreSpotBalances || []} />
                         </CollapsibleCard>
                     ),
                     txs: (
-                        <CollapsibleCard title={`Last ${DEFAULT_TRANSACTION_LIMIT} Trades`} defaultExpanded={false}>
+                        <CollapsibleCard title={'Trades'} defaultExpanded={false}>
                             <HyperCoreTransactionHistory account={coreAddress} limit={DEFAULT_TRANSACTION_LIMIT} />
                         </CollapsibleCard>
                     ),

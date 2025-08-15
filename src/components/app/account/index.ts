@@ -1,4 +1,3 @@
-export { AccountHeader } from './AccountHeader'
 export { DeltaBreakdown } from './DeltaBreakdown'
 export { ValueSummary } from './ValueSummary'
 export { LPPositionsTable } from './LPPositionsTable'

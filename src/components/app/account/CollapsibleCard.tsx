@@ -17,14 +17,17 @@ export function CollapsibleCard({ title, children, defaultExpanded = false, head
     const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
     return (
-        <AccountCard className="gap-2">
+        <AccountCard>
+            {/* header */}
             <div className="flex items-center justify-between">
                 <button onClick={() => setIsExpanded(!isExpanded)} className="flex flex-1 items-center gap-2 text-left">
-                    <IconWrapper id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT} className="size-4 text-default/50" />
-                    <h3 className="text-sm font-semibold">{title}</h3>
+                    <IconWrapper id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT} className="size-5 text-default/50" />
+                    <h3 className="text-lg font-semibold">{title}</h3>
                 </button>
                 {headerRight}
             </div>
+
+            {/* content */}
             {isExpanded && children}
         </AccountCard>
     )

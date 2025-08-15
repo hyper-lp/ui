@@ -9,7 +9,7 @@ export function FileWrapper(props: { children: ReactNode; className?: string }) 
 }
 
 export default function FileMapper({
-    className = 'rounded-full',
+    className = 'rounded-none',
     width = 20,
     height = 20,
     priority = false,

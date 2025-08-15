@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo, memo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import type { EChartsOption } from 'echarts'
 import { useTheme } from 'next-themes'
 import EchartWrapper from '../shared/EchartWrapperOptimized'
@@ -14,9 +14,17 @@ interface DeltaTrackingChartProps {
     showSpotDelta?: boolean
     showHyperEvmDelta?: boolean
     totalCapital?: number
+    hypePrice?: number
 }
 
-function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyperEvmDelta = false, totalCapital }: DeltaTrackingChartProps) {
+export default function DeltaTrackingChart({
+    className,
+    history,
+    showSpotDelta = false,
+    showHyperEvmDelta = false,
+    totalCapital,
+    hypePrice = 30,
+}: DeltaTrackingChartProps) {
     const [options, setOptions] = useState<EChartsOption | null>(null)
     const { resolvedTheme } = useTheme()
     const isDarkMode = resolvedTheme === 'dark'
@@ -46,8 +54,8 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             return
         }
 
-        // Calculate max delta for symmetric scale on both axes
-        const showRatioAxis = totalCapital && totalCapital > 0
+        // Determine if we should show dual axes
+        const showDualAxes = totalCapital && totalCapital > 0
 
         const allDeltas = [
             ...history.lpDeltas,
@@ -57,18 +65,17 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             ...(showHyperEvmDelta ? history.hyperEvmDeltas : []),
         ]
 
-        // Find max absolute delta for symmetric USD scale
-        const maxAbsDelta = Math.max(...allDeltas.map(Math.abs), 100) // At least $100 scale
-        const paddedMaxDelta = maxAbsDelta * 1.1 // Add 10% padding
+        // For left axis (USD): range from -capital to +capital
+        // For right axis (Delta ratio): range from -1 to +1
+        let usdAxisMax: number
 
-        // Calculate max ratio for percentage scale
-        let maxRatio = 1 // Default to 100%
-        if (showRatioAxis) {
-            maxRatio = Math.max(paddedMaxDelta / totalCapital, 0.5) // At least 50% scale
-            // Round to nice numbers
-            if (maxRatio > 2) maxRatio = Math.ceil(maxRatio)
-            else if (maxRatio > 1) maxRatio = 2
-            else maxRatio = 1
+        if (showDualAxes) {
+            // Use total capital for USD axis
+            usdAxisMax = totalCapital
+        } else {
+            // Fallback when no capital info: use actual delta values converted to USD
+            const maxAbsDelta = Math.max(...allDeltas.map((d) => Math.abs(d * hypePrice)), 100)
+            usdAxisMax = maxAbsDelta * 1.1 // Add 10% padding
         }
 
         // Format timestamps for display
@@ -81,17 +88,17 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             })
         })
 
-        // Prepare series data
+        // Prepare series data - convert HYPE deltas to USD
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const series: any[] = [
             {
                 name: 'LP Delta',
                 type: 'line',
-                data: history.lpDeltas,
+                data: history.lpDeltas.map((d) => d * hypePrice),
                 smooth: true,
                 symbol: 'none',
                 lineStyle: {
-                    color: '#10b981', // green
+                    color: colors.aquamarine, // Use theme green for positive
                     width: 2,
                 },
                 emphasis: {
@@ -101,11 +108,11 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             {
                 name: 'Perp Delta',
                 type: 'line',
-                data: history.perpDeltas,
+                data: history.perpDeltas.map((d) => d * hypePrice),
                 smooth: true,
                 symbol: 'none',
                 lineStyle: {
-                    color: '#ef4444', // red
+                    color: colors.folly, // Use theme red for negative
                     width: 2,
                 },
                 emphasis: {
@@ -115,11 +122,11 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             {
                 name: 'Net Delta',
                 type: 'line',
-                data: history.netDeltas,
+                data: history.netDeltas.map((d) => d * hypePrice),
                 smooth: true,
                 symbol: 'none',
                 lineStyle: {
-                    color: 'var(--color-default)', // theme default color
+                    color: colors.primary, // Use primary theme color for net
                     width: 3,
                     type: 'solid',
                 },
@@ -135,11 +142,11 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             series.push({
                 name: 'Spot Delta',
                 type: 'line',
-                data: history.spotDeltas,
+                data: history.spotDeltas.map((d) => d * hypePrice),
                 smooth: true,
                 symbol: 'none',
                 lineStyle: {
-                    color: '#3b82f6', // blue
+                    color: colors.secondary, // Use secondary theme color
                     width: 2,
                     type: 'dashed',
                 },
@@ -153,11 +160,11 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
             series.push({
                 name: 'HyperEVM Delta',
                 type: 'line',
-                data: history.hyperEvmDeltas,
+                data: history.hyperEvmDeltas.map((d) => d * hypePrice),
                 smooth: true,
                 symbol: 'none',
                 lineStyle: {
-                    color: '#a855f7', // purple
+                    color: colors.muted, // Use muted color for secondary data
                     width: 2,
                     type: 'dashed',
                 },
@@ -179,9 +186,10 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                               fontSize: 10,
                           },
                           lineStyle: {
-                              color: '#f59e0b', // amber
+                              color: colors.secondary, // Use secondary for events
                               type: 'dashed',
                               width: 1,
+                              opacity: 0.5,
                           },
                       })),
                   }
@@ -198,7 +206,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                 borderWidth: 1,
                 borderRadius: 8,
                 textStyle: {
-                    color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                    color: colors.foreground,
                 },
                 formatter: function (params) {
                     if (!Array.isArray(params) || params.length === 0) return ''
@@ -211,6 +219,8 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     params.forEach((param: any) => {
                         const value = typeof param.value === 'number' ? param.value.toFixed(2) : '0'
+                        const hypeAmount = typeof param.value === 'number' ? (param.value / hypePrice).toFixed(2) : '0'
+                        const deltaRatio = showDualAxes && totalCapital > 0 ? (param.value / totalCapital).toFixed(3) : ''
                         const color = param.color || '#666'
                         html += `
                             <div style="display: flex; justify-content: space-between; align-items: center; margin: 2px 0;">
@@ -218,7 +228,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                                     <span style="display: inline-block; width: 10px; height: 10px; background: ${color}; border-radius: 50%; margin-right: 6px;"></span>
                                     ${param.seriesName}
                                 </span>
-                                <strong style="margin-left: 20px;">$${value}</strong>
+                                <strong style="margin-left: 20px;">$${value} (${hypeAmount} HYPE${deltaRatio ? `, ${deltaRatio}` : ''})</strong>
                             </div>
                         `
                     })
@@ -237,12 +247,20 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                 textStyle: {
                     color: colors.foreground,
                 },
+                // By default, only show Net Delta - users can click to toggle others
+                selected: {
+                    'LP Delta': false,
+                    'Perp Delta': false,
+                    'Net Delta': true,
+                    'Spot Delta': false,
+                    'HyperEVM Delta': false,
+                },
             },
             grid: {
-                top: 60,
-                right: 80,
+                top: 50,
+                right: showDualAxes ? 60 : 20,
                 bottom: 60,
-                left: 80,
+                left: 60,
                 containLabel: true,
             },
             xAxis: {
@@ -260,16 +278,16 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                     interval: Math.floor(formattedTimestamps.length / 8), // Show ~8 labels
                 },
             },
-            yAxis: showRatioAxis
+            yAxis: showDualAxes
                 ? [
                       {
                           type: 'value',
-                          name: 'Delta (USD)',
+                          name: 'USD Value',
                           nameLocation: 'middle',
                           nameGap: 60,
                           position: 'left',
-                          min: -paddedMaxDelta,
-                          max: paddedMaxDelta,
+                          min: -usdAxisMax,
+                          max: usdAxisMax,
                           axisLine: {
                               lineStyle: {
                                   color: colors.border,
@@ -288,12 +306,12 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                       },
                       {
                           type: 'value',
-                          name: 'Delta Ratio (%)',
+                          name: 'Delta Ratio',
                           nameLocation: 'middle',
                           nameGap: 50,
                           position: 'right',
-                          min: -(paddedMaxDelta / totalCapital) * 100,
-                          max: (paddedMaxDelta / totalCapital) * 100,
+                          min: -1,
+                          max: 1,
                           axisLine: {
                               lineStyle: {
                                   color: colors.border,
@@ -302,9 +320,9 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                           axisLabel: {
                               color: colors.muted,
                               formatter: function (value: number) {
-                                  if (Math.abs(value) < 0.01) return '0%'
+                                  if (Math.abs(value) < 0.01) return '0'
                                   const sign = value > 0 ? '+' : ''
-                                  return `${sign}${value.toFixed(0)}%`
+                                  return `${sign}${value.toFixed(2)}`
                               },
                           },
                           splitLine: {
@@ -314,11 +332,11 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                   ]
                 : {
                       type: 'value',
-                      name: 'Delta (USD)',
+                      name: 'USD Value',
                       nameLocation: 'middle',
                       nameGap: 60,
-                      min: -paddedMaxDelta,
-                      max: paddedMaxDelta,
+                      min: -usdAxisMax,
+                      max: usdAxisMax,
                       axisLine: {
                           lineStyle: {
                               color: colors.border,
@@ -337,6 +355,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                   },
             series: series.map((s) => ({
                 ...s,
+                yAxisIndex: 0, // All series use the USD axis (left)
                 markLine: s.name === 'Net Delta' ? markLine : undefined,
             })),
             dataZoom: [
@@ -356,7 +375,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
         }
 
         setOptions(chartOptions)
-    }, [history, colors, isDarkMode, showSpotDelta, showHyperEvmDelta, totalCapital])
+    }, [history, colors, isDarkMode, showSpotDelta, showHyperEvmDelta, totalCapital, hypePrice])
 
     if (!options) {
         return (
@@ -375,5 +394,3 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
         </div>
     )
 }
-
-export default memo(DeltaTrackingChart)

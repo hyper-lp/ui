@@ -63,7 +63,7 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
         refetchInterval: process.env.NODE_ENV === 'development' ? 300000 : 30000, // Dev: 5 min, Prod: 30 sec
     })
 
-    // Calculate all deltas (accounting for token decimals)
+    // Calculate all deltas from new structure
     const deltas = useMemo(() => {
         if (!data?.positions) {
             return {
@@ -78,53 +78,42 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
         }
 
         // HyperEVM LP Delta
-        // LP positions already have token amounts calculated, likely already accounting for decimals
-        const hyperEvmLp =
-            data.positions.lp?.reduce((sum, p) => {
-                const token0IsHype = p.token0Symbol === 'WHYPE' || p.token0Symbol === 'HYPE'
-                const token1IsHype = p.token1Symbol === 'WHYPE' || p.token1Symbol === 'HYPE'
-                if (token0IsHype && p.token0Amount) return sum + p.token0Amount
-                else if (token1IsHype && p.token1Amount) return sum + p.token1Amount
-                return sum
-            }, 0) || 0
+        const hyperEvmLp = data.positions.hyperEvm.lp.reduce((sum, p) => {
+            const token0IsHype = p.token0Symbol === 'WHYPE' || p.token0Symbol === 'HYPE'
+            const token1IsHype = p.token1Symbol === 'WHYPE' || p.token1Symbol === 'HYPE'
+            if (token0IsHype && p.token0Amount) return sum + p.token0Amount
+            else if (token1IsHype && p.token1Amount) return sum + p.token1Amount
+            return sum
+        }, 0)
 
-        // HyperEVM Spot Delta
-        // Need to account for decimals from the raw balance
-        const hyperEvmSpot =
-            data.positions.hyperEvm?.reduce((sum, b) => {
-                if (b.symbol === 'WHYPE' || b.symbol === 'HYPE') {
-                    const balanceNum = parseFloat(b.balance) || 0
-                    // Apply decimals conversion (HYPE/WHYPE typically has 18 decimals)
-                    const decimals = b.decimals || 18
-                    const actualBalance = balanceNum / Math.pow(10, decimals)
-                    return sum + actualBalance
-                }
-                return sum
-            }, 0) || 0
+        // HyperEVM Balances Delta
+        const hyperEvmSpot = data.positions.hyperEvm.balances.reduce((sum, b) => {
+            if (b.symbol === 'WHYPE' || b.symbol === 'HYPE') {
+                const balanceNum = parseFloat(b.balance) || 0
+                const decimals = b.decimals || 18
+                const actualBalance = balanceNum / Math.pow(10, decimals)
+                return sum + actualBalance
+            }
+            return sum
+        }, 0)
 
         // HyperCore Perp Delta
-        // Perp positions size is already in token units, not raw amounts
-        const hyperCorePerp =
-            data.positions.perp?.reduce((sum, p) => {
-                if (p.asset === 'HYPE') {
-                    return sum + (p.size || 0)
-                }
-                return sum
-            }, 0) || 0
+        const hyperCorePerp = data.positions.hyperCore.perp.reduce((sum, p) => {
+            if (p.asset === 'HYPE') {
+                return sum + (p.size || 0)
+            }
+            return sum
+        }, 0)
 
         // HyperCore Spot Delta
-        // Spot balances may need decimal conversion
-        const hyperCoreSpot =
-            data.positions.spot?.reduce((sum, b) => {
-                if (b.asset === 'HYPE') {
-                    const balanceNum = typeof b.balance === 'string' ? parseFloat(b.balance) : b.balance
-                    // Check if the balance is likely a raw value (very large number)
-                    // If balance > 1e10, it's likely raw and needs decimal conversion
-                    const actualBalance = balanceNum > 1e10 ? balanceNum / 1e18 : balanceNum
-                    return sum + (actualBalance || 0)
-                }
-                return sum
-            }, 0) || 0
+        const hyperCoreSpot = data.positions.hyperCore.spot.reduce((sum, b) => {
+            if (b.asset === 'HYPE') {
+                const balanceNum = typeof b.balance === 'string' ? parseFloat(b.balance) : b.balance
+                const actualBalance = balanceNum > 1e10 ? balanceNum / 1e18 : balanceNum
+                return sum + (actualBalance || 0)
+            }
+            return sum
+        }, 0)
 
         const totalHyperEvm = hyperEvmLp + hyperEvmSpot
         const totalHyperCore = hyperCorePerp + hyperCoreSpot
@@ -141,42 +130,49 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
         }
     }, [data?.positions])
 
-    // Calculate values
-    const values = useMemo(() => {
-        if (!data?.summary) {
+    // Calculate perp metrics
+    const perpMetrics = useMemo(() => {
+        const perpPositions = data?.positions?.hyperCore?.perp || []
+
+        if (perpPositions.length === 0) {
             return {
-                totalHyperEvmValue: 0,
-                totalHyperCoreValue: 0,
-                totalValue: 0,
+                totalMargin: 0,
+                totalNotional: 0,
+                totalPnl: 0,
+                avgLeverage: 0,
             }
         }
 
-        const totalHyperEvmValue = (data.summary.totalLpValue || 0) + (data.summary.totalHyperEvmValue || 0)
-        const totalHyperCoreValue = (data.summary.totalPerpValue || 0) + (data.summary.totalSpotValue || 0)
+        const totalMargin = perpPositions.reduce((sum, p) => sum + p.marginUsed, 0)
+        const totalNotional = perpPositions.reduce((sum, p) => sum + Math.abs(p.notionalValue), 0)
+        const totalPnl = perpPositions.reduce((sum, p) => sum + p.unrealizedPnl, 0)
+        const avgLeverage = totalMargin > 0 ? totalNotional / totalMargin : 0
 
         return {
-            totalHyperEvmValue,
-            totalHyperCoreValue,
-            totalValue: data.summary.totalValue || 0,
+            totalMargin,
+            totalNotional,
+            totalPnl,
+            avgLeverage,
         }
-    }, [data?.summary])
+    }, [data?.positions?.hyperCore?.perp])
 
     // Add data point to history on each refresh and update last refresh time
     useEffect(() => {
-        if (data?.summary && evmAddress && coreAddress) {
+        if (data?.metrics && evmAddress && coreAddress) {
             const now = Date.now()
             setLastRefreshTime(now)
+            // Use calculated deltas for consistency
             const point = {
                 timestamp: now,
-                lpDelta: data.summary.lpDelta || 0,
-                perpDelta: data.summary.perpDelta || 0,
-                netDelta: data.summary.netDelta || 0,
-                spotDelta: data.summary.spotDelta || 0,
-                hyperEvmDelta: data.summary.hyperEvmDelta || 0,
+                lpDelta: deltas.hyperEvmLp,
+                perpDelta: deltas.hyperCorePerp,
+                netDelta: deltas.totalNet,
+                spotDelta: deltas.hyperCoreSpot,
+                hyperEvmDelta: deltas.totalHyperEvm,
             }
             addDataPoint(historyKey, point)
         }
-    }, [data?.summary, evmAddress, coreAddress, historyKey, addDataPoint])
+    }, [data?.metrics, evmAddress, coreAddress, historyKey, addDataPoint, deltas])
 
     // Update refresh time display every second
     useEffect(() => {
@@ -189,47 +185,23 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
     // Display refresh time
     const refreshTimeDisplay = formatTimeSince(lastRefreshTime)
 
-    // Calculate perp metrics
-    const perpMetrics = useMemo(() => {
-        if (!data?.positions?.perp) {
-            return {
-                totalMargin: 0,
-                totalNotional: 0,
-                totalPnl: 0,
-                avgLeverage: 0,
-            }
-        }
-
-        const totalMargin = data.positions.perp.reduce((sum, p) => sum + p.marginUsed, 0)
-        const totalNotional = data.positions.perp.reduce((sum, p) => sum + Math.abs(p.notionalValue), 0)
-        const totalPnl = data.positions.perp.reduce((sum, p) => sum + p.unrealizedPnl, 0)
-        const avgLeverage = totalMargin > 0 ? totalNotional / totalMargin : 0
-
-        return {
-            totalMargin,
-            totalNotional,
-            totalPnl,
-            avgLeverage,
-        }
-    }, [data?.positions?.perp])
-
     return {
-        // Core position data
+        // Core position data - simplified structure for components
         positions: {
-            lp: data?.positions?.lp || [],
-            wallet: data?.positions?.hyperEvm || [],
-            perp: data?.positions?.perp || [],
-            spot: data?.positions?.spot || [],
+            lp: data?.positions?.hyperEvm?.lp || [],
+            wallet: data?.positions?.hyperEvm?.balances || [],
+            perp: data?.positions?.hyperCore?.perp || [],
+            spot: data?.positions?.hyperCore?.spot || [],
         },
 
         // Aggregated metrics
         metrics: {
             values: {
-                totalPortfolio: values.totalValue,
-                totalLp: data?.summary?.totalLpValue || 0,
-                totalWallet: data?.summary?.totalHyperEvmValue || 0,
-                totalPerp: data?.summary?.totalPerpValue || 0,
-                totalSpot: data?.summary?.totalSpotValue || 0,
+                totalPortfolio: data?.metrics?.portfolio?.totalValue || 0,
+                totalLp: data?.metrics?.hyperEvm?.values?.lp || 0,
+                totalWallet: data?.metrics?.hyperEvm?.values?.balances || 0,
+                totalPerp: data?.metrics?.hyperCore?.values?.perp || 0,
+                totalSpot: data?.metrics?.hyperCore?.values?.spot || 0,
             },
             deltas: {
                 lp: deltas.hyperEvmLp,
@@ -260,24 +232,30 @@ export function useAccountData(evmAddress: string, coreAddress: string) {
             refetch,
         },
 
-        // Legacy data (for backward compatibility - to be removed)
+        // Direct access to raw data
         accountInfo: data?.account,
-        accountSummary: data?.summary,
+        accountSummary: data?.snapshots?.current
+            ? {
+                  totalLpValue: data.metrics.hyperEvm.values.lp,
+                  totalPerpValue: data.metrics.hyperCore.values.perp,
+                  totalSpotValue: data.metrics.hyperCore.values.spot,
+                  totalHyperEvmValue: data.metrics.hyperEvm.values.balances,
+                  totalValue: data.metrics.portfolio.totalValue,
+                  netDelta: data.metrics.portfolio.netDelta,
+                  lpDelta: data.metrics.hyperEvm.deltas.lp,
+                  perpDelta: data.metrics.hyperCore.deltas.perp,
+                  spotDelta: data.metrics.hyperCore.deltas.spot,
+                  hyperEvmDelta: data.metrics.hyperEvm.deltas.balances,
+                  lastSnapshot: data.snapshots.last,
+                  currentAPR: data.snapshots.current,
+              }
+            : undefined,
         deltaHistory,
 
-        // Legacy individual exports (for backward compatibility - to be removed)
-        hyperEvmLpPositions: data?.positions?.lp,
-        hyperEvmTokenBalances: data?.positions?.hyperEvm,
-        hyperCorePerpPositions: data?.positions?.perp,
-        hyperCoreSpotBalances: data?.positions?.spot,
-        hyperEvmLpDelta: deltas.hyperEvmLp,
-        hyperEvmSpotDelta: deltas.hyperEvmSpot,
-        hyperCorePerpDelta: deltas.hyperCorePerp,
-        hyperCoreSpotDelta: deltas.hyperCoreSpot,
-        totalNetDelta: deltas.totalNet,
-        totalPortfolioValue: values.totalValue,
-        totalLpValue: data?.summary?.totalLpValue || 0,
-        totalPerpValue: data?.summary?.totalPerpValue || 0,
+        // Direct access to values for convenience
+        totalPortfolioValue: data?.metrics?.portfolio?.totalValue || 0,
+        totalLpValue: data?.metrics?.hyperEvm?.values?.lp || 0,
+        totalPerpValue: data?.metrics?.hyperCore?.values?.perp || 0,
         evmAddress,
         coreAddress,
     }

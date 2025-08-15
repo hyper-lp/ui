@@ -1,88 +1,101 @@
 /**
  * Account and metrics-related interfaces
+ * AccountData is the main entrypoint containing all account information
  */
 
 import type { LPPosition, PerpPosition, SpotBalance, HyperEvmBalance } from './positions.interface'
 
+/**
+ * Main account data interface - the single source of truth for account information
+ */
 export interface AccountData {
     success: boolean
-    account?: {
-        address?: string
-        evmAddress?: string
-        coreAddress?: string
-        name: string | null
-        isActive: boolean
-    }
-    positions?: {
-        lp: Array<LPPosition>
-        perp: Array<PerpPosition>
-        spot: Array<SpotBalance>
-        hyperEvm?: Array<HyperEvmBalance>
-    }
-    summary?: AccountSummary
-    timings?: {
-        lpFetch?: number
-        perpFetch?: number
-        spotFetch?: number
-        evmFetch?: number
-        total: number
-        totalFetch?: number
-    }
     error?: string
-}
 
-export interface AccountSummary {
-    totalLpValue: number
-    totalPerpValue: number
-    totalSpotValue: number
-    totalHyperEvmValue?: number
-    totalValue: number
-    netDelta: number
-    lpDelta: number
-    perpDelta: number
-    spotDelta: number
-    hyperEvmDelta?: number
-    lastSnapshot: {
-        timestamp: string
-        netAPR: number
-        lpFeeAPR: number
-        fundingAPR: number
-    } | null
-    currentAPR?: {
-        lpFeeAPR: number
-        fundingAPR: number
-        netAPR: number
-        formula: string
-        note: string
+    // Account identification
+    account: {
+        evmAddress: string
+        coreAddress: string
+        name: string | null
+        isMonitored: boolean
     }
-}
 
-export interface AccountMetrics {
-    address: string
-    totalValueUSD: number
-    lpValueUSD: number
-    perpValueUSD: number
-    spotValueUSD: number
-    netDelta: number
-    lpDelta: number
-    perpDelta: number
-    spotDelta: number
-    netAPR: number
-    lpFeeAPR: number
-    fundingAPR: number
-    timestamp: Date
-}
+    // Positions organized by platform
+    positions: {
+        hyperEvm: {
+            lp: Array<LPPosition>
+            balances: Array<HyperEvmBalance>
+        }
+        hyperCore: {
+            perp: Array<PerpPosition>
+            spot: Array<SpotBalance>
+        }
+    }
 
-export interface PositionMetrics {
-    tokenId: string
-    dex: string
-    valueUSD: number
-    token0Amount: number
-    token1Amount: number
-    token0ValueUSD: number
-    token1ValueUSD: number
-    inRange: boolean
-    feeAPR: number
-    impermanentLoss: number
-    timestamp: Date
+    // Metrics organized by platform
+    metrics: {
+        hyperEvm: {
+            values: {
+                lp: number
+                balances: number
+                total: number
+            }
+            deltas: {
+                lp: number
+                balances: number
+                total: number
+            }
+        }
+        hyperCore: {
+            values: {
+                perp: number
+                spot: number
+                total: number
+            }
+            deltas: {
+                perp: number
+                spot: number
+                total: number
+            }
+            leverage?: number
+            healthFactor?: number
+        }
+        portfolio: {
+            totalValue: number
+            netDelta: number
+            netAPR: number
+            lpFeeAPR: number
+            fundingAPR: number
+        }
+    }
+
+    // APR snapshots
+    snapshots: {
+        last: {
+            timestamp: string
+            netAPR: number
+            lpFeeAPR: number
+            fundingAPR: number
+        } | null
+        current: {
+            lpFeeAPR: number
+            fundingAPR: number
+            netAPR: number
+            formula: string
+            note: string
+        } | null
+    }
+
+    // Performance timings
+    timings: {
+        hyperEvm: {
+            lp?: number
+            balances?: number
+        }
+        hyperCore: {
+            perp?: number
+            spot?: number
+        }
+        total: number
+    }
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { useSearchParams, useParams } from 'next/navigation'
 import { useQueryState } from 'nuqs'
 import { isAddress } from 'viem'
@@ -24,6 +25,12 @@ import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { IconIds } from '@/enums'
 
+// Dynamically import chart to avoid SSR issues
+const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
+    ssr: false,
+    loading: () => <div className="flex size-full items-center justify-center text-sm text-default/50">Loading chart...</div>,
+})
+
 export default function AccountPage() {
     const searchParams = useSearchParams()
     const params = useParams()
@@ -40,7 +47,7 @@ export default function AccountPage() {
 
     const addressParam = searchParams?.get('address') || accountFromUrl || ''
     const accountData = useAccountData(addressParam, addressParam)
-    const { positions, metrics, meta, actions, accountInfo, accountSummary } = accountData
+    const { positions, metrics, meta, actions, accountInfo, accountSummary, deltaHistory } = accountData
 
     // Calculate HyperEVM capital breakdown (HYPE vs Stable) - must be before early returns
     const hyperEvmBreakdown = useMemo(() => {
@@ -243,27 +250,40 @@ export default function AccountPage() {
             <AccountTemplate
                 header={
                     <div className="mb-4 w-full">
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={inputValue}
-                                onChange={handleInputChange}
-                                onKeyDown={handleKeyDown}
-                                onBlur={handleBlur}
-                                placeholder="Enter address (0x...)"
-                                className="flex-1 border-b border-default/20 bg-background px-1 py-2 font-mono text-sm focus:border-default/50 focus:outline-none"
-                            />
-                            {meta.lastRefreshTime && (
-                                <DateWrapperAccurate date={meta.lastRefreshTime} className="whitespace-nowrap text-sm text-default/50" />
-                            )}
-                            <button
-                                onClick={() => actions.refetch()}
-                                disabled={meta.isFetching}
-                                className="rounded p-1 hover:bg-default/10 disabled:opacity-50"
-                                title="Refresh all data"
-                            >
-                                <IconWrapper id={IconIds.REFRESH} className={`size-4 text-default/50 ${meta.isFetching ? 'animate-spin' : ''}`} />
-                            </button>
+                        <div className="flex flex-col items-start gap-2">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
+                                    onBlur={handleBlur}
+                                    placeholder="Enter address (0x...)"
+                                    className="min-w-[400px] border-b border-default/20 bg-background px-1 py-2 font-mono text-sm focus:border-default/50 focus:outline-none"
+                                />
+                                <StyledTooltip content="Multiple addresses coming soon" placement="bottom">
+                                    <button
+                                        disabled
+                                        className="rounded border border-default/20 p-1 opacity-50 hover:bg-default/10"
+                                        aria-label="Add another address"
+                                    >
+                                        <IconWrapper id={IconIds.ADD_CIRCLED} className="size-4 text-default/50" />
+                                    </button>
+                                </StyledTooltip>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {meta.lastRefreshTime && (
+                                    <DateWrapperAccurate date={meta.lastRefreshTime} className="whitespace-nowrap text-sm text-default/50" />
+                                )}
+                                <button
+                                    onClick={() => actions.refetch()}
+                                    disabled={meta.isFetching}
+                                    className="rounded p-1 hover:bg-default/10 disabled:opacity-50"
+                                    title="Refresh all data"
+                                >
+                                    <IconWrapper id={IconIds.REFRESH} className={`size-4 text-default/50 ${meta.isFetching ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 }
@@ -325,7 +345,9 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1 text-base text-default">
-                                        <span className="font-medium">$ {metrics.values.totalLp.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
+                                        <span className="font-medium">
+                                            $ {metrics.values.totalLp.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        </span>
                                         <span>•</span>
                                         <span>
                                             {positions.lp?.length || 0} LP{positions.lp?.length !== 1 ? 's' : ''}
@@ -345,7 +367,10 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <span className="text-base font-medium text-default">
-                                        $ {(positions.wallet?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        ${' '}
+                                        {(positions.wallet?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)
+                                            .toFixed(0)
+                                            .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
                                     <DeltaDisplay delta={metrics.deltas.wallet} hypePrice={hypePrice} decimals={1} />
                                 </div>
@@ -385,6 +410,7 @@ export default function AccountPage() {
                                 </div>
                             </StyledTooltip>
                         ) : null,
+                    delta: <DeltaDisplay delta={metrics.deltas.lp + metrics.deltas.wallet} hypePrice={hypePrice} decimals={1} />,
                 }}
                 hyperCore={{
                     short: (
@@ -412,7 +438,10 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <span className="text-base font-medium text-default">
-                                        $ {(positions.spot?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        ${' '}
+                                        {(positions.spot?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)
+                                            .toFixed(0)
+                                            .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
                                     <DeltaDisplay delta={metrics.deltas.spot} hypePrice={hypePrice} decimals={1} />
                                 </div>
@@ -458,7 +487,17 @@ export default function AccountPage() {
                                 </div>
                             </StyledTooltip>
                         ) : null,
+                    delta: <DeltaDisplay delta={metrics.deltas.perp + metrics.deltas.spot} hypePrice={hypePrice} decimals={1} />,
                 }}
+                charts={
+                    <DeltaTrackingChart
+                        history={deltaHistory}
+                        showSpotDelta={true}
+                        showHyperEvmDelta={true}
+                        totalCapital={metrics.values.totalPortfolio}
+                        hypePrice={hypePrice}
+                    />
+                }
             />
         </PageWrapper>
     )

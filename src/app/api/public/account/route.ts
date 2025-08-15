@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { positionFetcher } from '@/services/core/position-fetcher.service'
+import type { AccountData } from '@/interfaces/account.interface'
 
 export async function GET(request: NextRequest) {
     try {
@@ -93,54 +94,92 @@ export async function GET(request: NextRequest) {
                 return sum + (notional > 0 ? (dailyFunding / notional) * 365 : 0)
             }, 0)
         const netAPR = lpFeeAPR + fundingAPR
+        const totalValue = totalLpValue + totalPerpValue + totalSpotValue + totalHyperEvmValue
 
-        // Return response with cache headers
-        return NextResponse.json(
-            {
-                success: true,
-                account: {
-                    evmAddress: evmAddressLower,
-                    coreAddress: coreAddressLower,
-                    name: null,
-                    isActive: false, // All accounts are non-monitored
-                },
-                timings,
-                positions: {
+        const accountData: AccountData = {
+            success: true,
+            account: {
+                evmAddress: evmAddressLower,
+                coreAddress: coreAddressLower,
+                name: null,
+                isMonitored: false,
+            },
+            // New structure - organized by platform
+            positions: {
+                hyperEvm: {
                     lp: lpPositions.map((p) => ({
                         ...p,
                         feeTier: p.fee ? `${(p.fee / 10000).toFixed(2)}%` : null,
                     })),
+                    balances: hyperEvmBalances,
+                },
+                hyperCore: {
                     perp: perpPositions,
                     spot: spotBalances,
-                    hyperEvm: hyperEvmBalances,
                 },
-                summary: {
-                    totalLpValue,
-                    totalPerpValue,
-                    totalSpotValue,
-                    totalHyperEvmValue,
-                    totalValue: totalLpValue + totalPerpValue + totalSpotValue + totalHyperEvmValue,
-                    netDelta, // In HYPE units
-                    lpDelta, // In HYPE units
-                    perpDelta, // In HYPE units
-                    spotDelta, // In HYPE units
-                    hyperEvmDelta, // In HYPE units
-                    lastSnapshot: null,
-                    currentAPR: {
-                        lpFeeAPR,
-                        fundingAPR,
-                        netAPR,
-                        formula: 'Net APR = LP Fee APR + Funding APR',
-                        note: 'Real-time APR calculation requires historical data tracking',
+            },
+            metrics: {
+                hyperEvm: {
+                    values: {
+                        lp: totalLpValue,
+                        balances: totalHyperEvmValue,
+                        total: totalLpValue + totalHyperEvmValue,
+                    },
+                    deltas: {
+                        lp: lpDelta,
+                        balances: hyperEvmDelta,
+                        total: lpDelta + hyperEvmDelta,
                     },
                 },
-            },
-            {
-                headers: {
-                    'Cache-Control': 'public, max-age=30, s-maxage=30, stale-while-revalidate=60',
+                hyperCore: {
+                    values: {
+                        perp: totalPerpValue,
+                        spot: totalSpotValue,
+                        total: totalPerpValue + totalSpotValue,
+                    },
+                    deltas: {
+                        perp: perpDelta,
+                        spot: spotDelta,
+                        total: perpDelta + spotDelta,
+                    },
+                },
+                portfolio: {
+                    totalValue,
+                    netDelta,
+                    netAPR,
+                    lpFeeAPR,
+                    fundingAPR,
                 },
             },
-        )
+            snapshots: {
+                last: null,
+                current: {
+                    lpFeeAPR,
+                    fundingAPR,
+                    netAPR,
+                    formula: 'Net APR = LP Fee APR + Funding APR',
+                    note: 'Real-time APR calculation requires historical data tracking',
+                },
+            },
+            timings: {
+                hyperEvm: {
+                    lp: timings.lpFetch,
+                    balances: timings.evmFetch,
+                },
+                hyperCore: {
+                    perp: timings.perpFetch,
+                    spot: timings.spotFetch,
+                },
+                total: timings.total,
+            },
+        }
+
+        // Return response with cache headers
+        return NextResponse.json(accountData, {
+            headers: {
+                'Cache-Control': 'public, max-age=30, s-maxage=30, stale-while-revalidate=60',
+            },
+        })
     } catch (error) {
         console.error('Error fetching positions:', error)
         return NextResponse.json(

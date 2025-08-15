@@ -14,11 +14,16 @@ const PoolTVLTable = dynamic(() => import('@/components/charts/shared/PoolTVLTab
 import type { DeltaHistory } from '@/stores/delta-history.store'
 
 interface StrategyMonitoringProps {
-    summary: NonNullable<AccountData['summary']>
+    metrics: AccountData['metrics']
+    snapshots: AccountData['snapshots']
     deltaHistory: DeltaHistory
 }
 
-export function StrategyMonitoring({ summary, deltaHistory }: StrategyMonitoringProps) {
+export function StrategyMonitoring({ metrics, snapshots, deltaHistory }: StrategyMonitoringProps) {
+    if (!metrics || !snapshots) {
+        return <div>Loading...</div>
+    }
+
     return (
         <div className="space-y-4 border-b pb-6">
             <h2 className="text-xl font-semibold">Live Strategy Monitoring</h2>
@@ -29,15 +34,15 @@ export function StrategyMonitoring({ summary, deltaHistory }: StrategyMonitoring
                     <DeltaTrackingChart
                         history={deltaHistory}
                         showSpotDelta={true}
-                        showHyperEvmDelta={!!summary.hyperEvmDelta}
-                        totalCapital={summary.totalValue}
+                        showHyperEvmDelta={true}
+                        totalCapital={metrics.portfolio.totalValue}
                         className="h-full"
                     />
                 </div>
                 <div className="h-[400px] rounded-lg border p-4">
                     <APRBreakdownChart
-                        lpFeeAPR={(summary.lastSnapshot?.lpFeeAPR || summary.currentAPR?.lpFeeAPR || 0) * 100}
-                        fundingAPR={(summary.lastSnapshot?.fundingAPR || summary.currentAPR?.fundingAPR || 0) * 100}
+                        lpFeeAPR={(snapshots.last?.lpFeeAPR || snapshots.current?.lpFeeAPR || 0) * 100}
+                        fundingAPR={(snapshots.last?.fundingAPR || snapshots.current?.fundingAPR || 0) * 100}
                         rebalancingCost={0.2} // Example 0.2% cost
                         className="h-full"
                     />
@@ -47,15 +52,15 @@ export function StrategyMonitoring({ summary, deltaHistory }: StrategyMonitoring
             {/* Secondary charts row */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="h-[300px] rounded-lg border p-4">
-                    <DeltaThresholdGauge currentDelta={summary.netDelta} threshold={100} warningThreshold={200} className="h-full" />
+                    <DeltaThresholdGauge currentDelta={metrics.portfolio.netDelta} threshold={100} warningThreshold={200} className="h-full" />
                 </div>
                 <div className="h-[300px] rounded-lg border p-4">
                     <PositionCompositionBar
-                        lpValue={summary.totalLpValue}
-                        perpMargin={summary.totalPerpValue}
-                        spotValue={summary.totalSpotValue}
-                        hyperEvmValue={summary.totalHyperEvmValue || 0}
-                        totalValue={summary.totalValue}
+                        lpValue={metrics.hyperEvm.values.lp}
+                        perpMargin={metrics.hyperCore.values.perp}
+                        spotValue={metrics.hyperCore.values.spot}
+                        hyperEvmValue={metrics.hyperEvm.values.balances}
+                        totalValue={metrics.portfolio.totalValue}
                         className="h-full"
                     />
                 </div>

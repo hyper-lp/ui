@@ -6,6 +6,7 @@ import { MULTICALL3_ABI, MULTICALL3_ADDRESS } from '@/contracts/multicall-abi'
 import { calculateTokenAmounts } from '@/utils/uniswap-v3.util'
 import { keccak256, encodePacked, getAddress } from 'viem'
 import type { PoolState, LPPosition, SpotBalance, PerpPosition, HyperEvmBalance } from '@/interfaces'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 export class PositionFetcher {
     private poolStateCache = new Map<string, PoolState>()
@@ -15,12 +16,11 @@ export class PositionFetcher {
 
     // Token addresses - Updated to correct addresses
     private readonly HYPE_ADDRESSES = [
-        '0x0000000000000000000000000000000000000000', // Native HYPE
-        '0x5555555555555555555555555555555555555555', // WHYPE (Wrapped HYPE)
+        NATIVE_HYPE_ADDRESS, // Native HYPE
+        WRAPPED_HYPE_ADDRESS, // WHYPE (Wrapped HYPE)
         '0x6871ee4e36ba76eb3990d4c33eec77cf308ec0ef', // Alternative WHYPE
         '0x20584eb8e2125c4cf568db5baf1646283b8eff02', // Alternative HYPE
     ]
-    private readonly USDT0_ADDRESS = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb' // Correct USDT0 address
 
     // Token decimals
     private readonly TOKEN_DECIMALS: Record<string, number> = {
@@ -258,7 +258,7 @@ export class PositionFetcher {
                     args: [token0 as Address, token1 as Address, Number(fee)],
                 })) as string
 
-                if (!poolAddress || poolAddress === '0x0000000000000000000000000000000000000000') {
+                if (!poolAddress || poolAddress === NATIVE_HYPE_ADDRESS) {
                     console.log('[PositionFetcher] No pool found in factory for tokens', token0, token1, 'fee', fee)
                     continue
                 }
@@ -688,9 +688,9 @@ export class PositionFetcher {
     private getTokenSymbol(address: string): string {
         const addr = address.toLowerCase()
         // Check USDT0 first
-        if (addr === this.USDT0_ADDRESS.toLowerCase()) return 'USDT0'
+        if (addr === USDT0_ADDRESS.toLowerCase()) return 'USDT0'
         // Check HYPE addresses
-        if (addr === '0x5555555555555555555555555555555555555555') return 'WHYPE'
+        if (addr === WRAPPED_HYPE_ADDRESS.toLowerCase()) return 'WHYPE'
         if (this.HYPE_ADDRESSES.map((a) => a.toLowerCase()).includes(addr)) return 'HYPE'
         // Fallback
         return addr.slice(0, 6).toUpperCase()
@@ -726,8 +726,8 @@ export class PositionFetcher {
 
             // Common token addresses on HyperEVM - Only track HYPE, USDT0, USDC
             const tokens = [
-                { address: '0x5555555555555555555555555555555555555555', symbol: 'WHYPE', decimals: 18 },
-                { address: '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb', symbol: 'USDT0', decimals: 6 },
+                { address: WRAPPED_HYPE_ADDRESS, symbol: 'WHYPE', decimals: 18 },
+                { address: USDT0_ADDRESS, symbol: 'USDT0', decimals: 6 },
                 // { address: '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70', symbol: 'USDC', decimals: 18 },
             ]
 
@@ -769,7 +769,7 @@ export class PositionFetcher {
                     id: `${account}-hyperevm-HYPE`,
                     asset: 'HYPE',
                     symbol: 'HYPE',
-                    address: '0x0000000000000000000000000000000000000000',
+                    address: NATIVE_HYPE_ADDRESS,
                     balance: nativeBalance.toString(),
                     decimals: 18,
                     valueUSD: nativeHypeAmount * hypePrice,

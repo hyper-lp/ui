@@ -53,7 +53,7 @@ export interface DexConfig {
     lbContracts?: LBContractAddresses
     audited?: boolean
     auditReports?: string[]
-    subgraphUrl?: string
+    subgraphUrl: string
     docsUrl?: string
 }
 
@@ -151,6 +151,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         isUniswapV3Fork: true,
         contracts: HYPERSWAP_V3_CONTRACTS,
         audited: true,
+        subgraphUrl: 'https://api.goldsky.com/api/public/project_cm97l77ib0cz601wlgi9wb0ec/subgraphs/v3-subgraph/6.0.0/gn',
         portfolioUrl: 'https://app.hyperswap.exchange/#/pool',
         docsUrl: 'https://docs.hyperswap.exchange/hyperswap/contracts/or-hyper-evm/v3',
     },
@@ -164,6 +165,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         isUniswapV3Fork: true,
         contracts: PRJTX_V3_CONTRACTS,
         audited: true,
+        subgraphUrl: 'https://api.goldsky.com/api/public/project_cmbbm2iwckb1b01t39xed236t/subgraphs/uniswap-v3-hyperevm-position/prod/gn',
         auditReports: ['PeckShield-Audit-Report-PRJX', '0xQuit-Audit-Report-PRJX'],
         portfolioUrl: 'https://www.prjx.com/portfolio',
         docsUrl: 'https://prjxdocs.notion.site/6-Tech-2291a8328ce880debb10e0d2a6b31931',
@@ -178,6 +180,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         isUniswapV3Fork: true,
         contracts: HYBRA_V3_CONTRACTS,
         audited: true,
+        subgraphUrl: 'https://api.goldsky.com/api/public/project_cmbj707z4cd9901sib1f6cu0c/subgraphs/hybra-v3/v3/gn',
         auditReports: ['https://github.com/peckshield/publications/blob/master/audit_reports/PeckShield-Audit-Report-Hybra-v1.0.pdf'],
         portfolioUrl: 'https://www.hybra.finance/dashboard',
         docsUrl: 'https://docs.hyperswap.exchange/hyperswap/contracts/or-hyper-evm/v3#amm-v3',
@@ -192,6 +195,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         isLiquidityBook: true,
         lbContracts: HYPERBRICK_LB_CONTRACTS,
         audited: true, // Inherits audits from Trader Joe v2
+        subgraphUrl: 'https://api.hyperbrick.xyz/lb/grouped-pools-with-details',
         portfolioUrl: 'https://hyperbrick.xyz',
         docsUrl: 'https://docs.hyperbrick.xyz',
     },

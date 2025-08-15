@@ -42,7 +42,7 @@ function RebalancingLog({ className, events = [], maxEvents = 5 }: RebalancingLo
             case 'manual':
                 return 'text-blue-500'
             default:
-                return 'text-gray-500'
+                return 'text-default/50'
         }
     }
 

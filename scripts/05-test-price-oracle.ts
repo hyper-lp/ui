@@ -2,6 +2,7 @@
 
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { getTokenPrice } from '@/services/core/token-prices.service'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 // Colors for console output
 const colors = {
@@ -16,9 +17,9 @@ const colors = {
 
 // Test tokens
 const TEST_TOKENS = {
-    HYPE: '0x0000000000000000000000000000000000000000',
-    WHYPE: '0x5555555555555555555555555555555555555555',
-    USDT0: '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb',
+    HYPE: NATIVE_HYPE_ADDRESS,
+    WHYPE: WRAPPED_HYPE_ADDRESS,
+    USDT0: USDT0_ADDRESS,
     feUSD: '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70',
     UNKNOWN: '0x1234567890123456789012345678901234567890',
 }

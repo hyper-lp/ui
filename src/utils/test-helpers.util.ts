@@ -1,6 +1,6 @@
 import type { DexLPPosition } from '@/interfaces/dex.interface'
-import type { Address } from 'viem'
 import { DexProtocol } from '@/enums'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 /**
  * Mock HYPE/USDT0 positions for testing
@@ -41,10 +41,9 @@ export const TEST_WALLETS = {
  * Token addresses on HyperEVM
  */
 export const TOKEN_ADDRESSES = {
-    HYPE_NATIVE: '0x0000000000000000000000000000000000000000' as Address,
-    HYPE_WRAPPED: '0x5555555555555555555555555555555555555555' as Address,
-    USDT0: '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb' as Address,
-    USDC: '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70' as Address,
+    HYPE_NATIVE: NATIVE_HYPE_ADDRESS,
+    HYPE_WRAPPED: WRAPPED_HYPE_ADDRESS,
+    USDT0: USDT0_ADDRESS,
 }
 
 /**
@@ -104,13 +103,6 @@ export function printWarning(message: string) {
  */
 export function printInfo(message: string) {
     console.log(`${colors.cyan}ℹ️  ${message}${colors.reset}`)
-}
-
-/**
- * Format USD value
- */
-export function formatUSD(value: number): string {
-    return `$${value.toFixed(2)}`
 }
 
 /**

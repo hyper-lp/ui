@@ -1,6 +1,7 @@
 import type { Address } from 'viem'
 import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import { UNISWAP_V3_POOL_ABI, NONFUNGIBLE_POSITION_MANAGER_ABI, UNISWAP_V3_FACTORY_ABI, ERC20_ABI } from '@/contracts/uniswap-v3-abis'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 export async function fetchPoolState(
     poolAddress: Address,
@@ -14,7 +15,7 @@ export async function fetchPoolState(
     fee: number
 }> {
     // Check for zero address
-    if (poolAddress === '0x0000000000000000000000000000000000000000') {
+    if (poolAddress === NATIVE_HYPE_ADDRESS) {
         throw new Error('Invalid pool address: zero address')
     }
 
@@ -154,8 +155,8 @@ export async function getTokenMetadata(tokenAddress: Address, chainId: number = 
         return { symbol, decimals }
     } catch {
         const knownHyperEvmTokens: Record<string, { symbol: string; decimals: number }> = {
-            '0x5555555555555555555555555555555555555555': { symbol: 'WHYPE', decimals: 18 },
-            '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb': { symbol: 'USDT0', decimals: 6 },
+            [WRAPPED_HYPE_ADDRESS.toLowerCase()]: { symbol: 'WHYPE', decimals: 18 },
+            [USDT0_ADDRESS.toLowerCase()]: { symbol: 'USDT0', decimals: 6 },
         }
 
         return knownHyperEvmTokens[tokenAddress.toLowerCase()] || { symbol: 'UNKNOWN', decimals: 18 }

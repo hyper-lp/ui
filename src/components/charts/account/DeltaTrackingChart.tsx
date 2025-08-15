@@ -119,7 +119,7 @@ function DeltaTrackingChart({ className, history, showSpotDelta = false, showHyp
                 smooth: true,
                 symbol: 'none',
                 lineStyle: {
-                    color: isDarkMode ? '#e5e7eb' : '#374151', // gray
+                    color: 'var(--color-default)', // theme default color
                     width: 3,
                     type: 'solid',
                 },

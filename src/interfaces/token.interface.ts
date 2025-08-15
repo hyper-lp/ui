@@ -1,3 +1,4 @@
+import { FileIds } from '@/enums'
 import type { Address } from 'viem'
 
 export interface TokenConfig {
@@ -6,6 +7,7 @@ export interface TokenConfig {
     symbol: string
     decimals: number
     chainId: number
-    logoURI: string
     tags: string[]
+    fileId: FileIds
+    decimalsForRounding: number
 }

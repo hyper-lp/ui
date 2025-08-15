@@ -145,3 +145,21 @@ export const REFRESH_INTERVALS = {
  * Multicall Configuration
  */
 export const MULTICALL3_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
+
+/**
+ * Transaction Display Configuration
+ */
+export const DEFAULT_TRANSACTION_LIMIT = 10
+
+/**
+ * Delta Thresholds for Account Page
+ */
+export const DELTA_THRESHOLDS = {
+    NEUTRAL: 0.1,
+    NEAR_NEUTRAL: 1,
+} as const
+
+/**
+ * Default HYPE Price Fallback
+ */
+export const DEFAULT_HYPE_PRICE = 30

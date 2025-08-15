@@ -5,7 +5,7 @@ import { getAllPositionManagers, getDexByPositionManager, HYPEREVM_DEXS } from '
 import { getPoolAddress, fetchPoolState } from '@/services/core/uniswap-pool.service'
 // import { positionFetcher } from '@/services/core/position-fetcher.service' // TODO: Use this for optimized fetching
 import { POSITION_MANAGER_ABI } from '../constants/abis'
-import { HYPE_ADDRESSES, TOKEN_ADDRESSES, CACHE_DURATIONS } from '../constants/tokens'
+import { HYPE_ADDRESSES, TOKEN_ADDRESSES, CACHE_DURATIONS } from '@/config/hyperevm-tokens.config'
 import type { Address } from 'viem'
 import type { MonitoredAccount, Dex, Asset } from '@/generated/prisma-monitoring'
 import type { DexProtocol } from '@/interfaces/dex.interface'

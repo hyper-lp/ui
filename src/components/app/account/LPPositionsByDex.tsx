@@ -4,6 +4,7 @@ import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import type { LPPosition } from '@/interfaces'
 import { ImageWrapper } from '@/components/common/ImageWrapper'
 import { DexProtocol } from '@/enums'
+import { formatNumber } from '@/utils/format.util'
 
 interface LPPositionsByDexProps {
     positions: LPPosition[]
@@ -17,15 +18,8 @@ interface DexGroupedPositions {
 }
 
 export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
-    const formatNumber = (num: number, decimals = 2) => {
-        return new Intl.NumberFormat('en-US', {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-        }).format(num)
-    }
-
     if (!positions || positions.length === 0) {
-        return <div className="py-4 text-center text-gray-500">No LP positions found</div>
+        return <div className="py-4 text-center text-default/50">No LP positions found</div>
     }
 
     // Group positions by DEX
@@ -79,15 +73,15 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                             </div>
                             <div className="space-y-1 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">Positions:</span>
+                                    <span className="text-default/50">Positions:</span>
                                     <span className="font-medium">{dexPositions.length}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">Total Value:</span>
+                                    <span className="text-default/50">Total Value:</span>
                                     <span className="font-medium">${formatNumber(totalValue)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">HYPE Delta:</span>
+                                    <span className="text-default/50">HYPE Delta:</span>
                                     <span className={`font-medium ${totalDelta > 0 ? 'text-green-600' : totalDelta < 0 ? 'text-red-600' : ''}`}>
                                         {totalDelta > 0 ? '+' : ''}
                                         {formatNumber(totalDelta, 4)}
@@ -116,7 +110,7 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                             <div className="overflow-x-auto">
                                 <table className="w-full border-collapse text-sm">
                                     <thead>
-                                        <tr className="bg-gray-50">
+                                        <tr className="bg-default/10">
                                             <th className="border p-2 text-left">Token ID</th>
                                             <th className="border p-2 text-left">Pair</th>
                                             <th className="border p-2 text-left">Fee</th>
@@ -129,7 +123,7 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                     </thead>
                                     <tbody>
                                         {dexPositions.map((position) => (
-                                            <tr key={position.id} className="hover:bg-gray-50">
+                                            <tr key={position.id} className="hover:bg-default/10">
                                                 <td className="border p-2 font-mono">#{position.tokenId}</td>
                                                 <td className="border p-2">
                                                     {position.token0Symbol}/{position.token1Symbol}
@@ -141,11 +135,11 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                                     </span>
                                                 </td>
                                                 <td className="border p-2 text-right">
-                                                    <div className="text-xs text-gray-500">{position.token0Symbol}</div>
+                                                    <div className="text-xs text-default/50">{position.token0Symbol}</div>
                                                     <div>{position.token0Amount ? formatNumber(position.token0Amount, 4) : '0'}</div>
                                                 </td>
                                                 <td className="border p-2 text-right">
-                                                    <div className="text-xs text-gray-500">{position.token1Symbol}</div>
+                                                    <div className="text-xs text-default/50">{position.token1Symbol}</div>
                                                     <div>{position.token1Amount ? formatNumber(position.token1Amount, 4) : '0'}</div>
                                                 </td>
                                                 <td className="border p-2 text-right font-semibold">${formatNumber(position.valueUSD)}</td>
@@ -171,11 +165,11 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                             <div className="space-y-2">
                                 <h4 className="font-semibold">Detailed Position Information</h4>
                                 {dexPositions.map((position) => (
-                                    <div key={position.id} className="space-y-3 rounded border bg-gray-50 p-4">
+                                    <div key={position.id} className="space-y-3 rounded border bg-default/10 p-4">
                                         <div className="flex items-start justify-between">
                                             <div>
                                                 <div className="font-mono text-lg font-semibold">Position #{position.tokenId}</div>
-                                                <div className="text-sm text-gray-600">
+                                                <div className="text-sm text-default/50">
                                                     {position.token0Symbol}/{position.token1Symbol} • Fee:{' '}
                                                     {position.feeTier || `${position.fee ? (position.fee / 10000).toFixed(2) + '%' : 'N/A'}`}
                                                 </div>
@@ -191,11 +185,11 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                         {/* Token Addresses */}
                                         <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
                                             <div>
-                                                <span className="text-gray-600">Token0 Address:</span>
+                                                <span className="text-default/50">Token0 Address:</span>
                                                 <div className="break-all font-mono text-xs">{position.token0}</div>
                                             </div>
                                             <div>
-                                                <span className="text-gray-600">Token1 Address:</span>
+                                                <span className="text-default/50">Token1 Address:</span>
                                                 <div className="break-all font-mono text-xs">{position.token1}</div>
                                             </div>
                                         </div>
@@ -203,22 +197,22 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                         {/* Liquidity and Amounts */}
                                         <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
                                             <div>
-                                                <span className="text-gray-600">Liquidity:</span>
+                                                <span className="text-default/50">Liquidity:</span>
                                                 <div className="font-mono">{position.liquidity.toString()}</div>
                                             </div>
                                             <div>
-                                                <span className="text-gray-600">{position.token0Symbol} Amount:</span>
+                                                <span className="text-default/50">{position.token0Symbol} Amount:</span>
                                                 <div className="font-mono">
                                                     {position.token0Amount ? formatNumber(position.token0Amount, 6) : '0'}
                                                 </div>
-                                                <div className="text-xs text-gray-500">${formatNumber(position.token0ValueUSD || 0)}</div>
+                                                <div className="text-xs text-default/50">${formatNumber(position.token0ValueUSD || 0)}</div>
                                             </div>
                                             <div>
-                                                <span className="text-gray-600">{position.token1Symbol} Amount:</span>
+                                                <span className="text-default/50">{position.token1Symbol} Amount:</span>
                                                 <div className="font-mono">
                                                     {position.token1Amount ? formatNumber(position.token1Amount, 6) : '0'}
                                                 </div>
-                                                <div className="text-xs text-gray-500">${formatNumber(position.token1ValueUSD || 0)}</div>
+                                                <div className="text-xs text-default/50">${formatNumber(position.token1ValueUSD || 0)}</div>
                                             </div>
                                         </div>
 
@@ -228,13 +222,13 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                                 <div className="font-semibold">Price Range</div>
                                                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                                     <div>
-                                                        <span className="text-gray-600">Tick Range:</span>
+                                                        <span className="text-default/50">Tick Range:</span>
                                                         <div className="font-mono">
                                                             {position.tickLower ?? 'N/A'} → {position.tickUpper ?? 'N/A'}
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <span className="text-gray-600">Price Range:</span>
+                                                        <span className="text-default/50">Price Range:</span>
                                                         <div className="font-mono text-xs">
                                                             {position.tickLower !== undefined
                                                                 ? Math.pow(1.0001, position.tickLower).toFixed(6)
@@ -248,7 +242,7 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                                 </div>
                                                 {position.tickCurrent !== undefined && (
                                                     <div>
-                                                        <span className="text-gray-600">Current Tick:</span>
+                                                        <span className="text-default/50">Current Tick:</span>
                                                         <div className="font-mono">
                                                             {position.tickCurrent} (Price: {Math.pow(1.0001, position.tickCurrent).toFixed(6)})
                                                         </div>
@@ -260,22 +254,22 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                         {/* Additional Details */}
                                         <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
                                             <div>
-                                                <span className="text-gray-600">Pool:</span>
+                                                <span className="text-default/50">Pool:</span>
                                                 <div className="truncate font-mono text-xs">{position.pool}</div>
                                             </div>
                                             <div>
-                                                <span className="text-gray-600">ID:</span>
+                                                <span className="text-default/50">ID:</span>
                                                 <div className="font-mono text-xs">{position.id}</div>
                                             </div>
                                             {position.fee && (
                                                 <div>
-                                                    <span className="text-gray-600">Fee Tier:</span>
+                                                    <span className="text-default/50">Fee Tier:</span>
                                                     <div className="font-mono">{(position.fee / 10000).toFixed(2)}%</div>
                                                 </div>
                                             )}
                                             {position.sqrtPriceX96 && (
                                                 <div>
-                                                    <span className="text-gray-600">Sqrt Price X96:</span>
+                                                    <span className="text-default/50">Sqrt Price X96:</span>
                                                     <div className="truncate font-mono text-xs">{position.sqrtPriceX96.toString()}</div>
                                                 </div>
                                             )}
@@ -287,11 +281,11 @@ export function LPPositionsByDex({ positions }: LPPositionsByDexProps) {
                                                 <div className="mb-1 text-sm font-semibold">Uncollected Fees</div>
                                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                                     <div>
-                                                        <span className="text-gray-600">{position.token0Symbol}:</span>
+                                                        <span className="text-default/50">{position.token0Symbol}:</span>
                                                         <div className="font-mono">{position.fees0Uncollected || 0}</div>
                                                     </div>
                                                     <div>
-                                                        <span className="text-gray-600">{position.token1Symbol}:</span>
+                                                        <span className="text-default/50">{position.token1Symbol}:</span>
                                                         <div className="font-mono">{position.fees1Uncollected || 0}</div>
                                                     </div>
                                                 </div>

@@ -5,10 +5,10 @@ import { getPoolAddress, fetchPoolState } from '@/services/core/uniswap-pool.ser
 import { getTokenPrice } from '@/services/core/token-prices.service'
 import type { Address } from 'viem'
 import { ERC20_ABI } from '@/services/constants/abis'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 // Token addresses on HyperEVM
-const WHYPE_ADDRESS = '0x5555555555555555555555555555555555555555' as Address
-const USDT0_ADDRESS = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb' as Address
+const WHYPE_ADDRESS = WRAPPED_HYPE_ADDRESS
 
 // Common fee tiers
 const FEE_TIERS = [100, 500, 2000, 2500, 3000, 10000]
@@ -120,7 +120,7 @@ export async function GET() {
                     )
 
                     // Skip if pool address is zero (pool doesn't exist)
-                    if (poolAddress === '0x0000000000000000000000000000000000000000') {
+                    if (poolAddress === NATIVE_HYPE_ADDRESS) {
                         continue
                     }
 

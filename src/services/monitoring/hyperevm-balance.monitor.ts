@@ -5,6 +5,7 @@ import { MULTICALL3_ABI, MULTICALL3_ADDRESS } from '@/contracts/multicall-abi'
 import type { MonitoredAccount } from '@/generated/prisma-monitoring'
 import type { HyperEvmBalance } from '@/interfaces'
 import { Prisma } from '@prisma/client-monitoring'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 const { Decimal } = Prisma
 
@@ -34,9 +35,9 @@ export class HyperEvmBalanceMonitor {
 
     // Token configurations - Only track HYPE, USDT0, USDC
     private readonly tokens: TokenConfig[] = [
-        { address: '0x0000000000000000000000000000000000000000', symbol: 'HYPE', decimals: 18, isNative: true },
-        { address: '0x5555555555555555555555555555555555555555', symbol: 'WHYPE', decimals: 18 },
-        { address: '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb', symbol: 'USDT0', decimals: 6 },
+        { address: NATIVE_HYPE_ADDRESS, symbol: 'HYPE', decimals: 18, isNative: true },
+        { address: WRAPPED_HYPE_ADDRESS, symbol: 'WHYPE', decimals: 18 },
+        { address: USDT0_ADDRESS, symbol: 'USDT0', decimals: 6 },
         // { address: '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70', symbol: 'USDC', decimals: 18 },
     ]
 
@@ -67,7 +68,7 @@ export class HyperEvmBalanceMonitor {
                     id: `${accountAddress}-hyperevm-HYPE`,
                     asset: 'HYPE',
                     symbol: 'HYPE',
-                    address: '0x0000000000000000000000000000000000000000',
+                    address: NATIVE_HYPE_ADDRESS,
                     balance: nativeBalance.toString(),
                     decimals: 18,
                     valueUSD: nativeHypeAmount * hypePrice,

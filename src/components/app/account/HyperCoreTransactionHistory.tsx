@@ -1,0 +1,135 @@
+'use client'
+
+import { useQuery } from '@tanstack/react-query'
+import type { HyperCoreTransaction } from '@/services/explorers/hypercore.service'
+import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
+import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
+
+interface HyperCoreTransactionHistoryProps {
+    account: string
+    limit?: number
+}
+
+interface TransactionResponse {
+    success: boolean
+    transactions: HyperCoreTransaction[]
+    pagination: {
+        limit: number
+        total: number
+    }
+}
+
+async function fetchTransactions(account: string, limit: number): Promise<TransactionResponse> {
+    const params = new URLSearchParams({
+        limit: limit.toString(),
+    })
+
+    const response = await fetch(`/api/public/account/${account}/hypercore-transactions?${params}`)
+    if (!response.ok) {
+        throw new Error('Failed to fetch HyperCore transactions')
+    }
+    return response.json()
+}
+
+export function HyperCoreTransactionHistory({ account, limit = DEFAULT_TRANSACTION_LIMIT }: HyperCoreTransactionHistoryProps) {
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['hypercore-transactions', account, limit],
+        queryFn: () => fetchTransactions(account, limit),
+        enabled: !!account,
+        staleTime: 60000, // 1 minute
+        gcTime: 300000, // 5 minutes
+        refetchOnWindowFocus: false,
+    })
+
+    if (isLoading) {
+        return (
+            <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                        <div className="h-8 rounded bg-default/10"></div>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    if (error) {
+        return <div className="text-center text-sm text-red-500">Error: {error instanceof Error ? error.message : 'Failed to load transactions'}</div>
+    }
+
+    if (!data?.success || !data.transactions || data.transactions.length === 0) {
+        return <div className="py-4 text-center text-sm text-default/50">No recent transactions</div>
+    }
+
+    const formatTimestamp = (timestamp: number) => {
+        return new Date(timestamp).toLocaleString()
+    }
+
+    const formatSize = (size: number, coin: string) => {
+        const asset = getHyperCoreAssetBySymbol(coin)
+        const decimals = asset?.decimalsForRounding ?? 4
+        return size.toFixed(decimals)
+    }
+
+    const formatPrice = (price: number) => {
+        return price.toFixed(2)
+    }
+
+    const getTypeColor = (type: string) => {
+        switch (type) {
+            case 'trade':
+                return 'text-blue-600'
+            case 'liquidation':
+                return 'text-red-600'
+            case 'funding':
+                return 'text-purple-600'
+            default:
+                return 'text-default/50'
+        }
+    }
+
+    const getSideColor = (side: string) => {
+        switch (side) {
+            case 'buy':
+            case 'long':
+                return 'text-green-600 dark:text-green-400'
+            case 'sell':
+            case 'short':
+                return 'text-red-600 dark:text-red-400'
+            default:
+                return 'text-default/50'
+        }
+    }
+
+    return (
+        <div className="space-y-1">
+            {data.transactions.map((tx, index) => {
+                return (
+                    <div key={`${tx.hash}-${index}`} className="flex items-center justify-between py-1 text-sm hover:bg-default/5">
+                        <div className="flex items-center gap-3">
+                            <span className={`${getTypeColor(tx.type)} font-medium capitalize`}>{tx.type}</span>
+
+                            <span className="font-medium">{tx.coin}</span>
+
+                            <span className={`${getSideColor(tx.side)} font-medium uppercase`}>{tx.side}</span>
+
+                            <span className="text-default/50">
+                                {formatSize(tx.size, tx.coin)} @ ${formatPrice(tx.price)}
+                            </span>
+
+                            {tx.pnl !== undefined && (
+                                <span className={`${tx.pnl >= 0 ? 'text-green-600' : 'text-red-600'} text-xs`}>PnL: ${tx.pnl.toFixed(2)}</span>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-default/50">${tx.value.toFixed(2)}</span>
+                            <span className="text-xs text-default/50">{formatTimestamp(tx.timestamp)}</span>
+                            <span className="text-xs text-green-600 dark:text-green-400">✓</span>
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}

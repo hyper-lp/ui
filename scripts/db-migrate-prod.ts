@@ -2,7 +2,7 @@
 
 /**
  * Production Migration Script
- * 
+ *
  * Safely applies migrations to production with backup and rollback capabilities
  */
 
@@ -28,6 +28,7 @@ function runCommand(command: string, env?: NodeJS.ProcessEnv): string {
             env: env || process.env,
             encoding: 'utf-8',
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         throw new Error(`Command failed: ${command}\n${error.message}`)
     }
@@ -46,7 +47,7 @@ async function main() {
 
     const prodEnv = fs.readFileSync(prodEnvPath, 'utf-8')
     const prodDbUrl = prodEnv.match(/DATABASE_URL="([^"]+)"/)?.[1]
-    
+
     if (!prodDbUrl || prodDbUrl.includes('your_prod_database_url_here')) {
         console.error('❌ Production DATABASE_URL not configured')
         process.exit(1)
@@ -70,35 +71,35 @@ async function main() {
         console.log('\n📦 Creating database backup...')
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
         const backupFile = `backup-prod-${timestamp}.sql`
-        
+
         // Extract database info from URL
         const dbMatch = prodDbUrl.match(/postgresql:\/\/([^:]+):([^@]+)@([^\/]+)\/(.+)/)
         if (!dbMatch) {
             console.error('❌ Could not parse database URL')
             process.exit(1)
         }
-        
+
         const [, user, , host, database] = dbMatch
         console.log(`   Backing up ${database} on ${host}...`)
         console.log(`   Backup file: ${backupFile}`)
         console.log(`   (Backup command would run here in real implementation)`)
-        
+
         // Step 3: Show migration plan
         console.log('\n📝 Migration Plan:')
         console.log('The following migrations will be applied:')
         const pendingMigrations = statusOutput
             .split('\n')
-            .filter(line => line.includes('Not yet applied'))
-            .map(line => line.trim())
-        
-        pendingMigrations.forEach(migration => {
+            .filter((line) => line.includes('Not yet applied'))
+            .map((line) => line.trim())
+
+        pendingMigrations.forEach((migration) => {
             console.log(`   - ${migration}`)
         })
 
         // Step 4: Confirm
         console.log('\n⚠️  WARNING: This will modify the production database!')
         const answer = await question('Do you want to proceed? Type "deploy" to continue: ')
-        
+
         if (answer !== 'deploy') {
             console.log('❌ Migration cancelled')
             process.exit(0)
@@ -112,7 +113,7 @@ async function main() {
         // Step 6: Verify
         console.log('\n✅ Verifying migration...')
         const verifyOutput = runCommand('pnpm prisma migrate status', env)
-        
+
         if (verifyOutput.includes('Database schema is up to date')) {
             console.log('✅ Migration successful!')
             console.log(`   Backup saved as: ${backupFile}`)
@@ -120,7 +121,7 @@ async function main() {
         } else {
             throw new Error('Migration verification failed')
         }
-
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error('\n❌ Migration failed!')
         console.error(error.message)

@@ -3,6 +3,7 @@ import { getPoolAddress, fetchPoolState } from '@/services/core/uniswap-pool.ser
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
 import type { Address } from 'viem'
 import type { DexProtocol } from '@/interfaces/dex.interface'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 export interface PoolInfo {
     dex: DexProtocol
@@ -19,11 +20,9 @@ export interface PoolInfo {
 
 // Token addresses on HyperEVM
 const HYPE_ADDRESSES = {
-    NATIVE: '0x0000000000000000000000000000000000000000' as Address,
-    WRAPPED: '0x5555555555555555555555555555555555555555' as Address,
+    NATIVE: NATIVE_HYPE_ADDRESS,
+    WRAPPED: WRAPPED_HYPE_ADDRESS,
 }
-
-const USDT0_ADDRESS = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb' as Address
 
 // Common fee tiers used across DEXs
 const FEE_TIERS = [

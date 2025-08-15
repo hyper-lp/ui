@@ -1,17 +1,18 @@
 import type { Address } from 'viem'
 import { HYPEREVM_CHAIN_ID } from '@/lib/viem'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 // Hyperliquid API endpoint (public API, no authentication needed)
 const HYPERLIQUID_API = 'https://api.hyperliquid.xyz/info'
 
 // Token addresses on HyperEVM
 const HYPE_ADDRESSES = [
-    '0x5555555555555555555555555555555555555555', // WHYPE (Wrapped HYPE)
-    '0x0000000000000000000000000000000000000000', // HYPE (native/unwrapped)
+    WRAPPED_HYPE_ADDRESS, // WHYPE (Wrapped HYPE)
+    NATIVE_HYPE_ADDRESS, // HYPE (native/unwrapped)
 ]
 
 const STABLE_ADDRESSES = [
-    '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb', // USDT0
+    USDT0_ADDRESS, // USDT0
     '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70', // feUSD (USD stablecoin)
 ]
 
@@ -130,12 +131,12 @@ export async function getTokenPrice(tokenAddress: Address, chainId: number): Pro
     const lowerAddress = tokenAddress.toLowerCase()
 
     // Check if it's HYPE
-    if (HYPE_ADDRESSES.includes(lowerAddress)) {
+    if (HYPE_ADDRESSES.map((a) => a.toLowerCase()).includes(lowerAddress)) {
         return fetchHypePrice()
     }
 
     // Check if it's a stablecoin
-    if (STABLE_ADDRESSES.includes(lowerAddress)) {
+    if (STABLE_ADDRESSES.map((a) => a.toLowerCase()).includes(lowerAddress)) {
         return 1.0
     }
 

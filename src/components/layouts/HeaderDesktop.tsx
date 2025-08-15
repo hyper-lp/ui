@@ -30,13 +30,23 @@ export default function HeaderDesktop(props: { className?: string }) {
             >
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }}>
                     <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
-                        <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={60} height={60} />
-                        <div className="flex flex-col">
-                            <p className="text-3xl font-light">
-                                Hyper
-                                <span className="-ml-0.5 italic">LP</span>
-                            </p>
-                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={120} height={16} className="rounded-none" />
+                        <span className="relative inline-block">
+                            {/* Lightning effect */}
+                            <span
+                                className="pointer-events-none absolute left-1/2 top-1/2 -z-10 block h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-hl-light/70 via-hl-light/30 to-transparent opacity-20 blur-[8px] transition-colors dark:from-hl-dark/70 dark:via-hl-dark/30 dark:to-transparent"
+                                aria-hidden="true"
+                            />
+                            <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={70} height={70} />
+                        </span>
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-3xl font-light">
+                                    Hyper
+                                    <span className="-ml-0.5 italic">LP</span>
+                                </p>
+                                <p className="text-xs text-default/40">Alpha</p>
+                            </div>
+                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={140} height={16} className="rounded-none" />
                         </div>
                     </LinkWrapper>
                 </motion.div>

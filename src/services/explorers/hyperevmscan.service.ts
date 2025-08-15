@@ -37,7 +37,10 @@ export class HyperEVMScanService {
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), this.timeout)
 
-            const response = await fetch(`${this.baseUrl}?${params}`, {
+            const url = `${this.baseUrl}?${params}`
+            console.log(`[HyperEVMScan] Fetching from: ${url.replace(/apikey=[^&]+/, 'apikey=***')}`)
+
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',
@@ -53,9 +56,23 @@ export class HyperEVMScanService {
 
             const data: HyperEVMScanResponse = await response.json()
 
-            if (data.status === '0' && data.message !== 'No transactions found') {
+            console.log(`[HyperEVMScan] Response:`, {
+                status: data.status,
+                message: data.message,
+                result: typeof data.result === 'string' ? data.result : `${Array.isArray(data.result) ? data.result.length : 0} transactions`,
+            })
+
+            // Check for specific error messages
+            if (data.status === '0') {
+                if (data.message === 'No transactions found') {
+                    return []
+                }
+                if (data.message === 'NOTOK' && typeof data.result === 'string') {
+                    console.error(`HyperEVMScan API Error: ${data.result}`)
+                    // Could be invalid API key or rate limit
+                    return []
+                }
                 console.warn(`HyperEVMScan API warning: ${data.message}`)
-                // Return empty array instead of throwing error
                 return []
             }
 

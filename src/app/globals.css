@@ -8,6 +8,8 @@
     --color-background-opposite: 202 33% 9%; /* #0f1a1f - Oil Black */
     --color-primary: 168 65% 41%; /* #22ab94 - primary */
     --color-default: 214 17% 21%; /* #2e313c - Charcoal Blue */
+    --color-hl-light: 174 65% 41%; /* #50D2C1 - Hyperliquid Light */
+    --color-hl-dark: 174 65% 41%; /* #092723 - Hyperliquid Dark */
 }
 
 .dark {
@@ -16,6 +18,8 @@
     --color-background-opposite: 160 66% 99%; /* #f6fefd - Off-White */
     --color-primary: 168 65% 41%; /* #22ab94 - primary */
     --color-default: 214 10% 84%; /* #d1d4dc - Light Gray */
+    --color-hl-light: 174 65% 41%; /* #50D2C1 - Hyperliquid Light */
+    --color-hl-dark: 174 65% 41%; /* #092723 - Hyperliquid Dark */
 }
 
 @layer utilities {

@@ -14,6 +14,8 @@ const config: Config = {
                 'background-opposite': 'hsl(var(--color-background-opposite) / <alpha-value>)',
                 primary: 'hsl(var(--color-primary) / <alpha-value>)',
                 default: 'hsl(var(--color-default) / <alpha-value>)',
+                'hl-light': 'hsl(var(--color-hl-light) / <alpha-value>)',
+                'hl-dark': 'hsl(var(--color-hl-dark) / <alpha-value>)',
             },
             animation: {
                 'skeleton-move': 'skeleton-move 2s infinite',

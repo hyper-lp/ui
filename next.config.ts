@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-    productionBrowserSourceMaps: true,
+    productionBrowserSourceMaps: process.env.NODE_ENV === 'production',
     images: {
         remotePatterns: [{ hostname: '*' }],
     },
@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
     },
     experimental: {
         webpackBuildWorker: true,
+        turbo: {
+            resolveAlias: {
+                '@/*': ['./src/*'],
+            },
+        },
     },
     async headers() {
         return [

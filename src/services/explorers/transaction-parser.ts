@@ -1,6 +1,7 @@
 import type { ExplorerTransaction, ParsedDexTransaction } from '@/interfaces/explorers'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import { DexProtocol } from '@/enums'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 // Common function signatures for DEX interactions
 const DEX_FUNCTION_SIGNATURES: Record<string, string> = {
@@ -43,8 +44,8 @@ const DEX_FUNCTION_SIGNATURES: Record<string, string> = {
 
 // Token addresses we're interested in
 const HYPE_ADDRESSES = [
-    '0x1FA22a8bb4876DfAECa89A2B7621a0AB6469C909', // WHYPE
-    '0x0000000000000000000000000000000000000000', // Native HYPE (if applicable)
+    WRAPPED_HYPE_ADDRESS, // WHYPE
+    NATIVE_HYPE_ADDRESS, // Native HYPE
 ].map((a) => a.toLowerCase())
 
 /**

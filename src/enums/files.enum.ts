@@ -32,5 +32,10 @@ export enum FileIds {
     DEX_HYBRA = '/brands/dexs/hybra.jpg',
     DEX_HYPERBRICK = '/brands/dexs/hyperbrick.svg',
     DEX_HYPERSWAP = '/brands/dexs/hyperswap.jpg',
-    DEX_PROJETX = '/brands/dexs/projet-x.jpg',
+    DEX_PROJETX = '/brands/dexs/project-x.jpg',
+
+    // tokens
+    TOKEN_HYPE = '/tokens/HYPE.jpg',
+    TOKEN_USDT0 = '/tokens/USDT0.png',
+    TOKEN_USDC = '/tokens/USDC.png',
 }

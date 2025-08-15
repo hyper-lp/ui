@@ -47,13 +47,16 @@ export default function HeaderMobile() {
                 <div className="z-30 flex grow items-center gap-4">
                     {/* logo */}
                     <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
-                        <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={60} height={60} />
-                        <div className="flex flex-col">
-                            <p className="text-3xl font-light">
-                                Hyper
-                                <span className="-ml-0.5 italic">LP</span>
-                            </p>
-                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={120} height={16} className="rounded-none" />
+                        <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={70} height={70} />
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-3xl font-light">
+                                    Hyper
+                                    <span className="-ml-0.5 italic">LP</span>
+                                </p>
+                                <p className="text-xs text-default/40">Alpha</p>
+                            </div>
+                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={140} height={16} className="rounded-none" />
                         </div>
                     </LinkWrapper>
                 </div>

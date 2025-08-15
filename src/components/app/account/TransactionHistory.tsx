@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { ParsedDexTransaction } from '@/interfaces/explorers'
 import { DexProtocol } from '@/enums'
+import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
 
 interface TransactionHistoryProps {
     account: string
+    limit?: number
 }
 
 interface TransactionResponse {
@@ -29,10 +31,9 @@ interface TransactionResponse {
     message?: string // Optional message for API key not configured
 }
 
-async function fetchTransactions(account: string, onlyHypeUsdt: boolean, limit: number = 100): Promise<TransactionResponse> {
+async function fetchTransactions(account: string, limit: number = 10): Promise<TransactionResponse> {
     const params = new URLSearchParams({
         limit: limit.toString(),
-        onlyHypeUsdt: onlyHypeUsdt.toString(),
     })
 
     const response = await fetch(`/api/public/account/${account}/transactions?${params}`)
@@ -42,14 +43,12 @@ async function fetchTransactions(account: string, onlyHypeUsdt: boolean, limit: 
     return response.json()
 }
 
-export function TransactionHistory({ account }: TransactionHistoryProps) {
-    const [onlyHypeUsdt, setOnlyHypeUsdt] = useState(true)
-    const [showStats, setShowStats] = useState(false)
-    const [displayCount, setDisplayCount] = useState(25)
+export function TransactionHistory({ account, limit = DEFAULT_TRANSACTION_LIMIT }: TransactionHistoryProps) {
+    const [displayCount] = useState(limit)
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ['transactions', account, onlyHypeUsdt],
-        queryFn: () => fetchTransactions(account, onlyHypeUsdt, 100),
+        queryKey: ['transactions', account, limit],
+        queryFn: () => fetchTransactions(account, limit),
         enabled: !!account,
         staleTime: 60000, // 1 minute
         gcTime: 300000, // 5 minutes
@@ -58,35 +57,22 @@ export function TransactionHistory({ account }: TransactionHistoryProps) {
 
     if (isLoading) {
         return (
-            <div className="border p-4">
-                <h2 className="mb-4 text-xl font-semibold">Transaction History</h2>
-                <div className="space-y-2">
-                    {[...Array(5)].map((_, i) => (
-                        <div key={i} className="animate-pulse">
-                            <div className="h-10 rounded bg-gray-200"></div>
-                        </div>
-                    ))}
-                </div>
+            <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                        <div className="h-8 rounded bg-default/10"></div>
+                    </div>
+                ))}
             </div>
         )
     }
 
     if (error) {
-        return (
-            <div className="border p-4">
-                <h2 className="mb-4 text-xl font-semibold">Transaction History</h2>
-                <div className="text-center text-red-500">Error: {error instanceof Error ? error.message : 'Failed to load transactions'}</div>
-            </div>
-        )
+        return <div className="text-center text-sm text-red-500">Error: {error instanceof Error ? error.message : 'Failed to load transactions'}</div>
     }
 
     if (!data?.success || !data.transactions) {
-        return (
-            <div className="border p-4">
-                <h2 className="mb-4 text-xl font-semibold">Transaction History</h2>
-                <div className="text-center text-gray-500">No transaction data available</div>
-            </div>
-        )
+        return <div className="text-center text-sm text-default/50">No transaction data available</div>
     }
 
     const formatAddress = (address: string) => {
@@ -107,8 +93,31 @@ export function TransactionHistory({ account }: TransactionHistoryProps) {
                 return 'text-red-600'
             case 'collect':
                 return 'text-purple-600'
+            case 'transfer':
+                return 'text-indigo-600'
+            case 'contract':
+                return 'text-orange-600'
             default:
-                return 'text-gray-600'
+                return 'text-default/50'
+        }
+    }
+
+    const getTypeLabel = (type: string) => {
+        switch (type) {
+            case 'swap':
+                return 'Swap'
+            case 'addLiquidity':
+                return 'Add Liquidity'
+            case 'removeLiquidity':
+                return 'Remove Liquidity'
+            case 'collect':
+                return 'Collect Fees'
+            case 'transfer':
+                return 'Transfer'
+            case 'contract':
+                return 'Contract Call'
+            default:
+                return type
         }
     }
 
@@ -119,140 +128,53 @@ export function TransactionHistory({ account }: TransactionHistoryProps) {
             [DexProtocol.PRJTX]: 'Project X',
             [DexProtocol.HYPERBRICK]: 'HyperBrick',
         }
-        return names[dex] || dex
+        return names[dex] || ''
     }
 
     return (
-        <div className="space-y-4">
-            <div className="border p-4">
-                <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Transaction History</h2>
-                    <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2">
-                            <input type="checkbox" checked={onlyHypeUsdt} onChange={(e) => setOnlyHypeUsdt(e.target.checked)} className="rounded" />
-                            <span className="text-sm">Only HYPE/USDT0</span>
-                        </label>
-                        <button onClick={() => setShowStats(!showStats)} className="rounded bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200">
-                            {showStats ? 'Hide' : 'Show'} Stats
-                        </button>
-                    </div>
+        <div className="space-y-2">
+            {/* Message if API key not configured */}
+            {data.message && <div className="text-sm text-yellow-600 dark:text-yellow-400">{data.message}</div>}
+            {/* Transaction List */}
+            {data.transactions.length === 0 ? (
+                <div className="py-4 text-center text-sm text-default/50">
+                    {data.message ? 'Transaction history unavailable' : 'No recent transactions'}
                 </div>
-
-                {/* Statistics */}
-                {showStats && data.stats && (
-                    <div className="mb-4 grid grid-cols-2 gap-4 rounded bg-gray-50 p-4 text-sm md:grid-cols-4">
-                        <div>
-                            <div className="font-semibold">Total Transactions</div>
-                            <div>{data.stats.total}</div>
-                        </div>
-                        <div>
-                            <div className="font-semibold">Successful</div>
-                            <div className="text-green-600">{data.stats.successful}</div>
-                        </div>
-                        <div>
-                            <div className="font-semibold">Failed</div>
-                            <div className="text-red-600">{data.stats.failed}</div>
-                        </div>
-                        <div>
-                            <div className="font-semibold">By Type</div>
-                            <div className="text-xs">
-                                {Object.entries(data.stats.byType)
-                                    .filter(([, count]) => count > 0)
-                                    .map(([type, count]) => (
-                                        <div key={type}>
-                                            {type}: {count}
-                                        </div>
-                                    ))}
+            ) : (
+                <div className="space-y-1">
+                    {data.transactions.slice(0, displayCount).map((tx) => (
+                        <div key={tx.txHash} className="flex items-center justify-between py-1 text-sm hover:bg-default/5">
+                            <div className="flex items-center gap-3">
+                                <span className={`${getTypeColor(tx.type)} font-medium`}>{getTypeLabel(tx.type)}</span>
+                                {getDexName(tx.dex) && <span className="text-default/50">{getDexName(tx.dex)}</span>}
+                                {tx.token0Symbol && tx.token1Symbol ? (
+                                    <span className="text-default/50">
+                                        {tx.token0Symbol}/{tx.token1Symbol}
+                                    </span>
+                                ) : null}
                             </div>
-                        </div>
-                        {Object.keys(data.stats.byDex).length > 0 && (
-                            <div className="col-span-2 md:col-span-4">
-                                <div className="font-semibold">By DEX</div>
-                                <div className="flex gap-4 text-xs">
-                                    {Object.entries(data.stats.byDex).map(([dex, count]) => (
-                                        <div key={dex}>
-                                            {getDexName(dex as DexProtocol)}: {count}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Message if API key not configured */}
-                {data.message && (
-                    <div className="mb-4 rounded bg-yellow-50 p-4 text-sm text-yellow-800">
-                        {data.message}. To view transaction history, please configure HYPEREVM_SCAN_API_KEY in your environment.
-                    </div>
-                )}
-
-                {/* Transaction List */}
-                {data.transactions.length === 0 ? (
-                    <div className="py-8 text-center text-gray-500">
-                        {data.message
-                            ? 'Transaction history unavailable'
-                            : `No DEX transactions found for this account${onlyHypeUsdt ? ' with HYPE/USDT0 pairs' : ''}`}
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b text-left">
-                                    <th className="pb-2">Type</th>
-                                    <th className="pb-2">DEX</th>
-                                    <th className="pb-2">Tokens</th>
-                                    <th className="pb-2">Tx Hash</th>
-                                    <th className="pb-2">Time</th>
-                                    <th className="pb-2">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.transactions.slice(0, displayCount).map((tx) => (
-                                    <tr key={tx.txHash} className="border-b hover:bg-gray-50">
-                                        <td className={`py-2 ${getTypeColor(tx.type)}`}>{tx.type}</td>
-                                        <td className="py-2">{getDexName(tx.dex)}</td>
-                                        <td className="py-2">{tx.token0Symbol && tx.token1Symbol ? `${tx.token0Symbol}/${tx.token1Symbol}` : '-'}</td>
-                                        <td className="py-2">
-                                            <a
-                                                href={`https://hyperevmscan.io/tx/${tx.txHash}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 hover:underline"
-                                            >
-                                                {formatAddress(tx.txHash)}
-                                            </a>
-                                        </td>
-                                        <td className="py-2 text-xs">{formatTimestamp(tx.timestamp)}</td>
-                                        <td className="py-2">
-                                            <span
-                                                className={`rounded px-2 py-1 text-xs ${
-                                                    tx.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                }`}
-                                            >
-                                                {tx.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {data.transactions.length > displayCount && (
-                            <div className="mt-4 text-center">
-                                <div className="mb-2 text-sm text-gray-500">
-                                    Showing {displayCount} of {data.transactions.length} transactions
-                                </div>
-                                <button
-                                    onClick={() => setDisplayCount((prev) => Math.min(prev + 25, data.transactions.length))}
-                                    className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                            <div className="flex items-center gap-3">
+                                <a
+                                    href={`https://hyperevmscan.io/tx/${tx.txHash}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-mono text-blue-600 hover:underline dark:text-blue-400"
                                 >
-                                    Load More
-                                </button>
+                                    {formatAddress(tx.txHash)}
+                                </a>
+                                <span className="text-xs text-default/50">{formatTimestamp(tx.timestamp)}</span>
+                                <span
+                                    className={`text-xs ${
+                                        tx.status === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                                    }`}
+                                >
+                                    {tx.status === 'success' ? '✓' : '✗'}
+                                </span>
                             </div>
-                        )}
-                    </div>
-                )}
-            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

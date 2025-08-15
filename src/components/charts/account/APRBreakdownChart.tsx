@@ -44,7 +44,7 @@ function APRBreakdownChart({ className, lpFeeAPR = 0, fundingAPR = 0, rebalancin
             data.push({
                 value: rebalancingCost,
                 name: 'Rebalancing Cost',
-                itemStyle: { color: '#6b7280' }, // gray
+                itemStyle: { color: 'hsl(var(--default) / 0.5)' }, // theme default with opacity
             })
         }
 

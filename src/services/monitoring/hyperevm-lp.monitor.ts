@@ -6,6 +6,7 @@ import { poolDiscoveryService } from '../discovery/pool-discovery.service'
 import type { DexLPPosition } from '@/interfaces/dex.interface'
 import type { MonitoredAccount } from '@/generated/prisma-monitoring'
 import { DexProtocol } from '@/enums'
+import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 const POSITION_MANAGER_ABI = [
     {
@@ -93,11 +94,11 @@ export class LPMonitorService {
         const client = getViemClient(this.chainId)
 
         const hypeAddresses = [
-            '0x0000000000000000000000000000000000000000', // Native HYPE
-            '0x5555555555555555555555555555555555555555', // Wrapped HYPE
+            NATIVE_HYPE_ADDRESS, // Native HYPE
+            WRAPPED_HYPE_ADDRESS, // Wrapped HYPE
         ]
         const stableAddresses = [
-            '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb', // USDT0
+            USDT0_ADDRESS.toLowerCase(), // USDT0 (lowercase for comparison)
             '0x02c6a2fa58cc01a18b8d9e00ea48d65e4df26c70', // USDC (feUSD)
         ]
 
@@ -160,8 +161,9 @@ export class LPMonitorService {
 
                     // Check if it's a HYPE/Stable pair (HYPE/USDT0 or HYPE/USDC)
                     const isHypeStable =
-                        (hypeAddresses.includes(token0.toLowerCase()) && stableAddresses.includes(token1.toLowerCase())) ||
-                        (hypeAddresses.includes(token1.toLowerCase()) && stableAddresses.includes(token0.toLowerCase()))
+                        (hypeAddresses.includes(token0.toLowerCase() as typeof NATIVE_HYPE_ADDRESS) &&
+                            stableAddresses.includes(token1.toLowerCase())) ||
+                        (hypeAddresses.includes(token1.toLowerCase() as typeof NATIVE_HYPE_ADDRESS) && stableAddresses.includes(token0.toLowerCase()))
 
                     if (isHypeStable) {
                         const dex = getDexByPositionManager(positionManagerAddress) || protocol

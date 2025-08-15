@@ -28,22 +28,24 @@ export default function Footer(props: { className?: string }) {
             <div className="flex flex-row gap-8">
                 <div className="hidden md:flex">
                     <StyledTooltip closeDelay={500} content={<p>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</p>}>
-                        <p className="truncate">Aug. 2025</p>
+                        <p className="truncate">Alpha - Aug. 2025</p>
                     </StyledTooltip>
                 </div>
 
                 <LinkWrapper href={AppUrls.TAIKAI} target="_blank" className="hidden md:flex">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Hyperliquid Community Hackathon</p>
                 </LinkWrapper>
-                <LinkWrapper href={AppUrls.DOCS} target="_blank">
-                    <p className="cursor-alias truncate hover:text-primary hover:underline">Docs</p>
-                </LinkWrapper>
             </div>
 
             {/* right */}
-            <LinkWrapper href={AppUrls.CONTACT_US} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">
-                Contact us
-            </LinkWrapper>
+            <div className="flex flex-row gap-8">
+                <LinkWrapper href={AppUrls.DOCS} target="_blank">
+                    <p className="cursor-alias truncate hover:text-primary hover:underline">Docs</p>
+                </LinkWrapper>
+                <LinkWrapper href={AppUrls.CONTACT_US} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">
+                    Contact
+                </LinkWrapper>
+            </div>
             {/* <Authors className="justify-start md:justify-end" /> */}
         </footer>
     )

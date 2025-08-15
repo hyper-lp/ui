@@ -1,134 +1,74 @@
 'use client'
 
 import { useSearchParams, useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import PageWrapper from '@/components/common/PageWrapper'
-import { CollapsibleSection } from '@/components/common/CollapsibleSection'
-import type { AccountData } from '@/interfaces'
-import { useDeltaHistoryStore } from '@/stores/delta-history.store'
-import {
-    AccountHeader,
-    DeltaBreakdown,
-    ValueSummary,
-    APRDisplay,
-    LPPositionsByDex,
-    PerpPositionsTable,
-    SpotBalancesTable,
-    HyperEvmBalancesTable,
-    StrategyMonitoring,
-    TransactionHistory,
-} from '@/components/app/account'
+import { useAccountData } from '@/hooks/useAccountData'
+import { AccountHeader, PerpPositionsTable, SpotBalancesTable, HyperEvmBalancesTable, TransactionHistory } from '@/components/app/account'
+import { HyperCoreTransactionHistory } from '@/components/app/account/HyperCoreTransactionHistory'
+import { CollapsibleLPPositions } from '@/components/app/account/CollapsibleLPPositions'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { AccountCard } from '@/components/app/account/layout/AccountCard'
-
-async function fetchAccountData(evmAddress: string, coreAddress: string): Promise<AccountData> {
-    // If both addresses are the same, use the old single-address API for backward compatibility
-    if (evmAddress === coreAddress && evmAddress) {
-        const response = await fetch(`/api/public/account/${evmAddress}`)
-        if (!response.ok) {
-            if (response.status === 404) {
-                throw new Error('Account not found')
-            }
-            throw new Error('Failed to fetch account data')
-        }
-        return response.json()
-    }
-
-    // Otherwise use the new dual-address API
-    const params = new URLSearchParams({
-        evm: evmAddress,
-        core: coreAddress,
-    })
-    const response = await fetch(`/api/public/account?${params}`)
-    if (!response.ok) {
-        if (response.status === 404) {
-            throw new Error('Account not found')
-        }
-        throw new Error('Failed to fetch account data')
-    }
-    return response.json()
-}
-
-function formatTimeSince(timestamp: number | null): string {
-    if (!timestamp) return ''
-    const seconds = Math.floor((Date.now() - timestamp) / 1000)
-    if (seconds < 60) return `${seconds}s ago`
-    const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `${minutes}m ago`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours}h ago`
-    return `${Math.floor(hours / 24)}d ago`
-}
+import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
+import { RoundedAmount } from '@/components/common/RoundedAmount'
+import { getTokenBySymbol } from '@/config/hyperevm-tokens.config'
+import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
+import { DEFAULT_TRANSACTION_LIMIT, DEFAULT_HYPE_PRICE } from '@/config/app.config'
+import { formatUSD, getDeltaStatus } from '@/utils/format.util'
+import { CardSkeleton, SectionSkeleton } from '@/components/common/SkeletonLoader'
+import { HypeIcon } from '@/components/common/HypeIcon'
+import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
+import { DeltaDisplay } from '@/components/common/DeltaDisplay'
 
 export default function AccountPage() {
     const searchParams = useSearchParams()
     const params = useParams()
-
-    // Support both old URL pattern (/account/[address]) and new pattern with query params
     const accountFromUrl = params?.account as string
-    const evmAddress = searchParams?.get('evm') || accountFromUrl || ''
-    const coreAddress = searchParams?.get('core') || accountFromUrl || ''
-    const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null)
-    const [, setTick] = useState(0) // Force re-render for time display
+    const addressParam = searchParams?.get('address') || accountFromUrl || ''
 
-    // Delta history store - use combined key for history
-    const { addDataPoint, getHistory } = useDeltaHistoryStore()
-    const historyKey = `${evmAddress}-${coreAddress}`
-    const deltaHistory = getHistory(historyKey)
+    const {
+        accountInfo,
+        hyperEvmLpPositions,
+        hyperEvmTokenBalances,
+        hyperCorePerpPositions,
+        hyperCoreSpotBalances,
+        accountSummary,
+        isSuccess,
+        hyperEvmLpDelta,
+        hyperEvmSpotDelta,
+        hyperCorePerpDelta,
+        hyperCoreSpotDelta,
+        totalNetDelta,
+        totalPortfolioValue,
+        totalLpValue,
+        totalPerpValue,
+        isLoading,
+        error,
+        isFetching,
+        refetch,
+        lastRefreshTime,
+        evmAddress,
+        coreAddress,
+    } = useAccountData(addressParam, addressParam)
 
-    const { data, isLoading, error, refetch, isFetching } = useQuery({
-        queryKey: ['account', evmAddress, coreAddress],
-        queryFn: () => fetchAccountData(evmAddress, coreAddress),
-        enabled: !!evmAddress && !!coreAddress,
-        staleTime: process.env.NODE_ENV === 'development' ? 300000 : 30000, // Dev: 5 min, Prod: 30 sec
-        gcTime: 300000, // Keep in cache for 5 minutes
-        refetchInterval: process.env.NODE_ENV === 'development' ? 300000 : 30000, // Dev: 5 min, Prod: 30 sec
-    })
-
-    // Add data point to history on each refresh and update last refresh time
-    useEffect(() => {
-        if (data?.summary && evmAddress && coreAddress) {
-            const now = Date.now()
-            setLastRefreshTime(now)
-            const point = {
-                timestamp: now,
-                lpDelta: data.summary.lpDelta || 0,
-                perpDelta: data.summary.perpDelta || 0,
-                netDelta: data.summary.netDelta || 0,
-                spotDelta: data.summary.spotDelta || 0,
-                hyperEvmDelta: data.summary.hyperEvmDelta || 0,
-            }
-            addDataPoint(historyKey, point)
-        }
-    }, [data?.summary, evmAddress, coreAddress, historyKey, addDataPoint])
-
-    // Update refresh time display every second
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setTick((prev) => prev + 1)
-        }, 1000)
-        return () => clearInterval(interval)
-    }, [])
-
-    // Show loading screen only while actually loading
-    if (isLoading && !data) {
+    // Loading state
+    if (isLoading && !accountInfo) {
         return (
-            <PageWrapper>
-                <div className="py-8">
-                    <div className="mx-auto max-w-2xl space-y-4">
-                        <div className="text-center">
-                            <h2 className="mb-4 text-xl font-semibold">Fetching account data...</h2>
-                            <div className="mb-4 flex justify-center">
-                                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
-                            </div>
-                            <div className="space-y-1 text-sm text-gray-600">
-                                <p>Loading LP positions from HyperEVM...</p>
-                                <p>Loading balances from HyperEVM...</p>
-                                <p>Loading perpetual positions from HyperCore...</p>
-                                <p>Loading spot balances from HyperCore...</p>
-                            </div>
-                            <p className="mt-3 text-xs text-gray-500">Fetching data from multiple blockchain sources</p>
+            <PageWrapper className="px-4">
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+                        <CardSkeleton />
+                        <CardSkeleton />
+                        <CardSkeleton />
+                        <CardSkeleton />
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <div className="space-y-4">
+                            <SectionSkeleton title="Liquidity Positions" rows={2} />
+                            <SectionSkeleton title="Wallet Balances" rows={3} />
+                        </div>
+                        <div className="space-y-4">
+                            <SectionSkeleton title="Perpetual Positions" rows={2} />
+                            <SectionSkeleton title="Spot Balances" rows={3} />
                         </div>
                     </div>
                 </div>
@@ -136,293 +76,225 @@ export default function AccountPage() {
         )
     }
 
+    // Error state
     if (error) {
         return (
-            <PageWrapper>
-                <div className="py-8 text-center text-red-500">Error: {error instanceof Error ? error.message : 'Failed to load account'}</div>
+            <PageWrapper className="px-4">
+                <div className="space-y-4 py-12 text-center">
+                    <p className="text-default/50">{error instanceof Error ? error.message : 'Failed to load account'}</p>
+                    <button
+                        onClick={() => refetch()}
+                        className="rounded border border-default/20 px-4 py-2 text-sm transition-colors hover:bg-default/5"
+                    >
+                        Retry
+                    </button>
+                </div>
             </PageWrapper>
         )
     }
 
-    if (!data?.success || !data.account) {
+    // No data state
+    if (!isSuccess || !accountInfo) {
         return (
-            <PageWrapper>
-                <div className="py-8 text-center">No data available for this account</div>
+            <PageWrapper className="px-4">
+                <div className="space-y-4 py-12 text-center">
+                    <p className="text-default/50">
+                        No data for <code className="font-mono text-sm">{addressParam}</code>
+                    </p>
+                    <button
+                        onClick={() => refetch()}
+                        className="rounded border border-default/20 px-4 py-2 text-sm transition-colors hover:bg-default/5"
+                    >
+                        Refresh
+                    </button>
+                </div>
             </PageWrapper>
         )
     }
 
-    // Calculate section-specific deltas
-    const hyperEvmLpDelta =
-        data.positions?.lp?.reduce((sum, p) => {
-            const token0IsHype = p.token0Symbol === 'WHYPE' || p.token0Symbol === 'HYPE'
-            const token1IsHype = p.token1Symbol === 'WHYPE' || p.token1Symbol === 'HYPE'
-            if (token0IsHype && p.token0Amount) return sum + p.token0Amount
-            else if (token1IsHype && p.token1Amount) return sum + p.token1Amount
-            return sum
-        }, 0) || 0
-
-    const hyperEvmSpotDelta =
-        data.positions?.hyperEvm?.reduce((sum, b) => {
-            if (b.symbol === 'WHYPE' || b.symbol === 'HYPE') {
-                // Parse balance string to number
-                const balanceNum = parseFloat(b.balance) || 0
-                return sum + balanceNum
+    // Calculate HYPE price from LP or spot balances
+    const getHypePrice = () => {
+        // Try to get from LP positions
+        if (hyperEvmLpPositions && hyperEvmLpPositions.length > 0) {
+            const hypePosition = hyperEvmLpPositions.find(
+                (p) => p.token0Symbol === 'HYPE' || p.token1Symbol === 'HYPE' || p.token0Symbol === 'WHYPE' || p.token1Symbol === 'WHYPE',
+            )
+            if (hypePosition) {
+                const hypeAmount =
+                    hypePosition.token0Symbol === 'HYPE' || hypePosition.token0Symbol === 'WHYPE'
+                        ? hypePosition.token0Amount
+                        : hypePosition.token1Amount
+                const hypeValue =
+                    hypePosition.token0Symbol === 'HYPE' || hypePosition.token0Symbol === 'WHYPE'
+                        ? hypePosition.token0ValueUSD
+                        : hypePosition.token1ValueUSD
+                if (hypeAmount && hypeValue && hypeAmount > 0) {
+                    return hypeValue / hypeAmount
+                }
             }
-            return sum
-        }, 0) || 0
+        }
 
-    const hyperCorePerpDelta =
-        data.positions?.perp?.reduce((sum, p) => {
-            // Only count HYPE perps for delta
-            if (p.asset === 'HYPE') {
-                return sum + (p.size || 0)
+        // Try to get from wallet balances
+        if (hyperEvmTokenBalances && hyperEvmTokenBalances.length > 0) {
+            const hypeBalance = hyperEvmTokenBalances.find((b) => b.symbol === 'HYPE')
+            if (hypeBalance && hypeBalance.balance && hypeBalance.valueUSD) {
+                const amount = Number(hypeBalance.balance) / 10 ** hypeBalance.decimals
+                if (amount > 0) return hypeBalance.valueUSD / amount
             }
-            return sum
-        }, 0) || 0
+        }
 
-    const hyperCoreSpotDelta =
-        data.positions?.spot?.reduce((sum, b) => {
-            if (b.asset === 'HYPE') {
-                // Handle both string and number balance
-                const balanceNum = typeof b.balance === 'string' ? parseFloat(b.balance) : b.balance
-                return sum + (balanceNum || 0)
-            }
-            return sum
-        }, 0) || 0
+        // Default fallback price
+        return DEFAULT_HYPE_PRICE
+    }
 
-    const totalHyperEvmDelta = hyperEvmLpDelta + hyperEvmSpotDelta
-    const totalHyperCoreDelta = hyperCorePerpDelta + hyperCoreSpotDelta
-    const totalNetDelta = totalHyperEvmDelta + totalHyperCoreDelta
-
-    // Calculate values for sections
-    const totalHyperEvmValue = (data.summary?.totalLpValue || 0) + (data.summary?.totalHyperEvmValue || 0)
-    const totalHyperCoreValue = (data.summary?.totalPerpValue || 0) + (data.summary?.totalSpotValue || 0)
-
-    // Display refresh time
-    const refreshTimeDisplay = formatTimeSince(lastRefreshTime)
+    const hypePrice = getHypePrice()
 
     return (
-        <PageWrapper>
+        <PageWrapper className="px-4">
+            <AccountHeader onRefresh={refetch} isFetching={isFetching} lastRefreshTime={lastRefreshTime} />
+
             <AccountTemplate
                 summary={{
-                    address: <AccountCard>Address</AccountCard>,
-                    aum: <AccountCard>AUM</AccountCard>,
-                    netDelta: <AccountCard>Net Delta</AccountCard>,
-                    apr: <AccountCard>APR</AccountCard>,
+                    address: (
+                        <AccountCard>
+                            <span className="text-xs text-default/50">Capital Deployed</span>
+                            <RoundedAmount amount={totalPortfolioValue} className="text-xl font-semibold">
+                                {formatUSD(totalPortfolioValue)}
+                            </RoundedAmount>
+                            <span className="text-xs text-default/50">
+                                {hyperEvmLpPositions?.length || 0} position{hyperEvmLpPositions?.length !== 1 ? 's' : ''}
+                            </span>
+                        </AccountCard>
+                    ),
+                    aum: (
+                        <AccountCard>
+                            <span className="text-xs text-default/50">Long LP</span>
+                            <RoundedAmount amount={totalLpValue} className="text-xl font-semibold">
+                                {formatUSD(totalLpValue)}
+                            </RoundedAmount>
+                            <span className="text-xs text-default/50">
+                                {accountSummary?.currentAPR?.lpFeeAPR ? `${accountSummary.currentAPR.lpFeeAPR.toFixed(1)}% APR` : 'N/A'}
+                            </span>
+                        </AccountCard>
+                    ),
+                    netDelta: (
+                        <AccountCard>
+                            <span className="text-xs text-default/50">Short Perp</span>
+                            <RoundedAmount amount={Math.abs(totalPerpValue)} className="text-xl font-semibold">
+                                {formatUSD(Math.abs(totalPerpValue))}
+                            </RoundedAmount>
+                            <span className="text-xs text-default/50">
+                                {accountSummary?.currentAPR?.fundingAPR ? `${accountSummary.currentAPR.fundingAPR.toFixed(1)}% APR` : 'N/A'}
+                            </span>
+                        </AccountCard>
+                    ),
+                    apr: (
+                        <AccountCard>
+                            <span className="text-xs text-default/50">Net Delta</span>
+                            <div className="flex items-center gap-1">
+                                <HypeIcon size={20} />
+                                <HypeDeltaTooltip
+                                    delta={totalNetDelta}
+                                    hypePrice={hypePrice}
+                                    decimals={getHyperCoreAssetBySymbol('HYPE')?.decimalsForRounding ?? 1}
+                                    className="text-xl font-semibold"
+                                />
+                            </div>
+                            <span className="text-xs text-default/50">{getDeltaStatus(totalNetDelta)}</span>
+                        </AccountCard>
+                    ),
                 }}
                 hyperEvm={{
                     lp: (
-                        <AccountCard>
-                            <CollapsibleSection
-                                title="HyperEVM"
-                                sectionKey="hyperEvm"
-                                badge={`Δ: ${totalHyperEvmDelta >= 0 ? '+' : ''}${totalHyperEvmDelta.toFixed(4)} HYPE`}
-                                subtitle={`$${totalHyperEvmValue.toFixed(2)} • ${data.positions?.lp?.length || 0} LP positions • ${data.positions?.hyperEvm?.length || 0} tokens`}
-                                lastRefresh={refreshTimeDisplay}
-                            >
-                                <div className="space-y-6">
-                                    {/* LP Positions grouped by DEX */}
-                                    {data.positions?.lp && data.positions.lp.length > 0 && (
-                                        <div>
-                                            <h3 className="mb-4 text-lg font-semibold">
-                                                Liquidity Positions (Δ: {hyperEvmLpDelta >= 0 ? '+' : ''}
-                                                {hyperEvmLpDelta.toFixed(4)} HYPE)
-                                            </h3>
-                                            <LPPositionsByDex positions={data.positions.lp} />
-                                        </div>
-                                    )}
-
-                                    {!data.positions?.lp?.length && !data.positions?.hyperEvm?.length && (
-                                        <div className="py-4 text-center text-gray-500">No HyperEVM positions found</div>
-                                    )}
-                                </div>
-                            </CollapsibleSection>
-                        </AccountCard>
+                        <CollapsibleCard
+                            title="Liquidity Positions"
+                            defaultExpanded={true}
+                            headerRight={
+                                <DeltaDisplay
+                                    delta={hyperEvmLpDelta}
+                                    hypePrice={hypePrice}
+                                    decimals={getTokenBySymbol('HYPE')?.decimalsForRounding ?? 1}
+                                />
+                            }
+                        >
+                            {hyperEvmLpPositions && hyperEvmLpPositions.length > 0 ? (
+                                <CollapsibleLPPositions positions={hyperEvmLpPositions} />
+                            ) : (
+                                <div className="py-4 text-center text-default/50">No positions</div>
+                            )}
+                        </CollapsibleCard>
                     ),
                     balances: (
-                        <AccountCard>
-                            {/* HyperEVM Spot Balances */}
-                            {data.positions?.hyperEvm && data.positions.hyperEvm.length > 0 && (
-                                <div>
-                                    <h3 className="mb-4 text-lg font-semibold">
-                                        Spot Balances (Δ: {hyperEvmSpotDelta >= 0 ? '+' : ''}
-                                        {hyperEvmSpotDelta.toFixed(4)} HYPE)
-                                    </h3>
-                                    <HyperEvmBalancesTable balances={data.positions.hyperEvm} />
-                                </div>
+                        <CollapsibleCard
+                            title="Wallet Balances"
+                            defaultExpanded={false}
+                            headerRight={
+                                <DeltaDisplay
+                                    delta={hyperEvmSpotDelta}
+                                    hypePrice={hypePrice}
+                                    decimals={getTokenBySymbol('HYPE')?.decimalsForRounding ?? 1}
+                                />
+                            }
+                        >
+                            {hyperEvmTokenBalances && hyperEvmTokenBalances.length > 0 ? (
+                                <HyperEvmBalancesTable balances={hyperEvmTokenBalances} />
+                            ) : (
+                                <div className="py-4 text-center text-default/50">No balances</div>
                             )}
-                        </AccountCard>
+                        </CollapsibleCard>
                     ),
                     txs: (
-                        <AccountCard>
-                            {/* Transaction History */}
-                            <CollapsibleSection
-                                title="Transaction History"
-                                sectionKey="transactions"
-                                subtitle="DEX interactions on HyperEVM"
-                                lastRefresh={refreshTimeDisplay}
-                            >
-                                <TransactionHistory account={evmAddress} />
-                            </CollapsibleSection>
-                        </AccountCard>
+                        <CollapsibleCard title={`Last ${DEFAULT_TRANSACTION_LIMIT} Transactions`} defaultExpanded={false}>
+                            <TransactionHistory account={evmAddress} limit={DEFAULT_TRANSACTION_LIMIT} />
+                        </CollapsibleCard>
                     ),
                 }}
                 hyperCore={{
                     short: (
-                        <AccountCard>
-                            {/* HyperCore Section */}
-                            <CollapsibleSection
-                                title="HyperCore"
-                                sectionKey="hyperCore"
-                                badge={`Δ: ${totalHyperCoreDelta >= 0 ? '+' : ''}${totalHyperCoreDelta.toFixed(4)} HYPE`}
-                                subtitle={`$${totalHyperCoreValue.toFixed(2)} • ${data.positions?.perp?.length || 0} perp positions • ${data.positions?.spot?.length || 0} tokens`}
-                                lastRefresh={refreshTimeDisplay}
-                            >
-                                <div className="space-y-6">
-                                    {/* Perp Positions */}
-                                    {data.positions?.perp && data.positions.perp.length > 0 && (
-                                        <div>
-                                            <h3 className="mb-4 text-lg font-semibold">
-                                                Perpetual Positions (Δ: {hyperCorePerpDelta >= 0 ? '+' : ''}
-                                                {hyperCorePerpDelta.toFixed(4)} HYPE)
-                                            </h3>
-                                            <PerpPositionsTable positions={data.positions.perp} />
-                                        </div>
-                                    )}
-
-                                    {/* Spot Balances */}
-                                    {data.positions?.spot && data.positions.spot.length > 0 && (
-                                        <div>
-                                            <h3 className="mb-4 text-lg font-semibold">
-                                                Spot Balances (Δ: {hyperCoreSpotDelta >= 0 ? '+' : ''}
-                                                {hyperCoreSpotDelta.toFixed(4)} HYPE)
-                                            </h3>
-                                            <SpotBalancesTable balances={data.positions.spot} />
-                                        </div>
-                                    )}
-
-                                    {!data.positions?.perp?.length && !data.positions?.spot?.length && (
-                                        <div className="py-4 text-center text-gray-500">No HyperCore positions found</div>
-                                    )}
-                                </div>
-                            </CollapsibleSection>
-                        </AccountCard>
+                        <CollapsibleCard
+                            title="Perpetual Positions"
+                            defaultExpanded={true}
+                            headerRight={
+                                <DeltaDisplay
+                                    delta={hyperCorePerpDelta}
+                                    hypePrice={hypePrice}
+                                    decimals={getHyperCoreAssetBySymbol('HYPE')?.decimalsForRounding ?? 1}
+                                />
+                            }
+                        >
+                            {hyperCorePerpPositions && hyperCorePerpPositions.length > 0 ? (
+                                <PerpPositionsTable positions={hyperCorePerpPositions} />
+                            ) : (
+                                <div className="py-4 text-center text-default/50">No positions</div>
+                            )}
+                        </CollapsibleCard>
                     ),
-                    spot: <AccountCard>Spot</AccountCard>,
-                    txs: <AccountCard>TXs</AccountCard>,
+                    spot: (
+                        <CollapsibleCard
+                            title="Spot Balances"
+                            defaultExpanded={false}
+                            headerRight={
+                                <DeltaDisplay
+                                    delta={hyperCoreSpotDelta}
+                                    hypePrice={hypePrice}
+                                    decimals={getHyperCoreAssetBySymbol('HYPE')?.decimalsForRounding ?? 1}
+                                />
+                            }
+                        >
+                            {hyperCoreSpotBalances && hyperCoreSpotBalances.length > 0 ? (
+                                <SpotBalancesTable balances={hyperCoreSpotBalances} />
+                            ) : (
+                                <div className="py-4 text-center text-default/50">No balances</div>
+                            )}
+                        </CollapsibleCard>
+                    ),
+                    txs: (
+                        <CollapsibleCard title={`Last ${DEFAULT_TRANSACTION_LIMIT} Trades`} defaultExpanded={false}>
+                            <HyperCoreTransactionHistory account={coreAddress} limit={DEFAULT_TRANSACTION_LIMIT} />
+                        </CollapsibleCard>
+                    ),
                 }}
             />
-
-            {/* Header */}
-            <AccountHeader onRefresh={() => refetch()} isFetching={isFetching} />
-            {/* Display timing information if available */}
-            {data?.timings && (
-                <div className="mb-4 rounded-lg bg-gray-50 p-3">
-                    <div className="font-mono text-xs text-gray-600">
-                        <span className="font-semibold">Fetch timings:</span>
-                        {data.timings.lpFetch && <span className="ml-3">LP: {(data.timings.lpFetch / 1000).toFixed(2)}s</span>}
-                        {data.timings.evmFetch && <span className="ml-3">EVM: {(data.timings.evmFetch / 1000).toFixed(2)}s</span>}
-                        {data.timings.perpFetch && <span className="ml-3">Perp: {(data.timings.perpFetch / 1000).toFixed(2)}s</span>}
-                        {data.timings.spotFetch && <span className="ml-3">Spot: {(data.timings.spotFetch / 1000).toFixed(2)}s</span>}
-                        <span className="ml-3 font-semibold">Total: {(data.timings.total / 1000).toFixed(2)}s</span>
-                    </div>
-                </div>
-            )}
-            <div className="space-y-4">
-                {/* Charts Section */}
-                <CollapsibleSection
-                    title="Strategy Monitoring"
-                    sectionKey="charts"
-                    subtitle="Live delta tracking and historical performance"
-                    lastRefresh={refreshTimeDisplay}
-                >
-                    {data.summary && <StrategyMonitoring summary={data.summary} deltaHistory={deltaHistory} />}
-                </CollapsibleSection>
-
-                {/* Summary Section */}
-                <CollapsibleSection
-                    title="Summary"
-                    sectionKey="summary"
-                    badge={`Net Δ: ${totalNetDelta >= 0 ? '+' : ''}${totalNetDelta.toFixed(4)} HYPE`}
-                    subtitle="Portfolio overview and current APRs"
-                    lastRefresh={refreshTimeDisplay}
-                >
-                    {data.summary && (
-                        <div className="space-y-4">
-                            <ValueSummary
-                                totalValue={data.summary.totalValue}
-                                totalLpValue={data.summary.totalLpValue}
-                                totalPerpValue={data.summary.totalPerpValue}
-                                totalSpotValue={data.summary.totalSpotValue}
-                                totalHyperEvmValue={data.summary.totalHyperEvmValue || 0}
-                            />
-
-                            <DeltaBreakdown
-                                lpDelta={data.summary.lpDelta}
-                                perpDelta={data.summary.perpDelta}
-                                spotDelta={data.summary.spotDelta}
-                                hyperEvmDelta={data.summary.hyperEvmDelta || 0}
-                                netDelta={data.summary.netDelta}
-                            />
-
-                            <APRDisplay lastSnapshot={data.summary.lastSnapshot} currentAPR={data.summary.currentAPR} />
-                        </div>
-                    )}
-                </CollapsibleSection>
-
-                {/* Debug Section */}
-                <CollapsibleSection
-                    title="Raw API Response (Debug)"
-                    sectionKey="debug"
-                    subtitle="Complete API response data"
-                    lastRefresh={refreshTimeDisplay}
-                >
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="mb-2 font-semibold">Account Info</h3>
-                            <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.account, null, 2)}</pre>
-                        </div>
-
-                        {data.summary && (
-                            <div>
-                                <h3 className="mb-2 font-semibold">Summary</h3>
-                                <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.summary, null, 2)}</pre>
-                            </div>
-                        )}
-
-                        {data.positions?.lp && data.positions.lp.length > 0 && (
-                            <div>
-                                <h3 className="mb-2 font-semibold">LP Positions (Raw)</h3>
-                                <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.positions.lp, null, 2)}</pre>
-                            </div>
-                        )}
-
-                        {data.positions?.perp && data.positions.perp.length > 0 && (
-                            <div>
-                                <h3 className="mb-2 font-semibold">Perp Positions (Raw)</h3>
-                                <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.positions.perp, null, 2)}</pre>
-                            </div>
-                        )}
-
-                        {data.positions?.spot && data.positions.spot.length > 0 && (
-                            <div>
-                                <h3 className="mb-2 font-semibold">Spot Balances (Raw)</h3>
-                                <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(data.positions.spot, null, 2)}</pre>
-                            </div>
-                        )}
-
-                        {data.positions?.hyperEvm && data.positions.hyperEvm.length > 0 && (
-                            <div>
-                                <h3 className="mb-2 font-semibold">HyperEVM Balances (Raw)</h3>
-                                <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">
-                                    {JSON.stringify(data.positions.hyperEvm, null, 2)}
-                                </pre>
-                            </div>
-                        )}
-                    </div>
-                </CollapsibleSection>
-            </div>
         </PageWrapper>
     )
 }

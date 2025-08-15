@@ -1,7 +1,7 @@
 // Core services - shared utilities
 export * from './core'
 
-// Discovery services - pool and position discovery  
+// Discovery services - pool and position discovery
 export * from './discovery'
 
 // Monitoring services - account and position monitoring
@@ -13,6 +13,6 @@ export * from './analytics'
 // Explorer services - blockchain explorers
 export * from './explorers'
 
-// Constants - ABIs and token configurations
+// Constants - ABIs
 export * from './constants/abis'
-export * from './constants/tokens'
+// Token constants are now in @/config/hyperevm-tokens.config

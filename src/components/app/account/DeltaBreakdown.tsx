@@ -1,5 +1,7 @@
 'use client'
 
+import { formatNumber, getDeltaColor } from '@/utils/format.util'
+
 interface DeltaBreakdownProps {
     lpDelta: number
     perpDelta: number
@@ -9,21 +11,9 @@ interface DeltaBreakdownProps {
 }
 
 export function DeltaBreakdown({ lpDelta, perpDelta, spotDelta, hyperEvmDelta, netDelta }: DeltaBreakdownProps) {
-    const formatNumber = (num: number, decimals = 2) => {
-        return new Intl.NumberFormat('en-US', {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-        }).format(num)
-    }
-
-    const formatDelta = (num: number, decimals = 4) => {
+    const formatDeltaWithSymbol = (num: number, decimals = 4) => {
         const sign = num >= 0 ? '+' : ''
         return `${sign}${formatNumber(Math.abs(num), decimals)} HYPE`
-    }
-
-    const getDeltaColor = (num: number) => {
-        if (Math.abs(num) < 0.01) return 'text-gray-600'
-        return num >= 0 ? 'text-green-600' : 'text-red-600'
     }
 
     return (
@@ -31,27 +21,27 @@ export function DeltaBreakdown({ lpDelta, perpDelta, spotDelta, hyperEvmDelta, n
             <h3 className="mb-2 font-semibold">Delta Exposure (HYPE Units)</h3>
             <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-5">
                 <div title="HYPE tokens in LP positions">
-                    <span className="text-gray-600">LP Delta:</span>
-                    <div className={`font-mono font-semibold ${getDeltaColor(lpDelta)}`}>{formatDelta(lpDelta)}</div>
+                    <span className="text-default/50">LP Delta:</span>
+                    <div className={`font-mono font-semibold ${getDeltaColor(lpDelta)}`}>{formatDeltaWithSymbol(lpDelta)}</div>
                 </div>
                 <div title="HYPE perp position size (negative = short)">
-                    <span className="text-gray-600">Perp Delta:</span>
-                    <div className={`font-mono font-semibold ${getDeltaColor(perpDelta)}`}>{formatDelta(perpDelta)}</div>
+                    <span className="text-default/50">Perp Delta:</span>
+                    <div className={`font-mono font-semibold ${getDeltaColor(perpDelta)}`}>{formatDeltaWithSymbol(perpDelta)}</div>
                 </div>
                 <div title="HYPE tokens held in spot">
-                    <span className="text-gray-600">Spot Delta:</span>
-                    <div className={`font-mono font-semibold ${getDeltaColor(spotDelta)}`}>{formatDelta(spotDelta)}</div>
+                    <span className="text-default/50">Spot Delta:</span>
+                    <div className={`font-mono font-semibold ${getDeltaColor(spotDelta)}`}>{formatDeltaWithSymbol(spotDelta)}</div>
                 </div>
                 <div title="HYPE tokens held in HyperEVM">
-                    <span className="text-gray-600">EVM Delta:</span>
-                    <div className={`font-mono font-semibold ${getDeltaColor(hyperEvmDelta)}`}>{formatDelta(hyperEvmDelta)}</div>
+                    <span className="text-default/50">EVM Delta:</span>
+                    <div className={`font-mono font-semibold ${getDeltaColor(hyperEvmDelta)}`}>{formatDeltaWithSymbol(hyperEvmDelta)}</div>
                 </div>
                 <div title="Net HYPE exposure in tokens">
-                    <span className="font-semibold text-gray-600">Net Delta:</span>
-                    <div className={`font-mono text-lg font-bold ${getDeltaColor(netDelta)}`}>{formatDelta(netDelta)}</div>
+                    <span className="font-semibold text-default/50">Net Delta:</span>
+                    <div className={`font-mono text-lg font-bold ${getDeltaColor(netDelta)}`}>{formatDeltaWithSymbol(netDelta)}</div>
                 </div>
             </div>
-            <div className="mt-3 border-t pt-3 text-xs text-gray-600">
+            <div className="mt-3 border-t pt-3 text-xs text-default/50">
                 <div>Formula: Net Delta = LP Delta + Perp Delta + Spot Delta + EVM Delta (all in HYPE units)</div>
                 <div className="mt-1">
                     {Math.abs(netDelta) < 10 && <span className="text-green-600">✓ Near delta neutral</span>}

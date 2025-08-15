@@ -73,14 +73,14 @@ export function SpotBalancesTable({ balances, className }: SpotBalancesTableProp
                                                 {getHyperCoreAssetBySymbol(balance.asset)?.fileId && (
                                                     <FileMapper
                                                         id={getHyperCoreAssetBySymbol(balance.asset)!.fileId}
-                                                        width={14}
-                                                        height={14}
+                                                        width={20}
+                                                        height={20}
                                                         className="rounded-full"
                                                     />
                                                 )}
-                                                <span className="text-xs">{balance.asset}</span>
+                                                <span className="text-sm">{balance.asset}</span>
                                                 {balance.asset === 'HYPE' && (
-                                                    <span className="rounded bg-green-500/10 px-1 py-0.5 text-[10px] font-medium text-green-600 dark:text-green-400">
+                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-600 dark:text-green-400">
                                                         LONG
                                                     </span>
                                                 )}

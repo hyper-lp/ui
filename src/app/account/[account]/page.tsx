@@ -118,7 +118,7 @@ export default function AccountPage() {
                         apr: <AccountCard isLoading />,
                     }}
                     hyperEvm={{
-                        lp: <CollapsibleCard title="Liquidity Positions" defaultExpanded={false} isLoading />,
+                        lp: <CollapsibleCard title="LPs" defaultExpanded={false} isLoading />,
                         balances: <CollapsibleCard title="Wallet" defaultExpanded={false} isLoading />,
                         txs: <CollapsibleCard title="Transactions" defaultExpanded={false} isLoading />,
                     }}
@@ -254,7 +254,7 @@ export default function AccountPage() {
                                 className="flex-1 border-b border-default/20 bg-background px-1 py-2 font-mono text-sm focus:border-default/50 focus:outline-none"
                             />
                             {meta.lastRefreshTime && (
-                                <DateWrapperAccurate date={meta.lastRefreshTime} className="whitespace-nowrap text-xs text-default/50" />
+                                <DateWrapperAccurate date={meta.lastRefreshTime} className="whitespace-nowrap text-sm text-default/50" />
                             )}
                             <button
                                 onClick={() => actions.refetch()}
@@ -270,40 +270,40 @@ export default function AccountPage() {
                 summary={{
                     address: (
                         <AccountCard>
-                            <span className="text-xs text-default/50">Capital Deployed</span>
+                            <span className="text-sm text-default/50">Capital Deployed</span>
                             <RoundedAmount amount={metrics.values.totalPortfolio} className="text-xl font-semibold">
                                 {formatUSD(metrics.values.totalPortfolio)}
                             </RoundedAmount>
-                            <span className="text-xs text-default/50">
+                            <span className="text-sm text-default/50">
                                 {positions.lp?.length || 0} position{positions.lp?.length !== 1 ? 's' : ''}
                             </span>
                         </AccountCard>
                     ),
                     aum: (
                         <AccountCard>
-                            <span className="text-xs text-default/50">Long LP</span>
+                            <span className="text-sm text-default/50">Long LP</span>
                             <RoundedAmount amount={metrics.values.totalLp} className="text-xl font-semibold">
                                 {formatUSD(metrics.values.totalLp)}
                             </RoundedAmount>
-                            <span className="text-xs text-default/50">
+                            <span className="text-sm text-default/50">
                                 {accountSummary?.currentAPR?.lpFeeAPR ? `${accountSummary.currentAPR.lpFeeAPR.toFixed(1)}% APR` : 'N/A'}
                             </span>
                         </AccountCard>
                     ),
                     netDelta: (
                         <AccountCard>
-                            <span className="text-xs text-default/50">Short Perp</span>
+                            <span className="text-sm text-default/50">Short Perp</span>
                             <RoundedAmount amount={Math.abs(metrics.values.totalPerp)} className="text-xl font-semibold">
                                 {formatUSD(Math.abs(metrics.values.totalPerp))}
                             </RoundedAmount>
-                            <span className="text-xs text-default/50">
+                            <span className="text-sm text-default/50">
                                 {accountSummary?.currentAPR?.fundingAPR ? `${accountSummary.currentAPR.fundingAPR.toFixed(1)}% APR` : 'N/A'}
                             </span>
                         </AccountCard>
                     ),
                     apr: (
                         <AccountCard>
-                            <span className="text-xs text-default/50">Net Delta</span>
+                            <span className="text-sm text-default/50">Net Delta</span>
                             <div className="flex items-center gap-1">
                                 <HypeIcon size={20} />
                                 <HypeDeltaTooltip
@@ -313,7 +313,7 @@ export default function AccountPage() {
                                     className="text-xl font-semibold"
                                 />
                             </div>
-                            <span className="text-xs text-default/50">{getDeltaStatus(metrics.deltas.netTotal)}</span>
+                            <span className="text-sm text-default/50">{getDeltaStatus(metrics.deltas.netTotal)}</span>
                         </AccountCard>
                     ),
                 }}
@@ -324,11 +324,11 @@ export default function AccountPage() {
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 text-base text-default/60">
-                                        <span className="font-medium text-default">{formatUSD(metrics.values.totalLp)}</span>
+                                    <div className="flex items-center gap-1 text-base text-default">
+                                        <span className="font-medium">$ {metrics.values.totalLp.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
                                         <span>•</span>
                                         <span>
-                                            {positions.lp?.length || 0} position{positions.lp?.length !== 1 ? 's' : ''}
+                                            {positions.lp?.length || 0} LP{positions.lp?.length !== 1 ? 's' : ''}
                                         </span>
                                     </div>
                                     <DeltaDisplay delta={metrics.deltas.lp} hypePrice={hypePrice} decimals={1} />
@@ -345,7 +345,7 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <span className="text-base font-medium text-default">
-                                        {formatUSD(positions.wallet?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
+                                        $ {(positions.wallet?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
                                     <DeltaDisplay delta={metrics.deltas.wallet} hypePrice={hypePrice} decimals={1} />
                                 </div>
@@ -365,14 +365,14 @@ export default function AccountPage() {
                                 content={
                                     <div className="space-y-1">
                                         <div className="flex items-center justify-between gap-8">
-                                            <span className="text-default/60">HYPE:</span>
-                                            <span className="font-medium">
+                                            <span className="text-default">HYPE:</span>
+                                            <span className="font-medium text-default">
                                                 {formatUSD(hyperEvmBreakdown.hypeValue)} ({hyperEvmBreakdown.hypePercent.toFixed(0)}%)
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between gap-8">
-                                            <span className="text-default/60">Stable:</span>
-                                            <span className="font-medium">
+                                            <span className="text-default">Stable:</span>
+                                            <span className="font-medium text-default">
                                                 {formatUSD(hyperEvmBreakdown.stableValue)} ({hyperEvmBreakdown.stablePercent.toFixed(0)}%)
                                             </span>
                                         </div>
@@ -380,7 +380,7 @@ export default function AccountPage() {
                                 }
                                 placement="bottom"
                             >
-                                <div className="cursor-help text-sm font-medium text-default/80">{formatUSD(hyperEvmBreakdown.total)}</div>
+                                <div className="cursor-help text-sm font-medium text-default">{formatUSD(hyperEvmBreakdown.total)}</div>
                             </StyledTooltip>
                         ) : null,
                 }}
@@ -391,10 +391,10 @@ export default function AccountPage() {
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1.5 text-base">
-                                        <span className="text-default/60">{formatUSD(metrics.perp.totalMargin)} margin</span>
-                                        <span className="text-default/40">•</span>
-                                        <span className="text-default/60">{metrics.perp.avgLeverage.toFixed(1)}x</span>
+                                    <div className="flex items-center gap-1.5 text-base text-default">
+                                        <span>$ {metrics.perp.totalMargin.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} margin</span>
+                                        <span>•</span>
+                                        <span>{metrics.perp.avgLeverage.toFixed(1)}x lev</span>
                                     </div>
                                     <DeltaDisplay delta={metrics.deltas.perp} hypePrice={hypePrice} decimals={1} />
                                 </div>
@@ -410,7 +410,7 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <span className="text-base font-medium text-default">
-                                        {formatUSD(positions.spot?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}
+                                        $ {(positions.spot?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
                                     <DeltaDisplay delta={metrics.deltas.spot} hypePrice={hypePrice} decimals={1} />
                                 </div>
@@ -430,28 +430,28 @@ export default function AccountPage() {
                                 content={
                                     <div className="space-y-1">
                                         <div className="flex items-center justify-between gap-8">
-                                            <span className="text-default/60">Margin:</span>
-                                            <span className="font-medium">{formatUSD(hyperCoreBreakdown.margin)}</span>
+                                            <span className="text-default">Margin:</span>
+                                            <span className="font-medium text-default">{formatUSD(hyperCoreBreakdown.margin)}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-8">
-                                            <span className="text-default/60">Notional:</span>
-                                            <span className="font-medium">{formatUSD(hyperCoreBreakdown.notional)}</span>
+                                            <span className="text-default">Notional:</span>
+                                            <span className="font-medium text-default">{formatUSD(hyperCoreBreakdown.notional)}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-8">
-                                            <span className="text-default/60">Leverage:</span>
-                                            <span className="font-medium">{hyperCoreBreakdown.leverage.toFixed(1)}x</span>
+                                            <span className="text-default">Leverage:</span>
+                                            <span className="font-medium text-default">{hyperCoreBreakdown.leverage.toFixed(1)}x</span>
                                         </div>
                                         {hyperCoreBreakdown.spotValue > 0 && (
                                             <div className="flex items-center justify-between gap-8 border-t border-default/20 pt-1">
-                                                <span className="text-default/60">Spot:</span>
-                                                <span className="font-medium">{formatUSD(hyperCoreBreakdown.spotValue)}</span>
+                                                <span className="text-default">Spot:</span>
+                                                <span className="font-medium text-default">{formatUSD(hyperCoreBreakdown.spotValue)}</span>
                                             </div>
                                         )}
                                     </div>
                                 }
                                 placement="bottom"
                             >
-                                <div className="cursor-help text-sm font-medium text-default/80">{formatUSD(hyperCoreBreakdown.total)}</div>
+                                <div className="cursor-help text-sm font-medium text-default">{formatUSD(hyperCoreBreakdown.total)}</div>
                             </StyledTooltip>
                         ) : null,
                 }}

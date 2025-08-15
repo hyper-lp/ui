@@ -18,7 +18,7 @@ export function AccountCard({
     return (
         <div
             className={cn(
-                'flex flex-col gap-1 rounded-lg border border-hl-light/50 bg-hl-light/10 transition-colors duration-300',
+                'flex flex-col gap-1 rounded-lg border border-hl-light/40 bg-hl-light/5 transition-colors duration-300 ease-in-out hover:border-hl-light hover:bg-hl-light/10',
                 hoverable && 'hover:bg-default/50',
                 className,
                 padding,

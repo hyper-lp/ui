@@ -86,7 +86,7 @@ export function LPPositionsTable({ positions, className }: LPPositionsTableProps
                                                     className="size-3 text-default/40"
                                                 />
                                                 {getDexLogo(position.dex) && (
-                                                    <FileMapper id={getDexLogo(position.dex)!} width={14} height={14} className="rounded" />
+                                                    <FileMapper id={getDexLogo(position.dex)!} width={20} height={20} className="rounded" />
                                                 )}
                                                 <span className="capitalize text-default">{position.dex}</span>
                                             </div>

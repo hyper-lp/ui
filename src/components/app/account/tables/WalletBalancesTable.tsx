@@ -7,7 +7,7 @@ import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { WalletRowTemplate } from './TableTemplates'
 import { formatNumber, formatUSD } from '@/utils/format.util'
-import { cn } from '@/utils'
+import { cn, shortenValue } from '@/utils'
 import { NATIVE_HYPE_ADDRESS } from '@/config/hyperevm-tokens.config'
 import StyledTooltip from '@/components/common/StyledTooltip'
 
@@ -80,13 +80,13 @@ export function WalletBalancesTable({ balances, className }: WalletBalancesTable
                                                                 ? FileIds.TOKEN_USDC
                                                                 : undefined
                                                     }
-                                                    width={16}
-                                                    height={16}
+                                                    width={20}
+                                                    height={20}
                                                     className="rounded-full"
                                                 />
                                                 <span className="text-default">{balance.symbol}</span>
                                                 {balance.symbol === 'HYPE' && (
-                                                    <span className="rounded bg-green-500/10 px-1 py-0.5 text-[10px] font-medium text-green-600 dark:text-green-400">
+                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-600 dark:text-green-400">
                                                         LONG
                                                     </span>
                                                 )}
@@ -99,7 +99,7 @@ export function WalletBalancesTable({ balances, className }: WalletBalancesTable
                                         price={formattedBalance > 0 ? <span>{formatUSD(price)}</span> : <span className="text-default/50">-</span>}
                                         address={
                                             <span className="truncate text-default/70">
-                                                {balance.address === NATIVE_HYPE_ADDRESS ? 'Native HYPE' : balance.address}
+                                                {balance.address === NATIVE_HYPE_ADDRESS ? 'Native HYPE' : shortenValue(balance.address)}
                                             </span>
                                         }
                                         className="h-10 transition-colors hover:bg-default/5"

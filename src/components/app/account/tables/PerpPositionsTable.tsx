@@ -80,20 +80,20 @@ export function PerpPositionsTable({ positions, className }: PerpPositionsTableP
                                                 {getHyperCoreAssetBySymbol(position.asset)?.fileId && (
                                                     <FileMapper
                                                         id={getHyperCoreAssetBySymbol(position.asset)!.fileId}
-                                                        width={14}
-                                                        height={14}
+                                                        width={20}
+                                                        height={20}
                                                         className="rounded-full"
                                                     />
                                                 )}
-                                                <span className="text-xs">{position.asset}</span>
+                                                <span className="text-sm">{position.asset}</span>
                                             </div>
                                         }
                                         side={
                                             <span
                                                 className={`rounded px-2 py-0.5 text-xs font-medium ${
                                                     isLong
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                        ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+                                                        : 'bg-red-500/10 text-red-600 dark:text-red-400'
                                                 }`}
                                             >
                                                 {isLong ? 'LONG' : 'SHORT'}

@@ -34,10 +34,10 @@ export const CHART_COLORS = {
         tooltipBackground: 'rgba(255, 255, 255, 0.98)',
 
         // Platform colors for charts
-        hyperEvmLp: '#00bfa3',
-        hyperEvmBalances: '#4db8cc',
-        hyperCorePerp: '#ff3366',
-        hyperCoreSpot: '#ff9933',
+        hyperEvmLp: '#3333ff', // HSL(255 90% 60%) - Vivid Blue for LP positions
+        hyperEvmBalances: '#47b8b8', // HSL(180 60% 55%) - Light Blue for wallet balances
+        hyperCorePerp: '#ff3366', // HSL(345 100% 60%) - Bright Red for perp positions
+        hyperCoreSpot: '#ff9933', // HSL(30 100% 60%) - Orange for spot balances
 
         // Heatmap colors
         heatmapGradient: [
@@ -59,10 +59,10 @@ export const CHART_COLORS = {
         tooltipBackground: 'rgba(20, 30, 45, 0.99)',
 
         // Platform colors for charts
-        hyperEvmLp: '#00ffd4',
-        hyperEvmBalances: '#4dd4e6',
-        hyperCorePerp: '#ff6680',
-        hyperCoreSpot: '#ffaa44',
+        hyperEvmLp: '#6666ff', // HSL(255 90% 70%) - Lighter Blue for LP positions in dark mode
+        hyperEvmBalances: '#47d4e6', // HSL(185 70% 65%) - Brighter Blue for wallet balances
+        hyperCorePerp: '#ff6680', // HSL(350 100% 70%) - Lighter Red for perp positions
+        hyperCoreSpot: '#ffaa4d', // HSL(35 100% 65%) - Lighter Orange for spot balances
 
         // Heatmap colors
         heatmapGradient: [

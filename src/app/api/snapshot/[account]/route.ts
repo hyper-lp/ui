@@ -6,6 +6,10 @@ import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWall
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { LPPosition } from '@/interfaces'
 
+// Simple in-memory cache with 5-second TTL
+const CACHE_TTL = 5000 // 5 seconds
+const cache = new Map<string, { data: AccountSnapshot; timestamp: number }>()
+
 const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
 
 const sumNotionalValue = (items: Array<{ notionalValue: number }>) => items.reduce((sum, item) => sum + item.notionalValue, 0)
@@ -20,9 +24,23 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     try {
         const { account } = await params
         const accountAddress = account.toLowerCase()
+        const cacheKey = accountAddress
 
-        // Fetch all positions and pool APR data in parallel
-        const [positionsData, poolAPRData] = await Promise.all([positionFetcher.fetchAllPositions(accountAddress), poolAPRService.fetchAllPoolAPR()])
+        // Check cache first
+        const cached = cache.get(cacheKey)
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+            // Return cached data with cache hit header
+            return NextResponse.json(cached.data, {
+                headers: {
+                    'X-Cache': 'HIT',
+                    'X-Cache-Age': String(Date.now() - cached.timestamp),
+                    'Cache-Control': 'no-store, no-cache, must-revalidate',
+                },
+            })
+        }
+
+        // Fetch positions first to get user's pool addresses
+        const positionsData = await positionFetcher.fetchAllPositions(accountAddress)
 
         const {
             lpData: lpPositions,
@@ -31,6 +49,15 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             hyperEvmData: hyperEvmBalances,
             timings: fetchTimings,
         } = positionsData
+
+        // Extract unique pool addresses from user's LP positions
+        const userPoolAddresses = [...new Set(lpPositions.map((lp) => lp.pool).filter(Boolean))] as string[]
+
+        // Fetch APR only for user's pools (or empty if no pools)
+        const poolAPRData =
+            userPoolAddresses.length > 0
+                ? await poolAPRService.fetchPoolAPRByAddresses(userPoolAddresses)
+                : { pools: [], averageAPR24h: 0, totalTVL: 0, totalVolume24h: 0, totalFees24h: 0, lastUpdated: Date.now() }
 
         // Calculate USD values
         const usdValues = {
@@ -139,8 +166,21 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             },
         }
 
+        // Store in cache
+        cache.set(cacheKey, {
+            data: accountData,
+            timestamp: Date.now(),
+        })
+
+        // Clean up old cache entries (keep max 100 entries)
+        if (cache.size > 100) {
+            const firstKey = cache.keys().next().value
+            if (firstKey) cache.delete(firstKey)
+        }
+
         return NextResponse.json(accountData, {
             headers: {
+                'X-Cache': 'MISS',
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
             },
         })

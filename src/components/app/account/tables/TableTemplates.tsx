@@ -55,12 +55,12 @@ export const WalletRowTemplate = (props: {
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center text-xs', props.className)}>
+        <div className={cn('flex items-center text-sm', props.className)}>
             <div className="w-[140px] px-2">{props.token}</div>
             <div className="w-[120px] px-2 text-right">{props.balance}</div>
             <div className="w-[100px] px-2 text-right">{props.value}</div>
             <div className="w-[100px] px-2 text-right">{props.price}</div>
-            <div className="w-[200px] px-2 font-mono text-[10px] text-default/50">{props.address}</div>
+            <div className="w-[200px] px-2 text-[10px] text-default/50">{props.address}</div>
         </div>
     )
 }
@@ -82,7 +82,7 @@ export const PerpRowTemplate = (props: {
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center text-xs', props.className)}>
+        <div className={cn('flex items-center text-sm', props.className)}>
             <div className="w-[120px] px-2">{props.asset}</div>
             <div className="w-[60px] px-2">{props.side}</div>
             <div className="w-[100px] px-2 text-right">{props.size}</div>
@@ -102,7 +102,7 @@ export const PerpRowTemplate = (props: {
  */
 export const SpotRowTemplate = (props: { asset: ReactNode; balance: ReactNode; value: ReactNode; price: ReactNode; className?: string }) => {
     return (
-        <div className={cn('flex items-center text-xs', props.className)}>
+        <div className={cn('flex items-center text-sm', props.className)}>
             <div className="w-[140px] px-2">{props.asset}</div>
             <div className="w-[120px] px-2 text-right">{props.balance}</div>
             <div className="w-[100px] px-2 text-right">{props.value}</div>

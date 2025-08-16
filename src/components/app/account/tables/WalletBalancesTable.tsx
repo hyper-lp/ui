@@ -11,6 +11,9 @@ import { cn, shortenValue } from '@/utils'
 import { NATIVE_HYPE_ADDRESS } from '@/config/hyperevm-tokens.config'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
+import { RoundedAmount } from '@/components/common/RoundedAmount'
+import numeral from 'numeral'
+import LinkWrapper from '@/components/common/LinkWrapper'
 
 interface WalletBalancesTableProps {
     className?: string
@@ -19,12 +22,12 @@ interface WalletBalancesTableProps {
 export function WalletBalancesTableHeader() {
     return (
         <WalletRowTemplate
-            token={<p className="font-medium text-default/60">Token</p>}
-            balance={<p className="text-right font-medium text-default/60">Balance</p>}
-            value={<p className="text-right font-medium text-default/60">Value</p>}
-            price={<p className="text-right font-medium text-default/60">Price</p>}
-            address={<p className="font-medium text-default/60">Address</p>}
-            className="h-8 border-b border-default/10"
+            token={<p className="truncate">Token</p>}
+            balance={<p className="truncate text-right">Balance</p>}
+            value={<p className="truncate text-right">Value $</p>}
+            price={<p className="truncate text-right">Price</p>}
+            address={<p className="truncate">Address</p>}
+            className="h-8 border-b border-default/10 text-xs text-default/50"
         />
     )
 }
@@ -90,21 +93,58 @@ export function WalletBalancesTable({ className }: WalletBalancesTableProps) {
                                                 />
                                                 <span className="text-default">{balance.symbol}</span>
                                                 {balance.symbol === 'HYPE' && (
-                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-600 dark:text-green-400">
+                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-sm font-medium text-green-600 dark:text-green-400">
                                                         LONG
                                                     </span>
                                                 )}
                                             </div>
                                         }
                                         balance={
-                                            <span className="font-medium">{formatNumber(formattedBalance, balance.decimals === 18 ? 4 : 2)}</span>
+                                            formattedBalance > 0.0001 ? (
+                                                <StyledTooltip content={`${formatNumber(formattedBalance, 8)} ${balance.symbol}`}>
+                                                    <span className="font-medium hover:underline">
+                                                        {formatNumber(formattedBalance, balance.decimals === 18 ? 4 : 2)}
+                                                    </span>
+                                                </StyledTooltip>
+                                            ) : (
+                                                <span className="text-default/50">-</span>
+                                            )
                                         }
-                                        value={<span className="font-medium text-primary">{formatUSD(balance.valueUSD)}</span>}
-                                        price={formattedBalance > 0 ? <span>{formatUSD(price)}</span> : <span className="text-default/50">-</span>}
+                                        value={<RoundedAmount amount={balance.valueUSD}>{formatUSD(balance.valueUSD)}</RoundedAmount>}
+                                        price={
+                                            formattedBalance > 0 ? (
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-sm text-default/50">Price per {balance.symbol}</p>
+                                                            <p>{formatUSD(price)}</p>
+                                                            {balance.symbol === 'HYPE' && (
+                                                                <>
+                                                                    <p className="text-sm text-default/50">Market Cap</p>
+                                                                    <p>{formatUSD(price * 1000000000)}</p>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    }
+                                                >
+                                                    <span className="hover:underline">{formatUSD(price)}</span>
+                                                </StyledTooltip>
+                                            ) : (
+                                                <span className="text-default/30">-</span>
+                                            )
+                                        }
                                         address={
-                                            <span className="truncate text-default/70">
-                                                {balance.address === NATIVE_HYPE_ADDRESS ? 'Native HYPE' : shortenValue(balance.address)}
-                                            </span>
+                                            balance.address === NATIVE_HYPE_ADDRESS ? (
+                                                <span className="text-default/70">Native</span>
+                                            ) : (
+                                                <StyledTooltip content={balance.address}>
+                                                    <LinkWrapper href={`https://hyperevmscan.io/address/${balance.address}`} target="_blank">
+                                                        <span className="truncate text-default/70 hover:text-default hover:underline">
+                                                            {shortenValue(balance.address)}
+                                                        </span>
+                                                    </LinkWrapper>
+                                                </StyledTooltip>
+                                            )
                                         }
                                         className="h-10 transition-colors hover:bg-default/5"
                                     />
@@ -112,61 +152,166 @@ export function WalletBalancesTable({ className }: WalletBalancesTableProps) {
 
                                 {/* Expanded Details */}
                                 {isExpanded && (
-                                    <div className="border-t border-default/10 bg-default/5 px-4 py-4">
+                                    <div className="space-y-4 border-t border-default/10 bg-default/5 px-4 py-4">
+                                        {/* Token Details Grid */}
                                         <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3 lg:grid-cols-4">
+                                            {/* Token Information Section */}
+                                            <div className="col-span-full mb-2">
+                                                <h4 className="text-sm font-semibold text-default/80">Token Details</h4>
+                                            </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Contract Address</p>
-                                                <p className="truncate font-mono text-xs" title={balance.address}>
-                                                    {balance.address === NATIVE_HYPE_ADDRESS ? 'Native HYPE' : balance.address}
+                                                <p className="text-sm text-default/50">Symbol</p>
+                                                <p className="text-sm font-medium">{balance.symbol}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Decimals</p>
+                                                <p className="text-sm font-medium">{balance.decimals}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Type</p>
+                                                <p className="text-sm font-medium">
+                                                    {balance.address === NATIVE_HYPE_ADDRESS ? 'Native Token' : 'ERC-20'}
                                                 </p>
                                             </div>
-                                            <div>
-                                                <p className="text-xs text-default/50">Decimals</p>
-                                                <p className="font-medium">{balance.decimals}</p>
+
+                                            {balance.symbol === 'HYPE' && (
+                                                <div>
+                                                    <p className="text-sm text-default/50">Position Type</p>
+                                                    <p className="font-medium text-green-600">LONG</p>
+                                                </div>
+                                            )}
+
+                                            {/* Contract Address - Full Width */}
+                                            <div className="col-span-2">
+                                                <p className="text-sm text-default/50">Contract Address</p>
+                                                <p className="break-all text-sm">
+                                                    {balance.address === NATIVE_HYPE_ADDRESS ? 'Native Token (No Contract)' : balance.address}
+                                                </p>
                                             </div>
-                                            <div>
-                                                <p className="text-xs text-default/50">Raw Balance</p>
-                                                <p className="font-mono text-xs">{balance.balance}</p>
+
+                                            {/* Balance Information Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Balance Information</h4>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Formatted Balance</p>
-                                                <p className="font-medium">{formatNumber(formattedBalance, 8)}</p>
+                                                <p className="text-sm text-default/50">Raw Balance</p>
+                                                <p className="text-sm">{balance.balance}</p>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Price per Token</p>
-                                                <p className="font-medium">{formatUSD(price)}</p>
+                                                <p className="text-sm text-default/50">Formatted Balance</p>
+                                                <p className="text-sm font-medium">{formatNumber(formattedBalance, 8)}</p>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Total Value</p>
-                                                <p className="font-medium text-primary">{formatUSD(balance.valueUSD)}</p>
+                                                <p className="text-sm text-default/50">Display Amount</p>
+                                                <p className="text-sm font-medium">
+                                                    {formatNumber(formattedBalance, balance.decimals === 18 ? 4 : 2)}
+                                                </p>
                                             </div>
+
+                                            {/* Percentage of total wallet value */}
+                                            {(() => {
+                                                const totalValue = balances.reduce((sum, b) => sum + b.valueUSD, 0)
+                                                const percentage = totalValue > 0 ? (balance.valueUSD / totalValue) * 100 : 0
+                                                return (
+                                                    <div>
+                                                        <p className="text-sm text-default/50">% of Wallet</p>
+                                                        <p className="text-sm font-medium">{numeral(percentage / 100).format('0,0.0%')}</p>
+                                                    </div>
+                                                )
+                                            })()}
+
+                                            {/* Value & Pricing Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Value & Pricing</h4>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Price per Token</p>
+                                                <p className="text-sm font-medium">{formatUSD(price)}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Total Value</p>
+                                                <p className="font-bold text-primary">{formatUSD(balance.valueUSD)}</p>
+                                            </div>
+
                                             {balance.symbol === 'HYPE' && (
                                                 <>
                                                     <div>
-                                                        <p className="text-xs text-default/50">Market Cap</p>
-                                                        <p className="font-medium">{formatUSD(price * 1000000000)}</p>
+                                                        <p className="text-sm text-default/50">Market Cap (Est)</p>
+                                                        <p className="text-sm font-medium">{formatUSD(price * 1000000000)}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs text-default/50">Position Type</p>
-                                                        <p className="font-medium text-green-600">LONG</p>
+                                                        <p className="text-sm text-default/50">FDV</p>
+                                                        <p className="text-sm font-medium">{formatUSD(price * 1000000000)}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Delta Exposure</p>
+                                                        <p className="font-medium text-green-600">+{formatNumber(formattedBalance, 2)} HYPE</p>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {(balance.symbol === 'USDT0' || balance.symbol === 'USDC') && (
+                                                <>
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Type</p>
+                                                        <p className="text-sm font-medium">Stablecoin</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Peg Status</p>
+                                                        <p
+                                                            className={cn(
+                                                                'font-medium',
+                                                                Math.abs(price - 1) < 0.01 ? 'text-green-600' : 'text-orange-500',
+                                                            )}
+                                                        >
+                                                            {Math.abs(price - 1) < 0.01 ? '✓ Stable' : '⚠ Off-peg'}
+                                                        </p>
                                                     </div>
                                                 </>
                                             )}
                                         </div>
 
-                                        {/* Raw JSON */}
-                                        <div className="mt-4 flex justify-end">
-                                            <StyledTooltip
-                                                content={
-                                                    <pre className="max-h-96 max-w-2xl overflow-auto text-xs">{JSON.stringify(balance, null, 2)}</pre>
-                                                }
-                                                placement="left"
-                                            >
-                                                <IconWrapper
-                                                    id={IconIds.INFORMATION}
-                                                    className="size-4 cursor-help text-default/40 hover:text-default/60"
-                                                />
-                                            </StyledTooltip>
+                                        {/* Note about native token */}
+                                        {balance.address === NATIVE_HYPE_ADDRESS && (
+                                            <div className="col-span-full mt-2 text-sm text-default/40">
+                                                * Native HYPE is the gas token for HyperEVM
+                                            </div>
+                                        )}
+
+                                        {/* Raw JSON Data */}
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <span className="text-sm text-default/40">Raw data available via tooltips →</span>
+                                            <div className="flex gap-2">
+                                                <StyledTooltip
+                                                    content={
+                                                        <pre className="max-h-96 max-w-2xl overflow-auto text-xs">
+                                                            {JSON.stringify(balance, null, 2)}
+                                                        </pre>
+                                                    }
+                                                    placement="left"
+                                                >
+                                                    <div className="flex cursor-help items-center gap-1 rounded bg-default/10 px-2 py-1 text-sm hover:bg-default/20">
+                                                        <IconWrapper id={IconIds.INFORMATION} className="size-3 text-default/60" />
+                                                        <span className="text-default/60">Balance</span>
+                                                    </div>
+                                                </StyledTooltip>
+                                                {balance.address !== NATIVE_HYPE_ADDRESS && (
+                                                    <LinkWrapper href={`https://hyperevmscan.io/address/${balance.address}`} target="_blank">
+                                                        <div className="flex items-center gap-1 rounded bg-blue-50 px-2 py-1 text-sm hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30">
+                                                            <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-3 text-blue-600" />
+                                                            <span className="text-blue-600">Explorer</span>
+                                                        </div>
+                                                    </LinkWrapper>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}

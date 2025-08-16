@@ -20,22 +20,25 @@ const grid = {
     containLabel: true,
 }
 
-const emptyOptions: EChartsOption = {
-    title: {
-        text: 'Waiting for data...',
-        left: 'center',
-        top: 'center',
-        textStyle: {
-            fontSize: 14,
-        },
-    },
-    grid,
+// Helper function to create skeleton loading data
+const createSkeletonData = (phaseOffset: number, amplitude: number, baseValue: number = 0): Array<[number, number]> => {
+    const now = Date.now()
+    const points = 20
+    const data: Array<[number, number]> = []
+
+    for (let i = 0; i < points; i++) {
+        const timestamp = now - (points - i - 1) * 60000 // 1 minute intervals
+        const value = baseValue + amplitude * Math.sin((i / points) * Math.PI * 2 + phaseOffset)
+        data.push([timestamp, value])
+    }
+
+    return data
 }
 
 export enum ChartSeries {
     TotalCapital = 'AUM',
     HyperEvmLps = 'LPs Δ',
-    HyperEvmBalances = 'Balances Δ',
+    HyperEvmBalances = 'Wallet Δ',
     HyperCorePerps = 'Perps Δ',
     NetDelta = 'Net Δ',
     HyperCoreSpots = 'Spots Δ',
@@ -45,6 +48,284 @@ export default function DeltaTrackingChart() {
     const [options, setOptions] = useState<EChartsOption | null>(null)
     const { resolvedTheme } = useTheme()
     const colors = getThemeColors(resolvedTheme)
+
+    // Create loading skeleton options dynamically based on theme
+    const createLoadingOptions = (): EChartsOption => {
+        const netDeltaColor = colors.charts.text || '#ffffff'
+        const aumColor = resolvedTheme === 'dark' ? '#ffffff' : '#000000'
+        const textOpacity = resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+
+        return {
+            backgroundColor: 'transparent',
+            animation: true,
+            animationDuration: 2000,
+            animationEasing: 'linear',
+            animationLoop: true,
+            grid,
+            tooltip: { show: false },
+            xAxis: {
+                type: 'time',
+                axisLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: {
+                    show: true,
+                    color: textOpacity,
+                    fontSize: 10,
+                    formatter: () => '••:••',
+                },
+                splitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: colors.charts.line,
+                        opacity: 0.2,
+                        type: 'dashed',
+                    },
+                },
+            },
+            yAxis: {
+                type: 'value',
+                position: 'left',
+                min: -5000,
+                max: 15000,
+                axisLine: { show: false },
+                axisLabel: {
+                    show: true,
+                    color: textOpacity,
+                    fontSize: 10,
+                    formatter: () => '$•,•••',
+                },
+                splitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: colors.charts.line,
+                        opacity: 0.2,
+                        type: 'dashed',
+                    },
+                },
+            },
+            legend: {
+                data: [
+                    { name: 'AUM', itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
+                    { name: 'LPs Δ', itemStyle: { color: colors.hyperEvmLp }, textStyle: { color: textOpacity } },
+                    { name: 'Wallet Δ', itemStyle: { color: colors.hyperEvmBalances }, textStyle: { color: textOpacity } },
+                    { name: 'Perps Δ', itemStyle: { color: colors.hyperCorePerp }, textStyle: { color: textOpacity } },
+                    { name: 'Spots Δ', itemStyle: { color: colors.hyperCoreSpot }, textStyle: { color: textOpacity } },
+                    { name: 'Net Δ', itemStyle: { color: netDeltaColor }, textStyle: { color: textOpacity } },
+                ],
+                top: 10,
+                icon: 'roundRect',
+                itemWidth: 14,
+                itemHeight: 8,
+                itemGap: 15,
+                selected: {
+                    AUM: true,
+                    'LPs Δ': true,
+                    'Wallet Δ': false,
+                    'Perps Δ': true,
+                    'Spots Δ': false,
+                    'Net Δ': true,
+                },
+                inactiveColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+            },
+            series: [
+                // AUM skeleton
+                {
+                    name: 'AUM',
+                    type: 'line',
+                    data: createSkeletonData(0, 1000, 10000),
+                    smooth: false,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: aumColor,
+                        width: 2,
+                        opacity: 0.3,
+                    },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationDelay: 0,
+                    endLabel: {
+                        show: true,
+                        formatter: 'AUM $••,•••',
+                        color: textOpacity,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: aumColor + '08',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                // LPs skeleton
+                {
+                    name: 'LPs Δ',
+                    type: 'line',
+                    data: createSkeletonData(1, 800, 3000),
+                    smooth: false,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: colors.hyperEvmLp,
+                        width: 2,
+                        opacity: 0.3,
+                    },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationDelay: 200,
+                    endLabel: {
+                        show: true,
+                        formatter: 'LPs Δ +•k$',
+                        color: textOpacity,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperEvmLp + '08',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                // Wallet skeleton
+                {
+                    name: 'Wallet Δ',
+                    type: 'line',
+                    data: createSkeletonData(2, 600, 1000),
+                    smooth: false,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: colors.hyperEvmBalances,
+                        width: 2,
+                        opacity: 0.3,
+                    },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationDelay: 400,
+                    endLabel: {
+                        show: true,
+                        formatter: 'Wallet Δ +•k$',
+                        color: textOpacity,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperEvmBalances + '08',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                // Perps skeleton
+                {
+                    name: 'Perps Δ',
+                    type: 'line',
+                    data: createSkeletonData(3, 700, -2000),
+                    smooth: false,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: colors.hyperCorePerp,
+                        width: 2,
+                        opacity: 0.3,
+                    },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationDelay: 600,
+                    endLabel: {
+                        show: true,
+                        formatter: 'Perps Δ -•k$',
+                        color: textOpacity,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperCorePerp + '08',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                // Net Delta skeleton with dashed line
+                {
+                    name: 'Net Δ',
+                    type: 'line',
+                    data: createSkeletonData(4, 500, 500),
+                    smooth: false,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: netDeltaColor,
+                        width: 2,
+                        type: 'dashed',
+                        opacity: 0.3,
+                    },
+                    areaStyle: {
+                        opacity: 0.05,
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [
+                                {
+                                    offset: 0,
+                                    color: netDeltaColor + '10',
+                                },
+                                {
+                                    offset: 1,
+                                    color: netDeltaColor + '00',
+                                },
+                            ],
+                        },
+                    },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationDelay: 800,
+                    markLine: {
+                        silent: true,
+                        symbol: 'none',
+                        data: [
+                            {
+                                yAxis: 0,
+                                label: {
+                                    show: false,
+                                },
+                                lineStyle: {
+                                    color: colors.charts.axis,
+                                    type: 'dashed',
+                                    width: 1,
+                                    opacity: 0.3,
+                                },
+                            },
+                        ],
+                    },
+                    endLabel: {
+                        show: true,
+                        formatter: 'Net Δ +•k$',
+                        color: textOpacity,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: netDeltaColor + '08',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                // Spots skeleton
+                {
+                    name: 'Spots Δ',
+                    type: 'line',
+                    data: createSkeletonData(5, 400, -500),
+                    smooth: false,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: colors.hyperCoreSpot,
+                        width: 2,
+                        opacity: 0.3,
+                    },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationDelay: 1000,
+                    endLabel: {
+                        show: true,
+                        formatter: 'Spots Δ -•k$',
+                        color: textOpacity,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperCoreSpot + '08',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+            ],
+        }
+    }
 
     // Store dataZoom range to persist between refreshes
     const [, setZoomRange] = useState<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
@@ -77,9 +358,12 @@ export default function DeltaTrackingChart() {
         // 1. get stored snapshots
         let storedSnapshots = getSnapshots()
 
-        // Show empty state if no data
+        // TEMPORARY: Force loading state for testing
+        // storedSnapshots = []
+
+        // Show loading skeleton if no data
         if (storedSnapshots.length === 0) {
-            setOptions(emptyOptions)
+            setOptions(createLoadingOptions())
             return
         }
 
@@ -124,8 +408,9 @@ export default function DeltaTrackingChart() {
             totalCapitalUSD.push([timestamp, totalUSD])
         })
 
-        // Use a consistent color for Net Delta line
+        // Use theme-aware colors
         const netDeltaColor = colors.charts.text || '#ffffff'
+        const aumColor = resolvedTheme === 'dark' ? '#ffffff' : '#000000'
 
         // 4. prepare series data
         const echartsOptions: EChartsOption = {
@@ -272,17 +557,44 @@ export default function DeltaTrackingChart() {
             },
             legend: {
                 data: [
-                    ChartSeries.TotalCapital,
-                    ChartSeries.HyperEvmLps,
-                    ChartSeries.HyperEvmBalances,
-                    ChartSeries.HyperCorePerps,
-                    ChartSeries.HyperCoreSpots,
-                    ChartSeries.NetDelta,
+                    {
+                        name: ChartSeries.TotalCapital,
+                        textStyle: {
+                            color: aumColor,
+                        },
+                    },
+                    {
+                        name: ChartSeries.HyperEvmLps,
+                        textStyle: {
+                            color: colors.hyperEvmLp,
+                        },
+                    },
+                    {
+                        name: ChartSeries.HyperEvmBalances,
+                        textStyle: {
+                            color: colors.hyperEvmBalances,
+                        },
+                    },
+                    {
+                        name: ChartSeries.HyperCorePerps,
+                        textStyle: {
+                            color: colors.hyperCorePerp,
+                        },
+                    },
+                    {
+                        name: ChartSeries.HyperCoreSpots,
+                        textStyle: {
+                            color: colors.hyperCoreSpot,
+                        },
+                    },
+                    {
+                        name: ChartSeries.NetDelta,
+                        textStyle: {
+                            color: netDeltaColor,
+                        },
+                    },
                 ],
                 top: 10,
-                textStyle: {
-                    color: colors.charts.text,
-                },
                 selected: {
                     [ChartSeries.TotalCapital]: true,
                     [ChartSeries.HyperEvmLps]: true,
@@ -295,6 +607,7 @@ export default function DeltaTrackingChart() {
                 itemWidth: 14,
                 itemHeight: 8,
                 itemGap: 15,
+                inactiveColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
             },
             toolbox: {
                 feature: {
@@ -400,12 +713,12 @@ export default function DeltaTrackingChart() {
                     showSymbol: true,
                     yAxisIndex: 0,
                     lineStyle: {
-                        color: STATUS_COLORS.info,
+                        color: aumColor,
                         width: 2,
                         type: 'solid',
                     },
                     itemStyle: {
-                        color: STATUS_COLORS.info,
+                        color: aumColor,
                     },
                     emphasis: {
                         focus: 'series',
@@ -417,10 +730,10 @@ export default function DeltaTrackingChart() {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
                             return `${ChartSeries.TotalCapital} ${formatUSD(value)}`
                         },
-                        color: STATUS_COLORS.info,
+                        color: aumColor,
                         fontSize: 12,
                         offset: [5, 0],
-                        backgroundColor: STATUS_COLORS.info + '15',
+                        backgroundColor: aumColor + '15',
                         padding: [2, 4],
                         borderRadius: 4,
                     },
@@ -436,7 +749,7 @@ export default function DeltaTrackingChart() {
                     lineStyle: {
                         color: colors.hyperEvmLp,
                         width: 2,
-                        type: 'dashed',
+                        type: 'solid',
                     },
                     itemStyle: {
                         color: colors.hyperEvmLp,
@@ -471,7 +784,7 @@ export default function DeltaTrackingChart() {
                     lineStyle: {
                         color: colors.hyperEvmBalances,
                         width: 2,
-                        type: 'dashed',
+                        type: 'solid',
                     },
                     itemStyle: {
                         color: colors.hyperEvmBalances,
@@ -506,7 +819,7 @@ export default function DeltaTrackingChart() {
                     lineStyle: {
                         color: colors.hyperCorePerp,
                         width: 2,
-                        type: 'dashed',
+                        type: 'solid',
                     },
                     itemStyle: {
                         color: colors.hyperCorePerp,
@@ -541,7 +854,7 @@ export default function DeltaTrackingChart() {
                     lineStyle: {
                         color: netDeltaColor,
                         width: 2,
-                        type: 'solid',
+                        type: 'dashed',
                     },
                     itemStyle: {
                         color: netDeltaColor,
@@ -616,7 +929,7 @@ export default function DeltaTrackingChart() {
                     lineStyle: {
                         color: colors.hyperCoreSpot,
                         width: 2,
-                        type: 'dashed',
+                        type: 'solid',
                     },
                     itemStyle: {
                         color: colors.hyperCoreSpot,

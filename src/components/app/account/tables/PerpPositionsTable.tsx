@@ -135,103 +135,198 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
 
                                 {/* Expanded Details */}
                                 {isExpanded && (
-                                    <div className="border-t border-default/10 bg-default/5 px-4 py-3">
-                                        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-                                            {/* Position Details */}
+                                    <div className="space-y-4 border-t border-default/10 bg-default/5 px-4 py-4">
+                                        {/* Position Details Grid */}
+                                        <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3 lg:grid-cols-4">
+                                            {/* Core Position Info */}
+                                            <div className="col-span-full mb-2">
+                                                <h4 className="text-sm font-semibold text-default/80">Position Details</h4>
+                                            </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Position ID</p>
-                                                <p className="font-mono text-xs">{shortenValue(position.id)}</p>
+                                                <p className="text-sm">{shortenValue(position.id)}</p>
                                             </div>
+
+                                            <div>
+                                                <p className="text-xs text-default/50">Asset</p>
+                                                <p className="font-medium">{position.asset}</p>
+                                            </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Direction</p>
-                                                <p className={`font-medium ${isLong ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {isLong ? 'LONG' : 'SHORT'}
+                                                <p className={cn('font-medium', isLong ? 'text-green-600' : 'text-red-600')}>
+                                                    {isLong ? '↑ LONG' : '↓ SHORT'}
                                                 </p>
                                             </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Size</p>
                                                 <p className="font-medium">
                                                     {formatNumber(Math.abs(position.size), 6)} {position.asset}
                                                 </p>
                                             </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Notional Value</p>
-                                                <p className="font-medium">{formatUSD(Math.abs(position.notionalValue))}</p>
+                                                <p className="font-bold text-primary">{formatUSD(Math.abs(position.notionalValue))}</p>
                                             </div>
 
-                                            {/* Prices */}
+                                            {/* Price Information Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Price Information</h4>
+                                            </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Entry Price</p>
                                                 <p className="font-medium">{formatUSD(position.entryPrice)}</p>
                                             </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Mark Price</p>
                                                 <p className="font-medium">{formatUSD(position.markPrice)}</p>
                                             </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Price Change</p>
                                                 <p
-                                                    className={`font-medium ${position.markPrice > position.entryPrice ? 'text-green-600' : 'text-red-600'}`}
+                                                    className={cn(
+                                                        'font-medium',
+                                                        position.markPrice > position.entryPrice ? 'text-green-600' : 'text-red-600',
+                                                    )}
                                                 >
                                                     {(((position.markPrice - position.entryPrice) / position.entryPrice) * 100).toFixed(2)}%
                                                 </p>
                                             </div>
 
-                                            {/* PnL Details */}
+                                            <div>
+                                                <p className="text-xs text-default/50">Liquidation Price</p>
+                                                <p className="font-medium text-orange-500">
+                                                    {formatUSD(isLong ? position.entryPrice * 0.85 : position.entryPrice * 1.15)}
+                                                </p>
+                                            </div>
+
+                                            {/* PnL Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Profit & Loss</h4>
+                                            </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Unrealized PnL</p>
-                                                <p className={`font-medium ${position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                <p className={cn('font-bold', position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600')}>
+                                                    {position.unrealizedPnl >= 0 ? '+' : ''}
                                                     {formatUSD(position.unrealizedPnl)}
                                                 </p>
                                             </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">PnL %</p>
-                                                <p className={`font-medium ${pnlPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                <p className={cn('font-medium', pnlPercentage >= 0 ? 'text-green-600' : 'text-red-600')}>
                                                     {pnlPercentage >= 0 ? '+' : ''}
                                                     {Math.abs(pnlPercentage) < 0.005 ? '0' : pnlPercentage.toFixed(2)}%
                                                 </p>
                                             </div>
 
-                                            {/* Margin & Leverage */}
+                                            <div>
+                                                <p className="text-xs text-default/50">ROI</p>
+                                                <p className={cn('font-medium', position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600')}>
+                                                    {((position.unrealizedPnl / position.marginUsed) * 100).toFixed(1)}%
+                                                </p>
+                                            </div>
+
+                                            {/* Margin & Risk Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Margin & Risk</h4>
+                                            </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Margin Used</p>
                                                 <p className="font-medium">{formatUSD(position.marginUsed)}</p>
                                             </div>
+
                                             <div>
                                                 <p className="text-xs text-default/50">Leverage</p>
-                                                <p className="font-medium">{leverage.toFixed(2)}x</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-default/50">Liquidation Price</p>
-                                                <p className="font-medium text-orange-500">
-                                                    {/* Mock calculation - would need actual maintenance margin */}
-                                                    {formatUSD(isLong ? position.entryPrice * 0.85 : position.entryPrice * 1.15)}
+                                                <p
+                                                    className={cn(
+                                                        'font-medium',
+                                                        leverage > 5 ? 'text-orange-500' : leverage > 3 ? 'text-yellow-500' : 'text-default',
+                                                    )}
+                                                >
+                                                    {leverage.toFixed(2)}x
                                                 </p>
                                             </div>
 
-                                            {/* Funding */}
                                             <div>
-                                                <p className="text-xs text-default/50">Funding Paid</p>
-                                                <p className={`font-medium ${position.fundingPaid >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                <p className="text-xs text-default/50">Margin Ratio</p>
+                                                <p className="font-medium">
+                                                    {((position.marginUsed / Math.abs(position.notionalValue)) * 100).toFixed(1)}%
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-default/50">Distance to Liq</p>
+                                                <p
+                                                    className={cn(
+                                                        'font-medium',
+                                                        Math.abs(
+                                                            (position.markPrice -
+                                                                (isLong ? position.entryPrice * 0.85 : position.entryPrice * 1.15)) /
+                                                                position.markPrice,
+                                                        ) < 0.1
+                                                            ? 'text-red-500'
+                                                            : 'text-default',
+                                                    )}
+                                                >
+                                                    {(
+                                                        Math.abs(
+                                                            (position.markPrice -
+                                                                (isLong ? position.entryPrice * 0.85 : position.entryPrice * 1.15)) /
+                                                                position.markPrice,
+                                                        ) * 100
+                                                    ).toFixed(1)}
+                                                    %
+                                                </p>
+                                            </div>
+
+                                            {/* Funding Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Funding Information</h4>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-default/50">Total Funding Paid</p>
+                                                <p className={cn('font-medium', position.fundingPaid >= 0 ? 'text-green-600' : 'text-red-600')}>
                                                     {formatUSD(position.fundingPaid)}
                                                 </p>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Est. Daily Funding</p>
-                                                <p className={`font-medium ${!isLong ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {formatUSD((Math.abs(position.notionalValue) * 0.085) / 365)}/day
+                                                <p className="text-xs text-default/50">Current Funding APR</p>
+                                                <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
+                                                    {!isLong ? '+' : '-'}8.5%
                                                 </p>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Funding APR</p>
-                                                <p className={`font-medium ${!isLong ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {!isLong ? '+' : '-'}8.5%
+                                                <p className="text-xs text-default/50">Est. Daily Funding</p>
+                                                <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
+                                                    {!isLong ? '+' : '-'}
+                                                    {formatUSD((Math.abs(position.notionalValue) * 0.085) / 365)}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-default/50">Est. Monthly Funding</p>
+                                                <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
+                                                    {!isLong ? '+' : '-'}
+                                                    {formatUSD((Math.abs(position.notionalValue) * 0.085) / 12)}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        {/* Raw JSON */}
-                                        <div className="mt-3 flex justify-end">
+                                        {/* Raw Data */}
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <span className="text-xs text-default/40">Raw data available via tooltip →</span>
                                             <StyledTooltip
                                                 content={
                                                     <pre className="max-h-96 max-w-2xl overflow-auto text-xs">
@@ -240,10 +335,10 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 }
                                                 placement="left"
                                             >
-                                                <IconWrapper
-                                                    id={IconIds.INFORMATION}
-                                                    className="size-4 cursor-help text-default/40 hover:text-default/60"
-                                                />
+                                                <div className="flex cursor-help items-center gap-1 rounded bg-default/10 px-2 py-1 text-xs hover:bg-default/20">
+                                                    <IconWrapper id={IconIds.INFORMATION} className="size-3 text-default/60" />
+                                                    <span className="text-default/60">Position Data</span>
+                                                </div>
                                             </StyledTooltip>
                                         </div>
                                     </div>

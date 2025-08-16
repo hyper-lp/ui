@@ -5,6 +5,7 @@ import { IconIds } from '@/enums'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { SectionCard } from './layout/Cards'
 import { ReactNode } from 'react'
+import { cn } from '@/utils'
 
 export function CollapsibleCard({
     title,
@@ -26,7 +27,10 @@ export function CollapsibleCard({
             {/* header */}
             <div className="flex items-center justify-between py-2 pl-2 pr-4">
                 <button onClick={() => setIsExpanded(!isExpanded)} className="flex flex-1 items-center gap-2 text-left">
-                    <IconWrapper id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT} className="size-5 text-default/50" />
+                    <IconWrapper
+                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                        className={cn('size-5', isExpanded ? 'text-default' : 'text-default/50')}
+                    />
                     {title}
                 </button>
                 {isLoading ? <div className="h-4 w-24 animate-pulse rounded bg-default/20" /> : headerRight}

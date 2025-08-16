@@ -16,13 +16,15 @@ import { cn } from '@/utils'
 import { calculateHypePrice, calculateTokenBreakdown } from '@/utils/token.util'
 import { getDurationBetween } from '@/utils/date.util'
 import { HypeIcon } from '@/components/common/HypeIcon'
-import { DeltaDisplay } from '@/components/common/DeltaDisplay'
 import { DateWrapperAccurate } from '@/components/common/DateWrapper'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
-import { AppUrls, IconIds } from '@/enums'
+import { AppUrls, FileIds, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import { env } from '@/env/t3-env'
+import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
+import { useTheme } from 'next-themes'
+import FileMapper from '@/components/common/FileMapper'
 
 // Dynamically import chart to avoid SSR issues
 const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
@@ -49,20 +51,24 @@ interface KPIMetricProps {
 }
 
 const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, className }) => {
+    const { resolvedTheme } = useTheme()
     const baseClassName = cn('flex flex-col items-center lg:items-end', className)
     const isNumber = typeof value === 'number'
     const color = isNumber && colorFn ? colorFn(value) : undefined
+
+    // Use white text in dark mode, black in light mode for AUM
+    const aumColor = label === 'AUM' ? (resolvedTheme === 'dark' ? 'text-white' : 'text-black') : undefined
 
     return (
         <div className={baseClassName}>
             <span className="text-xs uppercase tracking-wider text-default/50">{label}</span>
             {icon ? (
                 <div className="flex items-center gap-1">
-                    {icon}
                     <span className={cn('text-base font-semibold', color)}>{isNumber ? `${value >= 0 ? '+' : ''}${value.toFixed(1)}` : value}</span>
+                    {icon}
                 </div>
             ) : (
-                <span className="text-lg font-semibold">{value}</span>
+                <span className={cn('text-lg font-semibold', aumColor)}>{value}</span>
             )}
         </div>
     )
@@ -163,6 +169,12 @@ export default function AccountPage() {
     // Get HYPE price from the latest snapshot data, fallback to calculated price
     const hypePrice = prices?.HYPE || calculateHypePrice({ lp: positions.hyperEvm?.lps, wallet: positions.hyperEvm?.balances })
 
+    // Calculate total fetch time
+    const timings = snapshot?.timings
+    const totalFetchTime = timings
+        ? (timings.hyperEvm?.lpsMs || 0) + (timings.hyperEvm?.balancesMs || 0) + (timings.hyperCore?.perpsMs || 0) + (timings.hyperCore?.spotsMs || 0)
+        : 0
+
     // Show loading state while initial data is being fetched or if we don't have price data
     if ((isLoading && !snapshot) || !hypePrice) {
         return (
@@ -190,7 +202,7 @@ export default function AccountPage() {
                                     <div className="h-3 w-8 animate-pulse rounded bg-default/20" />
                                     <div className="mt-1 h-7 w-20 animate-pulse rounded bg-default/20" />
                                 </div>
-                                <div className="h-8 w-px bg-default/20" />
+                                <div className="h-8 w-px border-l border-dashed border-default/20" />
                                 <div className="flex flex-col items-end">
                                     <div className="h-3 w-10 animate-pulse rounded bg-default/20" />
                                     <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
@@ -257,6 +269,14 @@ export default function AccountPage() {
                     <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
                         {/* Address */}
                         <div className="flex flex-col">
+                            <div className="mb-10 flex items-center gap-1">
+                                <p className="text-primary">Delta Neutral LP strategy</p>
+                                <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-primary" />
+                                <p className="text-primary">Farming</p>
+                                <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
+                                <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
+                                <p className="text-primary">APRs with a dynamic short leg</p>
+                            </div>
                             <div className="flex items-baseline gap-2 text-sm">
                                 <p className="hidden text-lg font-medium xl:flex">{accountFromUrl}</p>
                                 <p className="flex text-lg font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
@@ -307,6 +327,31 @@ export default function AccountPage() {
                                                 <p>Next in {nextUpdateIn}</p>
                                             </>
                                         )}
+                                        {totalFetchTime > 0 && (
+                                            <StyledTooltip
+                                                content={
+                                                    <div className="space-y-1 text-xs">
+                                                        <p className="font-medium">Fetch Times:</p>
+                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                                                            <span>LPs:</span>
+                                                            <span>{timings?.hyperEvm?.lpsMs || 0}ms</span>
+                                                            <span>Wallet:</span>
+                                                            <span>{timings?.hyperEvm?.balancesMs || 0}ms</span>
+                                                            <span>Perps:</span>
+                                                            <span>{timings?.hyperCore?.perpsMs || 0}ms</span>
+                                                            <span>Spot:</span>
+                                                            <span>{timings?.hyperCore?.spotsMs || 0}ms</span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                placement="bottom"
+                                            >
+                                                <span className="cursor-help">
+                                                    <span className="text-default/30">•</span>
+                                                    <span className="ml-1">{(totalFetchTime / 1000).toFixed(1)}s</span>
+                                                </span>
+                                            </StyledTooltip>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -315,11 +360,11 @@ export default function AccountPage() {
                         {/* Global KPIs */}
                         <div className="flex items-center gap-6">
                             <KPIMetric label="AUM" value={formatUSD(metrics.portfolio?.totalUSD || 0)} />
-                            <div className="h-8 w-px bg-default/20" />
+                            <div className="h-8 w-px border-l border-dashed border-default/20" />
                             <KPIMetric
                                 label="Net Δ"
                                 value={metrics.portfolio?.netDeltaHYPE}
-                                icon={<HypeIcon size={15} />}
+                                icon={<HypeIcon size={20} />}
                                 colorFn={getDeltaColor}
                                 className="items-end"
                             />
@@ -334,17 +379,18 @@ export default function AccountPage() {
                             title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
                             defaultExpanded={true}
                             headerRight={
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 text-base text-default">
-                                        <span className="font-medium">
-                                            $ {(metrics.hyperEvm?.values?.lpsUSD || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        </span>
-                                        <span>•</span>
-                                        <span>
-                                            {positions.hyperEvm?.lps?.length || 0} LP{positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
-                                        </span>
+                                <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-1">
+                                        <p>
+                                            {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)} over {positions.hyperEvm?.lps?.length || 0} LP
+                                            {positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
+                                        </p>
                                     </div>
-                                    <DeltaDisplay delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <div className="flex items-center gap-1">
+                                        <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                        <HypeIcon size={20} />
+                                        <p className="text-default/50">Δ</p>
+                                    </div>
                                 </div>
                             }
                         >
@@ -356,14 +402,13 @@ export default function AccountPage() {
                             title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Wallet</h3>}
                             defaultExpanded={false}
                             headerRight={
-                                <div className="flex items-center gap-2">
-                                    <span className="text-base font-medium text-default">
-                                        ${' '}
-                                        {(positions.hyperEvm?.balances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)
-                                            .toFixed(0)
-                                            .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                    </span>
-                                    <DeltaDisplay delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                <div className="flex items-center gap-6">
+                                    <p>{formatUSD(positions.hyperEvm?.balances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}</p>
+                                    <div className="flex items-center gap-1">
+                                        <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                        <HypeIcon size={20} />
+                                        <p className="text-default/50">Δ</p>
+                                    </div>
                                 </div>
                             }
                         >
@@ -398,11 +443,15 @@ export default function AccountPage() {
                             </StyledTooltip>
                         ) : null,
                     delta: (
-                        <DeltaDisplay
-                            delta={(metrics.hyperEvm?.deltas?.lpsHYPE || 0) + (metrics.hyperEvm?.deltas?.balancesHYPE || 0)}
-                            hypePrice={hypePrice}
-                            decimals={1}
-                        />
+                        <>
+                            <HypeDeltaTooltip
+                                delta={(metrics.hyperEvm?.deltas?.lpsHYPE || 0) + (metrics.hyperEvm?.deltas?.balancesHYPE || 0)}
+                                hypePrice={hypePrice}
+                                decimals={1}
+                            />
+                            <HypeIcon size={20} />
+                            <p className="text-default/50">Δ</p>
+                        </>
                     ),
                 }}
                 hyperCore={{
@@ -411,16 +460,13 @@ export default function AccountPage() {
                             title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perpetuals leg</h3>}
                             defaultExpanded={false}
                             headerRight={
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1.5 text-base text-default">
-                                        <span>
-                                            $ {(metrics.hyperCore?.perpAggregates?.totalMargin || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}{' '}
-                                            margin
-                                        </span>
-                                        <span>•</span>
-                                        <span>{(metrics.hyperCore?.perpAggregates?.avgLeverage || 0).toFixed(1)}x lev</span>
+                                <div className="flex items-center gap-6">
+                                    <p>{formatUSD(metrics.hyperCore?.perpAggregates?.totalMargin || 0)} margin</p>
+                                    <div className="flex items-center gap-1">
+                                        <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                        <HypeIcon size={20} />
+                                        <p className="text-default/50">Δ</p>
                                     </div>
-                                    <DeltaDisplay delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
@@ -432,14 +478,13 @@ export default function AccountPage() {
                             title={<h3 className="text-lg font-semibold text-hyper-core-spots">Spot</h3>}
                             defaultExpanded={false}
                             headerRight={
-                                <div className="flex items-center gap-2">
-                                    <span className="text-base font-medium text-default">
-                                        ${' '}
-                                        {(positions.hyperCore?.spots?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)
-                                            .toFixed(0)
-                                            .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                    </span>
-                                    <DeltaDisplay delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                <div className="flex items-center gap-6">
+                                    <p>{formatUSD(positions.hyperCore?.spots?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}</p>
+                                    <div className="flex items-center gap-1">
+                                        <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                        <HypeIcon size={20} />
+                                        <p className="text-default/50">Δ</p>
+                                    </div>
                                 </div>
                             }
                         >
@@ -480,11 +525,14 @@ export default function AccountPage() {
                             </StyledTooltip>
                         ) : null,
                     delta: (
-                        <DeltaDisplay
-                            delta={(metrics.hyperCore?.deltas?.perpsHYPE || 0) + (metrics.hyperCore?.deltas?.spotHYPE || 0)}
-                            hypePrice={hypePrice}
-                            decimals={1}
-                        />
+                        <>
+                            <HypeDeltaTooltip
+                                delta={(metrics.hyperCore?.deltas?.perpsHYPE || 0) + (metrics.hyperCore?.deltas?.spotHYPE || 0)}
+                                hypePrice={hypePrice}
+                                decimals={1}
+                            />
+                            <HypeIcon size={20} />
+                        </>
                     ),
                 }}
             />

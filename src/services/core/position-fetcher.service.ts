@@ -380,47 +380,49 @@ export class PositionFetcher {
         const uncachedPools = poolAddresses.filter((addr) => !this.poolStateCache.has(addr))
 
         if (uncachedPools.length > 0) {
-            // Build multicall for slot0
-            const slot0Calls = uncachedPools.map((poolAddress) => ({
-                target: poolAddress as Address,
-                callData: encodeFunctionData({
-                    abi: UNISWAP_V3_POOL_ABI,
-                    functionName: 'slot0',
-                }),
-            }))
+            // Build combined multicall for both slot0 and liquidity in a single batch
+            const poolCalls: Array<{ target: Address; callData: `0x${string}` }> = []
 
-            const slot0Results = (await client.readContract({
+            // Add slot0 calls first, then liquidity calls
+            for (const poolAddress of uncachedPools) {
+                // slot0 call
+                poolCalls.push({
+                    target: poolAddress as Address,
+                    callData: encodeFunctionData({
+                        abi: UNISWAP_V3_POOL_ABI,
+                        functionName: 'slot0',
+                    }),
+                })
+                // liquidity call
+                poolCalls.push({
+                    target: poolAddress as Address,
+                    callData: encodeFunctionData({
+                        abi: UNISWAP_V3_POOL_ABI,
+                        functionName: 'liquidity',
+                    }),
+                })
+            }
+
+            // Single multicall for all pool state data
+            const poolResults = (await client.readContract({
                 address: MULTICALL3_ADDRESS,
                 abi: MULTICALL3_ABI,
                 functionName: 'tryAggregate',
-                args: [false, slot0Calls],
+                args: [false, poolCalls],
             })) as Array<{ success: boolean; returnData: `0x${string}` }>
 
-            // Build multicall for liquidity
-            const liquidityCalls = uncachedPools.map((poolAddress) => ({
-                target: poolAddress as Address,
-                callData: encodeFunctionData({
-                    abi: UNISWAP_V3_POOL_ABI,
-                    functionName: 'liquidity',
-                }),
-            }))
-
-            const liquidityResults = (await client.readContract({
-                address: MULTICALL3_ADDRESS,
-                abi: MULTICALL3_ABI,
-                functionName: 'tryAggregate',
-                args: [false, liquidityCalls],
-            })) as Array<{ success: boolean; returnData: `0x${string}` }>
-
-            // Process results
+            // Process results (slot0 and liquidity are interleaved)
             for (let i = 0; i < uncachedPools.length; i++) {
-                if (slot0Results[i].success && liquidityResults[i].success) {
+                const slot0Index = i * 2
+                const liquidityIndex = i * 2 + 1
+
+                if (poolResults[slot0Index].success && poolResults[liquidityIndex].success) {
                     // Check for empty data
                     if (
-                        !slot0Results[i].returnData ||
-                        slot0Results[i].returnData === '0x' ||
-                        !liquidityResults[i].returnData ||
-                        liquidityResults[i].returnData === '0x'
+                        !poolResults[slot0Index].returnData ||
+                        poolResults[slot0Index].returnData === '0x' ||
+                        !poolResults[liquidityIndex].returnData ||
+                        poolResults[liquidityIndex].returnData === '0x'
                     ) {
                         // Pool returned empty data - may not exist
                         continue
@@ -430,13 +432,13 @@ export class PositionFetcher {
                         const slot0 = decodeFunctionResult({
                             abi: UNISWAP_V3_POOL_ABI,
                             functionName: 'slot0',
-                            data: slot0Results[i].returnData,
+                            data: poolResults[slot0Index].returnData,
                         }) as [bigint, number, number, number, number, number, boolean]
 
                         const liquidity = decodeFunctionResult({
                             abi: UNISWAP_V3_POOL_ABI,
                             functionName: 'liquidity',
-                            data: liquidityResults[i].returnData,
+                            data: poolResults[liquidityIndex].returnData,
                         }) as bigint
 
                         const state = {

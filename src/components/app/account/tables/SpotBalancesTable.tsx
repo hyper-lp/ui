@@ -11,6 +11,9 @@ import { formatNumber, formatUSD } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
+import { RoundedAmount } from '@/components/common/RoundedAmount'
+import numeral from 'numeral'
+import LinkWrapper from '@/components/common/LinkWrapper'
 
 interface SpotBalancesTableProps {
     className?: string
@@ -19,11 +22,11 @@ interface SpotBalancesTableProps {
 export function SpotBalancesTableHeader() {
     return (
         <SpotRowTemplate
-            asset={<p className="font-medium text-default/60">Asset</p>}
-            balance={<p className="text-right font-medium text-default/60">Balance</p>}
-            value={<p className="text-right font-medium text-default/60">Value</p>}
-            price={<p className="text-right font-medium text-default/60">Price</p>}
-            className="h-8 border-b border-default/10"
+            asset={<p className="truncate">Asset</p>}
+            balance={<p className="truncate text-right">Balance</p>}
+            value={<p className="truncate text-right">Value $</p>}
+            price={<p className="truncate text-right">Price</p>}
+            className="h-8 border-b border-default/10 text-xs text-default/50"
         />
     )
 }
@@ -84,82 +87,312 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                                 )}
                                                 <span className="text-sm">{balance.asset}</span>
                                                 {balance.asset === 'HYPE' && (
-                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-600 dark:text-green-400">
+                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-sm font-medium text-green-600 dark:text-green-400">
                                                         LONG
                                                     </span>
                                                 )}
                                             </div>
                                         }
                                         balance={
-                                            <span className="font-medium">{formatNumber(displayBalance, balance.asset === 'HYPE' ? 4 : 2)}</span>
+                                            displayBalance > 0.0001 ? (
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-sm text-default/50">Exact Balance</p>
+                                                            <p>
+                                                                {formatNumber(displayBalance, 8)} {balance.asset}
+                                                            </p>
+                                                            <p className="text-sm text-default/50">Raw Value</p>
+                                                            <p className="text-sm">{balance.balance}</p>
+                                                        </div>
+                                                    }
+                                                >
+                                                    <span className="font-medium hover:underline">
+                                                        {formatNumber(displayBalance, balance.asset === 'HYPE' ? 4 : 2)}
+                                                    </span>
+                                                </StyledTooltip>
+                                            ) : (
+                                                <span className="text-default/50">-</span>
+                                            )
                                         }
-                                        value={<span className="font-medium text-primary">{formatUSD(balance.valueUSD)}</span>}
-                                        price={price > 0 ? <span>{formatUSD(price)}</span> : <span className="text-default/50">-</span>}
+                                        value={<RoundedAmount amount={balance.valueUSD}>{formatUSD(balance.valueUSD)}</RoundedAmount>}
+                                        price={
+                                            price > 0 ? (
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-sm text-default/50">{balance.asset} Price</p>
+                                                            <p>{formatUSD(price)}</p>
+                                                            {balance.asset === 'HYPE' && (
+                                                                <>
+                                                                    <p className="text-sm text-default/50">Market Cap</p>
+                                                                    <p>{formatUSD(price * 1000000000)}</p>
+                                                                </>
+                                                            )}
+                                                            {(balance.asset === 'USDC' || balance.asset === 'USDT0') && (
+                                                                <>
+                                                                    <p className="text-sm text-default/50">Peg Deviation</p>
+                                                                    <p
+                                                                        className={cn(
+                                                                            Math.abs(price - 1) < 0.01 ? 'text-green-600' : 'text-orange-500',
+                                                                        )}
+                                                                    >
+                                                                        {((price - 1) * 100).toFixed(3)}%
+                                                                    </p>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    }
+                                                >
+                                                    <span className="hover:underline">{formatUSD(price)}</span>
+                                                </StyledTooltip>
+                                            ) : (
+                                                <span className="text-default/30">-</span>
+                                            )
+                                        }
                                         className="h-10 transition-colors hover:bg-default/5"
                                     />
                                 </div>
 
                                 {/* Expanded Details */}
                                 {isExpanded && (
-                                    <div className="border-t border-default/10 bg-default/5 px-4 py-3">
-                                        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-                                            <div>
-                                                <p className="text-xs text-default/50">Asset Symbol</p>
-                                                <p className="font-medium">{balance.asset}</p>
+                                    <div className="space-y-4 border-t border-default/10 bg-default/5 px-4 py-4">
+                                        {/* Spot Balance Details Grid */}
+                                        <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3 lg:grid-cols-4">
+                                            {/* Asset Information Section */}
+                                            <div className="col-span-full mb-2">
+                                                <h4 className="text-sm font-semibold text-default/80">Asset Details</h4>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Asset Type</p>
-                                                <p className="font-medium">Spot</p>
+                                                <p className="text-sm text-default/50">Symbol</p>
+                                                <p className="text-sm font-medium">{balance.asset}</p>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Raw Balance</p>
-                                                <p className="font-mono text-xs">{balance.balance.toString()}</p>
+                                                <p className="text-sm text-default/50">Platform</p>
+                                                <p className="text-sm font-medium">HyperCore</p>
                                             </div>
+
                                             <div>
-                                                <p className="text-xs text-default/50">Display Balance</p>
-                                                <p className="font-medium">{formatNumber(displayBalance, 8)}</p>
+                                                <p className="text-sm text-default/50">Type</p>
+                                                <p className="text-sm font-medium">Spot Asset</p>
                                             </div>
-                                            <div>
-                                                <p className="text-xs text-default/50">Current Price</p>
-                                                <p className="font-medium">{price > 0 ? formatUSD(price) : 'N/A'}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-default/50">Total Value USD</p>
-                                                <p className="font-medium text-primary">{formatUSD(balance.valueUSD)}</p>
-                                            </div>
+
                                             {balance.asset === 'HYPE' && (
+                                                <div>
+                                                    <p className="text-sm text-default/50">Position Type</p>
+                                                    <p className="text-sm font-medium text-green-600">LONG</p>
+                                                </div>
+                                            )}
+
+                                            {balance.asset === 'USDC' && (
+                                                <div>
+                                                    <p className="text-sm text-default/50">Function</p>
+                                                    <p className="text-sm font-medium">Margin Collateral</p>
+                                                </div>
+                                            )}
+
+                                            {balance.asset === 'USDT0' && (
+                                                <div>
+                                                    <p className="text-sm text-default/50">Type</p>
+                                                    <p className="text-sm font-medium">Stablecoin</p>
+                                                </div>
+                                            )}
+
+                                            {/* Balance Information Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Balance Information</h4>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Raw Balance</p>
+                                                <p className="text-sm">{balance.balance.toString()}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Formatted Balance</p>
+                                                <p className="text-sm font-medium">{formatNumber(displayBalance, 8)}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Display Amount</p>
+                                                <p className="text-sm font-medium">
+                                                    {formatNumber(displayBalance, balance.asset === 'HYPE' ? 4 : 2)}
+                                                </p>
+                                            </div>
+
+                                            {/* Percentage of total spot value */}
+                                            {(() => {
+                                                const totalValue = balances.reduce((sum, b) => sum + b.valueUSD, 0)
+                                                const percentage = totalValue > 0 ? (balance.valueUSD / totalValue) * 100 : 0
+                                                return (
+                                                    <div>
+                                                        <p className="text-sm text-default/50">% of Spot</p>
+                                                        <p className="text-sm font-medium">{numeral(percentage / 100).format('0,0.0%')}</p>
+                                                    </div>
+                                                )
+                                            })()}
+
+                                            {/* Value & Pricing Section */}
+                                            <div className="col-span-full mb-2 mt-3">
+                                                <h4 className="text-sm font-semibold text-default/80">Value & Pricing</h4>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Current Price</p>
+                                                <p className="text-sm font-medium">{price > 0 ? formatUSD(price) : 'N/A'}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm text-default/50">Total Value</p>
+                                                <p className="text-sm font-bold text-primary">{formatUSD(balance.valueUSD)}</p>
+                                            </div>
+
+                                            {balance.asset === 'HYPE' && price > 0 && (
                                                 <>
                                                     <div>
-                                                        <p className="text-xs text-default/50">Position Type</p>
-                                                        <p className="font-medium text-green-600">LONG</p>
+                                                        <p className="text-sm text-default/50">Market Cap (Est)</p>
+                                                        <p className="text-sm font-medium">{formatUSD(price * 1000000000)}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs text-default/50">Market Cap (Est)</p>
-                                                        <p className="font-medium">{formatUSD(price * 1000000000)}</p>
+                                                        <p className="text-sm text-default/50">FDV</p>
+                                                        <p className="text-sm font-medium">{formatUSD(price * 1000000000)}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Delta Exposure</p>
+                                                        <p className="text-sm font-medium text-green-600">+{formatNumber(displayBalance, 2)} HYPE</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-default/50">24h Volume</p>
+                                                        <p className="text-sm font-medium text-default/50">-</p>
                                                     </div>
                                                 </>
                                             )}
+
+                                            {/* Collateral & Risk Info for USDC */}
                                             {balance.asset === 'USDC' && (
-                                                <div>
-                                                    <p className="text-xs text-default/50">Collateral Type</p>
-                                                    <p className="font-medium">Margin Collateral</p>
-                                                </div>
+                                                <>
+                                                    <div className="col-span-full mb-2 mt-3">
+                                                        <h4 className="text-sm font-semibold text-default/80">Collateral Information</h4>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Peg Status</p>
+                                                        <p
+                                                            className={cn(
+                                                                'font-medium',
+                                                                Math.abs(price - 1) < 0.01 ? 'text-green-600' : 'text-orange-500',
+                                                            )}
+                                                        >
+                                                            {Math.abs(price - 1) < 0.01 ? '✓ Stable' : '⚠ Off-peg'}
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Deviation</p>
+                                                        <p
+                                                            className={cn(
+                                                                'font-medium',
+                                                                Math.abs(price - 1) < 0.001
+                                                                    ? 'text-green-600'
+                                                                    : Math.abs(price - 1) < 0.01
+                                                                      ? 'text-yellow-500'
+                                                                      : 'text-orange-500',
+                                                            )}
+                                                        >
+                                                            {price > 1 ? '+' : ''}
+                                                            {((price - 1) * 100).toFixed(3)}%
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Available as Margin</p>
+                                                        <p className="text-sm font-medium text-green-600">✓ Yes</p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Max Leverage</p>
+                                                        <p className="text-sm font-medium">50x</p>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* USDT0 Stablecoin Info */}
+                                            {balance.asset === 'USDT0' && (
+                                                <>
+                                                    <div className="col-span-full mb-2 mt-3">
+                                                        <h4 className="text-sm font-semibold text-default/80">Stablecoin Information</h4>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Peg Status</p>
+                                                        <p
+                                                            className={cn(
+                                                                'font-medium',
+                                                                Math.abs(price - 1) < 0.01 ? 'text-green-600' : 'text-orange-500',
+                                                            )}
+                                                        >
+                                                            {Math.abs(price - 1) < 0.01 ? '✓ Stable' : '⚠ Off-peg'}
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Deviation</p>
+                                                        <p
+                                                            className={cn(
+                                                                'font-medium',
+                                                                Math.abs(price - 1) < 0.001
+                                                                    ? 'text-green-600'
+                                                                    : Math.abs(price - 1) < 0.01
+                                                                      ? 'text-yellow-500'
+                                                                      : 'text-orange-500',
+                                                            )}
+                                                        >
+                                                            {price > 1 ? '+' : ''}
+                                                            {((price - 1) * 100).toFixed(3)}%
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm text-default/50">Bridge</p>
+                                                        <p className="text-sm font-medium">Hyperliquid Native</p>
+                                                    </div>
+                                                </>
                                             )}
                                         </div>
 
-                                        {/* Raw JSON */}
-                                        <div className="mt-3 flex justify-end">
-                                            <StyledTooltip
-                                                content={
-                                                    <pre className="max-h-96 max-w-2xl overflow-auto text-xs">{JSON.stringify(balance, null, 2)}</pre>
-                                                }
-                                                placement="left"
-                                            >
-                                                <IconWrapper
-                                                    id={IconIds.INFORMATION}
-                                                    className="size-4 cursor-help text-default/40 hover:text-default/60"
-                                                />
-                                            </StyledTooltip>
+                                        {/* Note about USDC collateral */}
+                                        {balance.asset === 'USDC' && (
+                                            <div className="col-span-full mt-2 text-sm text-default/40">
+                                                * USDC is used as margin collateral for perpetual positions
+                                            </div>
+                                        )}
+
+                                        {/* Raw JSON Data */}
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <span className="text-sm text-default/40">Raw data available via tooltips →</span>
+                                            <div className="flex gap-2">
+                                                <StyledTooltip
+                                                    content={
+                                                        <pre className="max-h-96 max-w-2xl overflow-auto text-xs">
+                                                            {JSON.stringify(balance, null, 2)}
+                                                        </pre>
+                                                    }
+                                                    placement="left"
+                                                >
+                                                    <div className="flex cursor-help items-center gap-1 rounded bg-default/10 px-2 py-1 text-sm hover:bg-default/20">
+                                                        <IconWrapper id={IconIds.INFORMATION} className="size-3 text-default/60" />
+                                                        <span className="text-default/60">Balance</span>
+                                                    </div>
+                                                </StyledTooltip>
+                                                <LinkWrapper href={`https://app.hyperliquid.xyz/portfolio/spot`} target="_blank">
+                                                    <div className="flex items-center gap-1 rounded bg-purple-50 px-2 py-1 text-sm hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30">
+                                                        <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-3 text-purple-600" />
+                                                        <span className="text-purple-600">HyperCore</span>
+                                                    </div>
+                                                </LinkWrapper>
+                                            </div>
                                         </div>
                                     </div>
                                 )}

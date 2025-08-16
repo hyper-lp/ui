@@ -42,9 +42,9 @@ export function LPPositionsTableHeader() {
             value={<p className="truncate">Value $</p>}
             split={<p className="truncate">Split</p>}
             tvl={<p className="truncate">TVL $</p>}
-            apr24h={<p className="truncate">24h</p>}
-            apr7d={<p className="truncate">7d</p>}
-            apr30d={<p className="truncate">30d</p>}
+            apr24h={<p className="truncate">24h APR</p>}
+            apr7d={<p className="truncate">7d APR</p>}
+            apr30d={<p className="truncate">30d APR</p>}
             positionId={<p className="truncate">Position ID</p>}
             className="h-8 border-b border-default/10 text-xs text-default/50"
         />
@@ -161,7 +161,18 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                         }
                                         hype={
                                             hypeAmount ? (
-                                                <StyledTooltip content={hypeAmount}>
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-xs text-default/50">Amount</p>
+                                                            <p>{formatNumber(hypeAmount, 2)}</p>
+                                                            <p className="text-xs text-default/50">Price (USD)</p>
+                                                            <p>{formatUSD((position.token0ValueUSD || 0) / hypeAmount)}</p>
+                                                            <p className="text-xs text-default/50">Value (USD)</p>
+                                                            <p>{formatUSD(position.token0ValueUSD || 0)}</p>
+                                                        </div>
+                                                    }
+                                                >
                                                     <p className="font-medium hover:underline">{formatNumber(hypeAmount, 2)}</p>
                                                 </StyledTooltip>
                                             ) : (
@@ -170,7 +181,18 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                         }
                                         usdt={
                                             usdtAmount ? (
-                                                <StyledTooltip content={usdtAmount}>
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-xs text-default/50">Amount</p>
+                                                            <p>{formatNumber(usdtAmount, 0)}</p>
+                                                            <p className="text-xs text-default/50">Price (USD)</p>
+                                                            <p>{formatUSD((position.token1ValueUSD || 0) / usdtAmount)}</p>
+                                                            <p className="text-xs text-default/50">Value (USD)</p>
+                                                            <p>{formatUSD(position.token1ValueUSD || 0)}</p>
+                                                        </div>
+                                                    }
+                                                >
                                                     <p className="font-medium hover:underline">{formatNumber(usdtAmount, 0)}</p>
                                                 </StyledTooltip>
                                             ) : (
@@ -203,27 +225,57 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                         tvl={<RoundedAmount amount={poolSnapshot?.tvlUSD || 0}>{formatUSD(poolSnapshot?.tvlUSD || 0)}</RoundedAmount>}
                                         apr24h={(() => {
                                             return poolSnapshot ? (
-                                                <RoundedAmount amount={poolSnapshot.apr24h}>
-                                                    {numeral(poolSnapshot.apr24h).divide(100).format('0,0%')}
-                                                </RoundedAmount>
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-default/50">24h historical APR</p>
+                                                            <p>{numeral(poolSnapshot.apr24h).divide(100).format('0,0.[00]%')}</p>
+                                                            <p className="text-default/50">Not a projection of future performance</p>
+                                                        </div>
+                                                    }
+                                                >
+                                                    <p className="font-medium hover:underline">
+                                                        {numeral(poolSnapshot.apr24h).divide(100).format('0,0%')}
+                                                    </p>
+                                                </StyledTooltip>
                                             ) : (
                                                 <span className="text-default/30">-</span>
                                             )
                                         })()}
                                         apr7d={(() => {
                                             return poolSnapshot ? (
-                                                <RoundedAmount amount={poolSnapshot.apr7d}>
-                                                    {numeral(poolSnapshot.apr7d).divide(100).format('0,0%')}
-                                                </RoundedAmount>
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-default/50">7d historical APR</p>
+                                                            <p>{numeral(poolSnapshot.apr7d).divide(100).format('0,0.[00]%')}</p>
+                                                            <p className="text-default/50">Not a projection of future performance</p>
+                                                        </div>
+                                                    }
+                                                >
+                                                    <p className="font-medium hover:underline">
+                                                        {numeral(poolSnapshot.apr7d).divide(100).format('0,0%')}
+                                                    </p>
+                                                </StyledTooltip>
                                             ) : (
                                                 <span className="text-default/30">-</span>
                                             )
                                         })()}
                                         apr30d={(() => {
                                             return poolSnapshot ? (
-                                                <RoundedAmount amount={poolSnapshot.apr30d}>
-                                                    {numeral(poolSnapshot.apr30d).divide(100).format('0,0%')}
-                                                </RoundedAmount>
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-default/50">30d historical APR</p>
+                                                            <p>{numeral(poolSnapshot.apr30d).divide(100).format('0,0.[00]%')}</p>
+                                                            <p className="text-default/50">Not a projection of future performance</p>
+                                                        </div>
+                                                    }
+                                                >
+                                                    <p className="font-medium hover:underline">
+                                                        {numeral(poolSnapshot.apr30d).divide(100).format('0,0%')}
+                                                    </p>
+                                                </StyledTooltip>
                                             ) : (
                                                 <span className="text-default/30">-</span>
                                             )
@@ -244,12 +296,12 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
                                             <div>
                                                 <p className="text-xs text-default/50">Token ID (NFT)</p>
-                                                <p className="font-mono text-xs font-medium">#{position.tokenId}</p>
+                                                <p className="text-sm font-medium">#{position.tokenId}</p>
                                             </div>
 
                                             <div>
                                                 <p className="text-xs text-default/50">Position ID</p>
-                                                <p className="font-mono text-xs">{shortenValue(position.id)}</p>
+                                                <p className="text-sm">{shortenValue(position.id)}</p>
                                             </div>
 
                                             <div>
@@ -268,7 +320,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             {position.pool && (
                                                 <div className="col-span-2">
                                                     <p className="text-xs text-default/50">Pool Address</p>
-                                                    <p className="break-all font-mono text-xs">{position.pool}</p>
+                                                    <p className="break-all text-sm">{position.pool}</p>
                                                 </div>
                                             )}
 
@@ -276,13 +328,13 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             {position.token0 && (
                                                 <div className="col-span-2">
                                                     <p className="text-xs text-default/50">{position.token0Symbol} Address</p>
-                                                    <p className="break-all font-mono text-xs">{position.token0}</p>
+                                                    <p className="break-all text-sm">{position.token0}</p>
                                                 </div>
                                             )}
                                             {position.token1 && (
                                                 <div className="col-span-2">
                                                     <p className="text-xs text-default/50">{position.token1Symbol} Address</p>
-                                                    <p className="break-all font-mono text-xs">{position.token1}</p>
+                                                    <p className="break-all text-sm">{position.token1}</p>
                                                 </div>
                                             )}
 
@@ -316,19 +368,19 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             {position.tickLower !== undefined && (
                                                 <div>
                                                     <p className="text-xs text-default/50">Tick Lower</p>
-                                                    <p className="font-mono text-sm">{position.tickLower}</p>
+                                                    <p className="text-sm">{position.tickLower}</p>
                                                 </div>
                                             )}
                                             {position.tickUpper !== undefined && (
                                                 <div>
                                                     <p className="text-xs text-default/50">Tick Upper</p>
-                                                    <p className="font-mono text-sm">{position.tickUpper}</p>
+                                                    <p className="text-sm">{position.tickUpper}</p>
                                                 </div>
                                             )}
                                             {position.tickCurrent !== undefined && (
                                                 <div>
                                                     <p className="text-xs text-default/50">Current Tick</p>
-                                                    <p className={cn('font-mono text-sm', position.inRange ? 'text-green-500' : 'text-orange-500')}>
+                                                    <p className={cn('text-sm', position.inRange ? 'text-green-500' : 'text-orange-500')}>
                                                         {position.tickCurrent}
                                                     </p>
                                                 </div>
@@ -349,7 +401,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             {position.liquidity && (
                                                 <div>
                                                     <p className="text-xs text-default/50">Liquidity</p>
-                                                    <p className="font-mono text-xs">{position.liquidity.toString()}</p>
+                                                    <p className="text-sm">{position.liquidity.toString()}</p>
                                                 </div>
                                             )}
 
@@ -357,7 +409,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             {position.sqrtPriceX96 && (
                                                 <div>
                                                     <p className="text-xs text-default/50">Sqrt Price X96</p>
-                                                    <p className="font-mono text-xs">{position.sqrtPriceX96.toString()}</p>
+                                                    <p className="text-sm">{position.sqrtPriceX96.toString()}</p>
                                                 </div>
                                             )}
 

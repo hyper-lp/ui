@@ -252,6 +252,105 @@ class PoolAPRService {
             lastUpdated: Date.now(),
         }
     }
+
+    /**
+     * Fetch APR data only for specific pool addresses
+     * This is much more efficient than fetching all pools
+     */
+    async fetchPoolAPRByAddresses(poolAddresses: string[]): Promise<AggregatedPoolAPR> {
+        if (poolAddresses.length === 0) {
+            return {
+                pools: [],
+                averageAPR24h: 0,
+                totalTVL: 0,
+                totalVolume24h: 0,
+                totalFees24h: 0,
+                lastUpdated: Date.now(),
+            }
+        }
+
+        const allPools: PoolAPRData[] = []
+
+        // Format addresses for GraphQL query (lowercase and quoted)
+        const addressList = poolAddresses.map((addr) => `"${addr.toLowerCase()}"`).join(', ')
+
+        // Fetch from all V3 DEXs in parallel, filtering by pool addresses
+        const promises = this.V3_DEXS.map(async (dex) => {
+            const dexConfig = HYPEREVM_DEXS[dex]
+            if (!dexConfig?.subgraphUrl) return []
+
+            // Modified query to filter by pool addresses
+            const query = `
+                query {
+                    pools(
+                        where: { id_in: [${addressList}] }
+                    ) {
+                        id
+                        token0 { symbol decimals }
+                        token1 { symbol decimals }
+                        feeTier
+                        volumeUSD
+                        totalValueLockedUSD
+                        poolDayData(first: 7, orderBy: date, orderDirection: desc) {
+                            date
+                            volumeUSD
+                            feesUSD
+                            tvlUSD
+                        }
+                    }
+                }
+            `
+
+            const data = await this.fetchFromSubgraph<PoolsQueryResponse>(dexConfig.subgraphUrl, query)
+            if (!data?.pools) return []
+
+            // Calculate APR for each pool
+            return Promise.all(
+                data.pools.map(async (pool) => {
+                    const metrics = await this.calculatePoolMetrics(pool, dexConfig.subgraphUrl)
+                    return {
+                        dex,
+                        poolAddress: pool.id,
+                        feeTier: parseInt(pool.feeTier),
+                        token0Symbol: pool.token0.symbol,
+                        token1Symbol: pool.token1.symbol,
+                        tvlUSD: parseFloat(pool.totalValueLockedUSD),
+                        volume24h: parseFloat(pool.volumeUSD),
+                        fees24h: parseFloat(pool.feesUSD),
+                        ...metrics,
+                    }
+                }),
+            )
+        })
+
+        const results = await Promise.allSettled(promises)
+
+        for (const result of results) {
+            if (result.status === 'fulfilled' && result.value) {
+                allPools.push(...result.value)
+            }
+        }
+
+        // Sort by 24h APR descending
+        const sortedPools = allPools.sort((a, b) => b.apr24h - a.apr24h)
+
+        // Calculate aggregates
+        const poolsWithVolume = allPools.filter((p) => p.volume24h > 0)
+        const averageAPR24h = poolsWithVolume.length > 0 ? poolsWithVolume.reduce((sum, p) => sum + p.apr24h, 0) / poolsWithVolume.length : 0
+
+        const totalTVL = allPools.reduce((sum, p) => sum + p.tvlUSD, 0)
+        const totalVolume24h = allPools.reduce((sum, p) => sum + p.volume24h, 0)
+        const totalFees24h = allPools.reduce((sum, p) => sum + p.fees24h, 0)
+
+        return {
+            pools: sortedPools,
+            averageAPR24h,
+            totalTVL,
+            totalVolume24h,
+            totalFees24h,
+            lastUpdated: Date.now(),
+        }
+    }
 }
 
 export const poolAPRService = new PoolAPRService()

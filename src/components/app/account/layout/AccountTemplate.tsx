@@ -51,12 +51,12 @@ export default function AccountTemplate(props: {
             {props.header}
 
             {/* --------------- Content */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
                 {/* 1. historic of snapshots */}
                 <SectionCard className="h-[400px] w-full !p-1 md:!p-2">{props.charts}</SectionCard>
 
                 {/* 2. last snapshot */}
-                <div className="grid h-min grid-cols-1 gap-2">
+                <div className="grid h-min grid-cols-1 gap-4">
                     {/* Global summary section - only render if summary is provided */}
                     {props.summary && (
                         <SectionCard>
@@ -86,7 +86,7 @@ export default function AccountTemplate(props: {
                     )}
 
                     {/* HyperEvm */}
-                    <SectionCard className="!border-none !px-0">
+                    <div>
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_WHITE : FileIds.HYPER_EVM_DARK}
                             width={140}
@@ -102,10 +102,10 @@ export default function AccountTemplate(props: {
                                 {props.hyperEvm.balances}
                             </ErrorBoundary>
                         </div>
-                    </SectionCard>
+                    </div>
 
                     {/* HyperCore */}
-                    <SectionCard className="h-min !border-none !px-0">
+                    <div>
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_WHITE : FileIds.HYPER_CORE_DARK}
                             width={140}
@@ -123,7 +123,7 @@ export default function AccountTemplate(props: {
                                 {props.hyperCore.spot}
                             </ErrorBoundary>
                         </div>
-                    </SectionCard>
+                    </div>
                 </div>
             </div>
         </div>

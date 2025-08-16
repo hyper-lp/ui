@@ -316,8 +316,8 @@ export default function DeltaTrackingChart() {
                     },
                 },
                 itemSize: 12,
-                top: 10,
-                right: 10,
+                top: 15,
+                right: 5,
             },
             grid,
             xAxis: {

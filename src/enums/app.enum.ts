@@ -21,6 +21,7 @@ export enum AppUrls {
     PRIVY = 'https://www.privy.io/',
     DOCS = 'https://en.wikipedia.org/wiki/PnL_explained',
     CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
+    STATUS = 'https://merso.betteruptime.com/',
 
     // Authors
     MERSO_WEBSITE = 'https://merso.xyz',

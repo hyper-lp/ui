@@ -39,6 +39,9 @@ export default function Footer(props: { className?: string }) {
 
             {/* right */}
             <div className="flex flex-row gap-8">
+                <LinkWrapper href={AppUrls.STATUS} target="_blank">
+                    <p className="cursor-alias truncate hover:text-primary hover:underline">Status</p>
+                </LinkWrapper>
                 <LinkWrapper href={AppUrls.DOCS} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Docs</p>
                 </LinkWrapper>

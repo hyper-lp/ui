@@ -14,8 +14,8 @@ const grid = {
     top: 50,
     right: 100,
     bottom: 50,
-    // left: 45,
-    left: 15,
+    left: 45,
+    // left: 15,
     containLabel: true,
 }
 
@@ -46,18 +46,30 @@ export default function DeltaTrackingChart() {
     const colors = getThemeColors(resolvedTheme)
 
     // Store dataZoom range to persist between refreshes
-    const [, setZoomRange] = useState<{ start: number; end: number } | null>(null)
-    const zoomRangeRef = useRef<{ start: number; end: number } | null>(null)
+    const [, setZoomRange] = useState<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
+    const zoomRangeRef = useRef<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
 
     // Get historical snapshots from the app store
     const getSnapshots = useAppStore((state) => state.getSnapshots)
     const lastSnapshotAddedAt = useAppStore((state) => state.lastSnapshotAddedAt)
 
     // Handle dataZoom changes
-    const handleDataZoom = useCallback((start: number, end: number) => {
-        const newRange = { start, end }
+    const handleDataZoom = useCallback((start: number, end: number, axis: 'x' | 'y' = 'x') => {
+        const currentRange = zoomRangeRef.current || { x: { start: 0, end: 100 }, y: { start: 0, end: 100 } }
+        const newRange = {
+            ...currentRange,
+            [axis]: { start, end },
+        }
         setZoomRange(newRange)
         zoomRangeRef.current = newRange
+    }, [])
+
+    // Handle reset/restore from toolbox
+    const handleRestore = useCallback(() => {
+        // Clear the persisted zoom state
+        zoomRangeRef.current = null
+        setZoomRange(null)
+        // Force re-render with default zoom values
     }, [])
 
     useEffect(() => {
@@ -283,6 +295,30 @@ export default function DeltaTrackingChart() {
                 itemHeight: 8,
                 itemGap: 15,
             },
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 0,
+                        title: {
+                            zoom: 'Zoom',
+                            back: 'Reset',
+                        },
+                        iconStyle: {
+                            borderColor: colors.charts.text,
+                            opacity: 0.5,
+                        },
+                        emphasis: {
+                            iconStyle: {
+                                borderColor: colors.charts.text,
+                                opacity: 1,
+                            },
+                        },
+                    },
+                },
+                itemSize: 12,
+                top: 10,
+                right: 10,
+            },
             grid,
             xAxis: {
                 type: 'time',
@@ -412,7 +448,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
                             return `${ChartSeries.HyperEvmLps} ${formattedValue}`
                         },
                         color: colors.hyperEvmLp,
@@ -447,7 +483,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
                             return `${ChartSeries.HyperEvmBalances} ${formattedValue}`
                         },
                         color: colors.hyperEvmBalances,
@@ -482,7 +518,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
                             return `${ChartSeries.HyperCorePerps} ${formattedValue}`
                         },
                         color: colors.hyperCorePerp,
@@ -557,7 +593,7 @@ export default function DeltaTrackingChart() {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
                             // Hide label if value is very close to 0
                             if (Math.abs(value) < 1) return ''
-                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
                             return `${ChartSeries.NetDelta} ${formattedValue}`
                         },
                         color: netDeltaColor,
@@ -592,7 +628,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
                             return `${ChartSeries.HyperCoreSpots} ${formattedValue}`
                         },
                         color: colors.hyperCoreSpot,
@@ -605,45 +641,49 @@ export default function DeltaTrackingChart() {
                 },
             ],
             dataZoom: [
+                // X-axis inside zoom
                 {
                     type: 'inside',
-                    start: zoomRangeRef.current?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
-                    end: zoomRangeRef.current?.end ?? 100,
+                    xAxisIndex: 0,
+                    start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
+                    end: zoomRangeRef.current?.x?.end ?? 100,
                 },
+                // X-axis slider
                 {
                     type: 'slider',
-                    start: zoomRangeRef.current?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
-                    end: zoomRangeRef.current?.end ?? 100,
-                    height: 20,
-                    bottom: 10,
-                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
-                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                    xAxisIndex: 0,
+                    start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
+                    end: zoomRangeRef.current?.x?.end ?? 100,
+                    height: 12,
+                    bottom: 15,
+                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
+                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
                     selectedDataBackground: {
                         lineStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
                         },
                         areaStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
                         },
                     },
                     handleStyle: {
-                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
-                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
                         borderWidth: 1,
                     },
                     moveHandleStyle: {
-                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
                     },
                     emphasis: {
                         handleStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
                         },
                         moveHandleStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
-                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
                         },
                         handleLabel: {
                             show: false,
@@ -651,10 +691,70 @@ export default function DeltaTrackingChart() {
                     },
                     dataBackground: {
                         lineStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
                         },
                         areaStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                        },
+                    },
+                    textStyle: {
+                        color: colors.charts.text,
+                    },
+                },
+                // Y-axis inside zoom
+                {
+                    type: 'inside',
+                    yAxisIndex: 0,
+                    start: zoomRangeRef.current?.y?.start ?? 0,
+                    end: zoomRangeRef.current?.y?.end ?? 100,
+                },
+                // Y-axis slider
+                {
+                    type: 'slider',
+                    yAxisIndex: 0,
+                    start: zoomRangeRef.current?.y?.start ?? 0,
+                    end: zoomRangeRef.current?.y?.end ?? 100,
+                    width: 12,
+                    left: 10,
+                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
+                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                    selectedDataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                        },
+                    },
+                    handleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+                        borderWidth: 1,
+                    },
+                    moveHandleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                    },
+                    emphasis: {
+                        handleStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                        },
+                        moveHandleStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+                        },
+                        handleLabel: {
+                            show: false,
+                        },
+                    },
+                    dataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
                         },
                     },
                     textStyle: {
@@ -677,5 +777,5 @@ export default function DeltaTrackingChart() {
         )
     }
 
-    return <EchartWrapper options={options} className="size-full h-[500px]" onDataZoomChange={handleDataZoom} />
+    return <EchartWrapper options={options} className="size-full h-[500px]" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
 }

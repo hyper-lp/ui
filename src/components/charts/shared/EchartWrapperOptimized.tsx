@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import React, { useEffect, useRef, memo, useState } from 'react'
@@ -28,8 +29,9 @@ interface InterfaceEchartWrapperProps {
     options: echarts.EChartsOption
     id?: string
     onPointClick?: (params: unknown) => void
-    onDataZoomChange?: (start: number, end: number) => void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onDataZoomChange?: (start: number, end: number, axis?: 'x' | 'y') => void
+    onRestore?: () => void
+
     onMouseOver?: (params: any) => void
     onMouseOut?: () => void
     className?: string
@@ -72,12 +74,40 @@ function EchartWrapperOptimized(props: InterfaceEchartWrapperProps) {
             myChart.current.on('click', props.onPointClick)
         }
 
-        if (props.onDataZoomChange) {
+        if (props.onDataZoomChange || props.onRestore) {
             myChart.current.off('dataZoom')
             myChart.current.on('dataZoom', (params: unknown) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { start, end } = params as any
-                props.onDataZoomChange?.(start, end)
+                const p = params as any
+
+                // Check if this is a batch update (from toolbox reset)
+                if (p.batch) {
+                    // Check if all dataZooms are being reset to default
+                    const allReset = p.batch.every(
+                        (b: any) => (b.startValue === undefined && b.endValue === undefined) || (b.start === 0 && b.end === 100),
+                    )
+
+                    if (allReset && props.onRestore) {
+                        props.onRestore()
+                        // Still call the change handler to update to default values
+                        if (props.onDataZoomChange) {
+                            props.onDataZoomChange(0, 100, 'x')
+                            props.onDataZoomChange(0, 100, 'y')
+                        }
+                        return
+                    }
+
+                    // Process batch updates
+                    if (props.onDataZoomChange) {
+                        p.batch.forEach((b: any) => {
+                            const axis = b.dataZoomId?.includes('yAxis') ? 'y' : 'x'
+                            props.onDataZoomChange?.(b.start || 0, b.end || 100, axis)
+                        })
+                    }
+                } else if (props.onDataZoomChange) {
+                    // Single dataZoom update
+                    const axis = p.dataZoomId?.includes('yAxis') ? 'y' : 'x'
+                    props.onDataZoomChange(p.start, p.end, axis)
+                }
             })
         }
 
@@ -89,6 +119,15 @@ function EchartWrapperOptimized(props: InterfaceEchartWrapperProps) {
         if (props.onMouseOut) {
             myChart.current.off('mouseout')
             myChart.current.on('mouseout', props.onMouseOut)
+        }
+
+        if (props.onRestore) {
+            myChart.current.off('restore')
+            myChart.current.on('restore', props.onRestore)
+
+            // Also listen for dataZoomReset event from toolbox
+            myChart.current.off('dataZoomReset')
+            myChart.current.on('dataZoomReset', props.onRestore)
         }
 
         // Add both window resize and ResizeObserver for better responsiveness

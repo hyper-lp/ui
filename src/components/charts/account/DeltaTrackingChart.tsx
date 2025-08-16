@@ -777,5 +777,7 @@ export default function DeltaTrackingChart() {
         )
     }
 
-    return <EchartWrapper options={options} className="size-full h-[500px]" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
+    return (
+        <EchartWrapper options={options} className="size-full h-[400px] md:h-[500px]" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
+    )
 }

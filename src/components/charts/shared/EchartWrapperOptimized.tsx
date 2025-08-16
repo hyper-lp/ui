@@ -91,10 +91,21 @@ function EchartWrapperOptimized(props: InterfaceEchartWrapperProps) {
             myChart.current.on('mouseout', props.onMouseOut)
         }
 
+        // Add both window resize and ResizeObserver for better responsiveness
         window.addEventListener('resize', handleChartResize)
+
+        // Use ResizeObserver to detect parent container size changes
+        const resizeObserver = new ResizeObserver(() => {
+            handleChartResize()
+        })
+
+        if (chartRef.current) {
+            resizeObserver.observe(chartRef.current)
+        }
 
         return () => {
             window.removeEventListener('resize', handleChartResize)
+            resizeObserver.disconnect()
         }
     }, [echartsModule, props])
 

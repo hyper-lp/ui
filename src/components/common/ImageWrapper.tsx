@@ -28,6 +28,7 @@ export function ImageWrapper({
             width={width}
             height={height}
             className={cn('object-cover', className)}
+            style={{ width: 'auto', height: 'auto', maxWidth: width, maxHeight: height }}
             onError={() => setImgError(true)}
             priority={priority}
         />

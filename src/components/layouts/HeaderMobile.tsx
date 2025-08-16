@@ -5,7 +5,7 @@ import { useAppStore } from '@/stores/app.store'
 import { cn } from '@/utils'
 import { useRef, useEffect } from 'react'
 import { useKeyboardShortcut } from '@/hooks/helpers/useKeyboardShortcutArgs'
-import { AppUrls, IconIds, FileIds } from '@/enums'
+import { AppUrls, IconIds } from '@/enums'
 import IconWrapper from '../icons/IconWrapper'
 import LinkWrapper from '../common/LinkWrapper'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -13,7 +13,7 @@ import { WaitlistButton } from '../app/waitlist/WaitlistButton'
 import { WaitlistForm } from '../app/waitlist/WaitlistForm'
 import { usePrivy } from '@privy-io/react-auth'
 import ThemeSwitcher from '../common/ThemeSwitcher'
-import { ImageWrapper } from '../common/ImageWrapper'
+import HeaderLogo from './HeaderLogo'
 
 export default function HeaderMobile() {
     const { showMobileMenu, setShowMobileMenu } = useAppStore()
@@ -46,19 +46,7 @@ export default function HeaderMobile() {
                 {/* left */}
                 <div className="z-30 flex grow items-center gap-4">
                     {/* logo */}
-                    <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-2">
-                        <ImageWrapper src={FileIds.APP_LOGO} alt="Logo" width={70} height={70} />
-                        <div className="flex flex-col gap-1">
-                            <div className="flex items-baseline gap-2">
-                                <p className="text-3xl font-light">
-                                    Hyper
-                                    <span className="-ml-0.5 italic">LP</span>
-                                </p>
-                                <p className="text-xs text-default/40">Alpha</p>
-                            </div>
-                            <ImageWrapper src={FileIds.POWERED_BY_HYPERLIQUID_HL300} alt="Logo" width={140} height={16} className="rounded-none" />
-                        </div>
-                    </LinkWrapper>
+                    <HeaderLogo />
                 </div>
 
                 {/* right */}

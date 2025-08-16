@@ -15,16 +15,16 @@ async function fetchTransactions(account: string, limit: number): Promise<HyperC
         limit: limit.toString(),
     })
 
-    const response = await fetch(`/api/public/account/${account}/hypercore-transactions?${params}`)
+    const response = await fetch(`/api/account/${account}/trades?${params}`)
     if (!response.ok) {
-        throw new Error('Failed to fetch HyperCore transactions')
+        throw new Error('Failed to fetch HyperCore trades')
     }
     return response.json()
 }
 
 export function HyperCoreTransactionHistory({ account, limit = DEFAULT_TRANSACTION_LIMIT }: HyperCoreTransactionHistoryProps) {
     const { data, isLoading, error } = useQuery({
-        queryKey: ['hypercore-transactions', account, limit],
+        queryKey: ['hypercore-trades', account, limit],
         queryFn: () => fetchTransactions(account, limit),
         enabled: !!account,
         staleTime: 60000, // 1 minute

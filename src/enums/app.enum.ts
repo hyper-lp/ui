@@ -2,15 +2,23 @@ export enum AppUrls {
     // App pages
     HOME = '/',
 
-    // API routes
-    API_USERS = '/api/waitlist/users',
+    // API routes - Account
+    API_ACCOUNT_SNAPSHOT = '/api/account/:account/snapshot',
+    API_ACCOUNT_TRANSACTIONS = '/api/account/:account/transactions',
+    API_ACCOUNT_TRADES = '/api/account/:account/trades',
+
+    // API routes - Pools
+    API_POOLS_TVL = '/api/pools/tvl',
+
+    // API routes - Waitlist
+    API_WAITLIST_JOIN = '/api/waitlist/join',
+    API_WAITLIST_STATUS = '/api/waitlist/status',
+    API_WAITLIST_USERS = '/api/waitlist/users',
 
     // External links
     TAIKAI = 'https://taikai.network/hl-hackathon-organizers/hackathons/hl-hackathon/projects/cmdnbxv990721dcc359icaqvr/idea',
     GITHUB = 'https://github.com/hyperlp',
     PRIVY = 'https://www.privy.io/',
-    // DOCS = 'https://arxiv.org/pdf/2407.05146',
-    // DOCS = 'https://hyperliquid.gitbook.io/hyperliquid-docs',
     DOCS = 'https://en.wikipedia.org/wiki/PnL_explained',
     CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
 
@@ -18,6 +26,7 @@ export enum AppUrls {
     MERSO_WEBSITE = 'https://merso.xyz',
     FBERGER_WEBSITE = 'https://fberger.xyz',
     KATALYSTER_TWITTER = 'https://x.com/Katalyster',
+    ZARBOQ_TWITTER = 'https://x.com/zarboq',
 }
 
 export enum AppThemes {

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { IconIds } from '@/enums'
 import IconWrapper from '@/components/icons/IconWrapper'
-import { AccountCard } from './layout/AccountCard'
+import { ThemeCard } from './layout/Cards'
 import { ReactNode } from 'react'
 
 interface CollapsibleSectionProps {
@@ -18,7 +18,7 @@ export function CollapsibleSection({ title, children, defaultExpanded = false, h
     const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
     return (
-        <AccountCard padding="p-0">
+        <ThemeCard padding="p-0">
             {/* header */}
             <div className="flex items-center justify-between p-2">
                 <button onClick={() => setIsExpanded(!isExpanded)} className="flex flex-1 items-center gap-2 text-left">
@@ -39,6 +39,6 @@ export function CollapsibleSection({ title, children, defaultExpanded = false, h
                 ) : (
                     children
                 ))}
-        </AccountCard>
+        </ThemeCard>
     )
 }

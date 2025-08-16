@@ -36,7 +36,7 @@ interface TVLData {
 }
 
 async function fetchPoolTVL(): Promise<TVLData> {
-    const response = await fetch('/api/public/pools/tvl')
+    const response = await fetch('/api/pools/tvl')
     if (!response.ok) {
         throw new Error('Failed to fetch TVL data')
     }
@@ -71,7 +71,7 @@ function PoolTVLTable({ className }: { className?: string }) {
         return (
             <div className={cn('rounded-lg border p-4', className)}>
                 <h3 className="mb-3 text-sm font-semibold">HYPE/USDT0 Pool Liquidity</h3>
-                <div className="text-muted text-sm">Loading TVL data...</div>
+                <div className="text-sm text-default/50">Loading TVL data...</div>
             </div>
         )
     }
@@ -89,7 +89,7 @@ function PoolTVLTable({ className }: { className?: string }) {
         <div className={cn('rounded-lg border p-4', className)}>
             <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold">HYPE/USDT0 Pool Liquidity</h3>
-                <div className="text-muted text-xs">
+                <div className="text-def text-xs">
                     Total: <span className="text-foreground font-bold">{formatUSD(data.grandTotalTVL)}</span>
                 </div>
             </div>
@@ -103,7 +103,7 @@ function PoolTVLTable({ className }: { className?: string }) {
                         </div>
                         <div className="space-y-0.5">
                             {dex.pools.map((pool) => (
-                                <div key={pool.poolAddress} className="text-muted flex items-center justify-between pl-4 text-xs">
+                                <div key={pool.poolAddress} className="text-def flex items-center justify-between pl-4 text-xs">
                                     <span>
                                         {pool.feeLabel} tier
                                         {pool.isActive && <span className="ml-1 text-green-600">●</span>}
@@ -119,10 +119,10 @@ function PoolTVLTable({ className }: { className?: string }) {
                     </div>
                 ))}
 
-                {data.dexes.length === 0 && <div className="text-muted py-2 text-center text-sm">No pools found</div>}
+                {data.dexes.length === 0 && <div className="text-def py-2 text-center text-sm">No pools found</div>}
             </div>
 
-            <div className="text-muted mt-3 border-t pt-3 text-xs">
+            <div className="text-def mt-3 border-t pt-3 text-xs">
                 <div className="flex justify-between">
                     <span>HYPE Price: ${formatNumber(data.prices.HYPE, 2)}</span>
                     <span>Last updated: {new Date(data.timestamp).toLocaleTimeString()}</span>

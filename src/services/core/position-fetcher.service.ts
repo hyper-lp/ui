@@ -699,7 +699,7 @@ export class PositionFetcher {
     /**
      * Get token price in USD
      */
-    private getTokenPrice(symbol: string): number {
+    public getTokenPrice(symbol: string): number {
         // Use cached prices if available
         const cached = this.tokenPriceCache.get(symbol)
         if (cached !== undefined) return cached

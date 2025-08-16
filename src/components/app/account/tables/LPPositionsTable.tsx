@@ -4,14 +4,14 @@ import { useState } from 'react'
 import { FileIds, IconIds } from '@/enums'
 import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
-import type { LPPosition } from '@/interfaces'
+// import type { LPPosition } from '@/interfaces'
 import { LPRowTemplate } from './TableTemplates'
 import { formatUSD, formatNumber, shortenValue } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
+import { useAppStore } from '@/stores/app.store'
 
 interface LPPositionsTableProps {
-    positions: LPPosition[]
     className?: string
 }
 
@@ -40,8 +40,12 @@ export function LPPositionsTableHeader() {
     )
 }
 
-export function LPPositionsTable({ positions, className }: LPPositionsTableProps) {
+export function LPPositionsTable({ className }: LPPositionsTableProps) {
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+
+    // Get positions directly from the store
+    const snapshot = useAppStore((state) => state.getLatestSnapshot())
+    const positions = snapshot?.positions?.hyperEvm?.lps || []
 
     if (!positions || positions.length === 0) {
         return <div className={cn('py-8 text-center text-default/50', className)}>No liquidity positions</div>

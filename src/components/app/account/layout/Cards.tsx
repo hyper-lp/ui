@@ -2,7 +2,33 @@
 
 import { cn } from '@/utils'
 
-export function AccountCard({
+export function SectionCard({
+    children,
+    className,
+    hoverable = false,
+    padding = 'p-2',
+}: {
+    children?: React.ReactNode
+    className?: string
+    hoverable?: boolean
+    padding?: string
+    isLoading?: boolean
+}) {
+    return (
+        <div
+            className={cn(
+                'flex flex-col rounded-xl border border-dashed border-default/10 bg-transparent p-3 transition-all duration-300 ease-in-out hover:border-default/50 dark:border-default/50',
+                hoverable && 'hover:bg-default/50',
+                className,
+                padding,
+            )}
+        >
+            {children}
+        </div>
+    )
+}
+
+export function ThemeCard({
     children,
     className,
     hoverable = false,
@@ -18,7 +44,7 @@ export function AccountCard({
     return (
         <div
             className={cn(
-                'flex flex-col gap-1 rounded-lg border border-hl-light/40 bg-hl-light/5 transition-colors duration-300 ease-in-out hover:border-hl-light hover:bg-hl-light/10',
+                'flex flex-col gap-1 rounded-lg border border-hl-light-green/40 bg-hl-light-green/5 transition-colors duration-300 ease-in-out hover:border-hl-light-green hover:bg-hl-light-green/10',
                 hoverable && 'hover:bg-default/50',
                 className,
                 padding,

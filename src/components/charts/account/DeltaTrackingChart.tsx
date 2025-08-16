@@ -1,234 +1,254 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import type { EChartsOption } from 'echarts'
 import { useTheme } from 'next-themes'
 import EchartWrapper from '../shared/EchartWrapperOptimized'
 import { getThemeColors } from '@/config'
-import { cn } from '@/utils'
-import type { DeltaHistory } from '@/stores/delta-history.store'
+import { STATUS_COLORS } from '@/config'
+import { DAYJS_FORMATS, formatUSD } from '@/utils'
+import { useAppStore } from '@/stores/app.store'
+import numeral from 'numeral'
 
-interface DeltaTrackingChartProps {
-    className?: string
-    history: DeltaHistory
-    showSpotDelta?: boolean
-    showHyperEvmDelta?: boolean
-    totalCapital?: number
-    hypePrice?: number
+const grid = {
+    top: 50,
+    right: 100,
+    bottom: 50,
+    // left: 45,
+    left: 15,
+    containLabel: true,
 }
 
-export default function DeltaTrackingChart({
-    className,
-    history,
-    showSpotDelta = false,
-    showHyperEvmDelta = false,
-    totalCapital,
-    hypePrice = 30,
-}: DeltaTrackingChartProps) {
+const emptyOptions: EChartsOption = {
+    title: {
+        text: 'Waiting for data...',
+        left: 'center',
+        top: 'center',
+        textStyle: {
+            fontSize: 14,
+        },
+    },
+    grid,
+}
+
+export enum ChartSeries {
+    TotalCapital = 'AUM',
+    HyperEvmLps = 'LPs Δ',
+    HyperEvmBalances = 'Balances Δ',
+    HyperCorePerps = 'Perps Δ',
+    NetDelta = 'Net Δ',
+    HyperCoreSpots = 'Spots Δ',
+}
+
+export default function DeltaTrackingChart() {
     const [options, setOptions] = useState<EChartsOption | null>(null)
     const { resolvedTheme } = useTheme()
-    const isDarkMode = resolvedTheme === 'dark'
-    const colors = useMemo(() => getThemeColors(isDarkMode), [isDarkMode])
+    const colors = getThemeColors(resolvedTheme)
+
+    // Store dataZoom range to persist between refreshes
+    const [, setZoomRange] = useState<{ start: number; end: number } | null>(null)
+    const zoomRangeRef = useRef<{ start: number; end: number } | null>(null)
+
+    // Get historical snapshots from the app store
+    const getSnapshots = useAppStore((state) => state.getSnapshots)
+    const lastSnapshotAddedAt = useAppStore((state) => state.lastSnapshotAddedAt)
+
+    // Handle dataZoom changes
+    const handleDataZoom = useCallback((start: number, end: number) => {
+        const newRange = { start, end }
+        setZoomRange(newRange)
+        zoomRangeRef.current = newRange
+    }, [])
 
     useEffect(() => {
-        if (!history || history.timestamps.length === 0) {
-            // Show empty state
-            const emptyOptions: EChartsOption = {
-                title: {
-                    text: 'Waiting for data...',
-                    left: 'center',
-                    top: 'center',
-                    textStyle: {
-                        color: colors.muted,
-                        fontSize: 14,
-                    },
-                },
-                grid: {
-                    top: 60,
-                    right: 80,
-                    bottom: 60,
-                    left: 80,
-                },
-            }
+        // 1. get stored snapshots
+        let storedSnapshots = getSnapshots()
+
+        // Show empty state if no data
+        if (storedSnapshots.length === 0) {
             setOptions(emptyOptions)
             return
         }
 
-        // Determine if we should show dual axes
-        const showDualAxes = totalCapital && totalCapital > 0
-
-        const allDeltas = [
-            ...history.lpDeltas,
-            ...history.perpDeltas,
-            ...history.netDeltas,
-            ...(showSpotDelta ? history.spotDeltas : []),
-            ...(showHyperEvmDelta ? history.hyperEvmDeltas : []),
-        ]
-
-        // For left axis (USD): range from -capital to +capital
-        // For right axis (Delta ratio): range from -1 to +1
-        let usdAxisMax: number
-
-        if (showDualAxes) {
-            // Use total capital for USD axis
-            usdAxisMax = totalCapital
-        } else {
-            // Fallback when no capital info: use actual delta values converted to USD
-            const maxAbsDelta = Math.max(...allDeltas.map((d) => Math.abs(d * hypePrice)), 100)
-            usdAxisMax = maxAbsDelta * 1.1 // Add 10% padding
+        // If only 1 data point, duplicate it with a 1 second offset to show lines
+        if (storedSnapshots.length === 1) {
+            const singleSnapshot = storedSnapshots[0]
+            const duplicateSnapshot = {
+                ...singleSnapshot,
+                timestamp: singleSnapshot.timestamp - 1000, // Subtract 1 second
+            }
+            storedSnapshots = [duplicateSnapshot, singleSnapshot]
         }
 
-        // Format timestamps for display
-        const formattedTimestamps = history.timestamps.map((ts) => {
-            const date = new Date(ts)
-            return date.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-            })
+        // 2. extract deltas from AccountSnapshot array
+        const lpDeltasUSD: Array<[number, number]> = []
+        const perpDeltasUSD: Array<[number, number]> = []
+        const netDeltasUSD: Array<[number, number]> = []
+        const spotDeltasUSD: Array<[number, number]> = []
+        const balancesDeltasUSD: Array<[number, number]> = []
+        const totalCapitalUSD: Array<[number, number]> = []
+
+        storedSnapshots.forEach((snapshot) => {
+            const timestamp = snapshot.timestamp
+
+            // Use the price from the snapshot if available, otherwise use fallback
+            const hypePrice = snapshot.prices.HYPE
+
+            // Convert HYPE deltas to USD using the snapshot's price
+            const lpUSD = snapshot.metrics.hyperEvm.deltas.lpsHYPE * hypePrice
+            const perpUSD = snapshot.metrics.hyperCore.deltas.perpsHYPE * hypePrice
+            const spotUSD = snapshot.metrics.hyperCore.deltas.spotHYPE * hypePrice
+            const balancesUSD = snapshot.metrics.hyperEvm.deltas.balancesHYPE * hypePrice
+            const netUSD = snapshot.metrics.portfolio.netDeltaHYPE * hypePrice
+            const totalUSD = snapshot.metrics.portfolio.totalUSD
+
+            // For time axis, data must be [timestamp, value] pairs
+            lpDeltasUSD.push([timestamp, lpUSD])
+            perpDeltasUSD.push([timestamp, perpUSD])
+            spotDeltasUSD.push([timestamp, spotUSD])
+            balancesDeltasUSD.push([timestamp, balancesUSD])
+            netDeltasUSD.push([timestamp, netUSD])
+            totalCapitalUSD.push([timestamp, totalUSD])
         })
 
-        // Prepare series data - convert HYPE deltas to USD
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const series: any[] = [
-            {
-                name: 'LP Delta',
-                type: 'line',
-                data: history.lpDeltas.map((d) => d * hypePrice),
-                smooth: true,
-                symbol: 'none',
-                lineStyle: {
-                    color: colors.aquamarine, // Use theme green for positive
-                    width: 2,
-                },
-                emphasis: {
-                    focus: 'series',
-                },
-            },
-            {
-                name: 'Perp Delta',
-                type: 'line',
-                data: history.perpDeltas.map((d) => d * hypePrice),
-                smooth: true,
-                symbol: 'none',
-                lineStyle: {
-                    color: colors.folly, // Use theme red for negative
-                    width: 2,
-                },
-                emphasis: {
-                    focus: 'series',
-                },
-            },
-            {
-                name: 'Net Delta',
-                type: 'line',
-                data: history.netDeltas.map((d) => d * hypePrice),
-                smooth: true,
-                symbol: 'none',
-                lineStyle: {
-                    color: colors.primary, // Use primary theme color for net
-                    width: 3,
-                    type: 'solid',
-                },
-                emphasis: {
-                    focus: 'series',
-                },
-                z: 10, // Bring to front
-            },
-        ]
+        // Use a consistent color for Net Delta line
+        const netDeltaColor = colors.charts.text || '#ffffff'
 
-        // Add optional series
-        if (showSpotDelta && history.spotDeltas.length > 0) {
-            series.push({
-                name: 'Spot Delta',
-                type: 'line',
-                data: history.spotDeltas.map((d) => d * hypePrice),
-                smooth: true,
-                symbol: 'none',
-                lineStyle: {
-                    color: colors.secondary, // Use secondary theme color
-                    width: 2,
-                    type: 'dashed',
-                },
-                emphasis: {
-                    focus: 'series',
-                },
-            })
-        }
-
-        if (showHyperEvmDelta && history.hyperEvmDeltas.length > 0) {
-            series.push({
-                name: 'HyperEVM Delta',
-                type: 'line',
-                data: history.hyperEvmDeltas.map((d) => d * hypePrice),
-                smooth: true,
-                symbol: 'none',
-                lineStyle: {
-                    color: colors.muted, // Use muted color for secondary data
-                    width: 2,
-                    type: 'dashed',
-                },
-                emphasis: {
-                    focus: 'series',
-                },
-            })
-        }
-
-        // Add rebalance event markers
-        const markLine =
-            history.rebalanceEvents.length > 0
-                ? {
-                      data: history.rebalanceEvents.map((event) => ({
-                          xAxis: history.timestamps.findIndex((ts) => ts >= event.timestamp),
-                          label: {
-                              formatter: `${event.method} rebalance`,
-                              position: 'end',
-                              fontSize: 10,
-                          },
-                          lineStyle: {
-                              color: colors.secondary, // Use secondary for events
-                              type: 'dashed',
-                              width: 1,
-                              opacity: 0.5,
-                          },
-                      })),
-                  }
-                : undefined
-
-        const chartOptions: EChartsOption = {
+        // 4. prepare series data
+        const echartsOptions: EChartsOption = {
             animation: true,
             animationDuration: 300,
             animationEasing: 'cubicInOut',
+            appendToBody: true,
             tooltip: {
                 trigger: 'axis',
-                backgroundColor: colors.tooltipBackground,
-                borderColor: colors.primary,
+                triggerOn: 'mousemove',
+                backgroundColor: resolvedTheme === 'dark' ? 'rgba(17, 17, 17, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                 borderWidth: 1,
-                borderRadius: 8,
+                borderRadius: 12,
+                padding: [8, 12],
+                extraCssText: `backdrop-filter: blur(12px) saturate(120%); -webkit-backdrop-filter: blur(12px) saturate(120%); box-shadow: 0 8px 32px rgba(0, 0, 0, ${resolvedTheme === 'dark' ? '0.2' : '0.1'});`,
+                appendToBody: true,
+                hideDelay: 0,
+                transitionDuration: 0,
+                enterable: false,
+                confine: true,
                 textStyle: {
-                    color: colors.foreground,
+                    color: resolvedTheme === 'dark' ? '#ffffff' : '#000000',
+                    fontSize: 11,
                 },
-                formatter: function (params) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter: function (params: any) {
                     if (!Array.isArray(params) || params.length === 0) return ''
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const firstParam = params[0] as any
-                    const timestamp = firstParam.axisValue || ''
-                    let html = `<div style="padding: 4px;"><strong>${timestamp}</strong><br/>`
+                    // Remove duplicates by series name
+                    const uniqueParams = params.filter(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (param: any, index: number, self: any[]) => index === self.findIndex((p: any) => p.seriesName === param.seriesName),
+                    )
+
+                    const firstParam = uniqueParams[0]
+                    const timestamp = DAYJS_FORMATS.custom(firstParam.value[0], 'ddd. MMM. D ∙ hh:mm:ss A')
+
+                    // Get snapshot for total capital context
+                    const snapshot = storedSnapshots.find((s) => s.timestamp === firstParam.value[0])
+                    const totalCapital = snapshot?.metrics.portfolio.totalUSD || 0
+                    const hypePrice = snapshot?.prices.HYPE || 0
+
+                    const isDark = resolvedTheme === 'dark'
+                    const textColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)'
+                    const dividerColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
+
+                    // <div style="display: flex; align-items: center; gap: 6px;">
+                    //     <span style="color: ${textColor}; font-size: 11px;">AUM:</span>
+                    //     <span style="font-size: 12px; font-weight: 500;">${formatUSD(totalCapital)}</span>
+                    // </div >
+
+                    let html = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 2px;">
+                        <div style="margin-bottom: 10px;">
+                            <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">${timestamp}</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <img src="/tokens/HYPE.jpg" style="width: 12px; height: 12px; border-radius: 50%;" />
+                                    <span style="font-size: 12px; font-weight: 500;">$${numeral(hypePrice).format('0,0.[0000]')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="height: 1px; background: ${dividerColor}; margin: 8px -6px;"></div>`
 
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    params.forEach((param: any) => {
-                        const value = typeof param.value === 'number' ? param.value.toFixed(2) : '0'
-                        const hypeAmount = typeof param.value === 'number' ? (param.value / hypePrice).toFixed(2) : '0'
-                        const deltaRatio = showDualAxes && totalCapital > 0 ? (param.value / totalCapital).toFixed(3) : ''
+                    uniqueParams.forEach((param: any) => {
+                        // Skip formatting for Total Capital series
+                        if (param.seriesName === ChartSeries.TotalCapital) {
+                            const value = Array.isArray(param.value) ? param.value[1] : 0
+                            html += `
+                                <div style="margin: 8px 0;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="display: inline-block; width: 8px; height: 8px; background: ${param.color || '#666'}; border-radius: 50%;"></span>
+                                        <span style="font-size: 12px; font-weight: 500;">${param.seriesName}</span>
+                                        <span style="font-size: 11px; font-weight: 500; margin-left: auto;">${formatUSD(value)}</span>
+                                    </div>
+                                </div>
+                            `
+                            return
+                        }
+
+                        // With time axis, value is [timestamp, value]
+                        const value = Array.isArray(param.value) ? param.value[1] : 0
+                        const hypeAmount = hypePrice > 0 ? value / hypePrice : 0
+                        const deltaPercent = totalCapital > 0 ? Math.abs(value / totalCapital) * 100 : 0
+
+                        // Determine status and color for all series based on risk
                         const color = param.color || '#666'
+                        let riskLabel = ''
+                        let riskBadgeColor = ''
+
+                        if (param.seriesName === ChartSeries.NetDelta) {
+                            if (deltaPercent < 10) {
+                                riskBadgeColor = STATUS_COLORS.success
+                                riskLabel = 'HEDGED'
+                            } else if (deltaPercent < 20) {
+                                riskBadgeColor = STATUS_COLORS.warning
+                                riskLabel = 'DRIFT'
+                            } else {
+                                riskBadgeColor = STATUS_COLORS.error
+                                riskLabel = 'REBALANCE'
+                            }
+                        }
+
+                        // <img src="/tokens/HYPE.jpg" style="width: 14px; height: 14px; border-radius: 50%;" />
+
                         html += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin: 2px 0;">
-                                <span style="display: flex; align-items: center;">
-                                    <span style="display: inline-block; width: 10px; height: 10px; background: ${color}; border-radius: 50%; margin-right: 6px;"></span>
-                                    ${param.seriesName}
-                                </span>
-                                <strong style="margin-left: 20px;">$${value} (${hypeAmount} HYPE${deltaRatio ? `, ${deltaRatio}` : ''})</strong>
+                            <div style="margin: 8px 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="display: inline-block; width: 8px; height: 8px; background: ${color}; border-radius: 50%;"></span>
+                                        <span style="font-size: 12px; font-weight: 500;">${param.seriesName}</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span style="font-size: 11px; font-weight: 500;">${hypeAmount >= 0 ? '+' : ''}${hypeAmount.toFixed(2)} (${value >= 0 ? '+' : ''}${numeral(value).format('0,0a')}$)</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-left: 16px;">
+                                    <span style="color: ${textColor}; font-size: 11px;">${deltaPercent.toFixed(0)}% of AUM</span>
+                                    ${
+                                        riskLabel
+                                            ? `
+                                        <span style="
+                                            font-size: 9px; 
+                                            padding: 2px 6px; 
+                                            background: ${riskBadgeColor}20; 
+                                            color: ${riskBadgeColor}; 
+                                            border-radius: 4px; 
+                                            font-weight: 600;
+                                            letter-spacing: 0.5px;
+                                        ">${riskLabel}</span>
+                                    `
+                                            : ''
+                                    }
+                                </div>
                             </div>
                         `
                     })
@@ -238,159 +258,424 @@ export default function DeltaTrackingChart({
                 },
             },
             legend: {
-                data: ['LP Delta', 'Perp Delta', 'Net Delta', 'Spot Delta', 'HyperEVM Delta'].filter((name) => {
-                    if (name === 'Spot Delta' && !showSpotDelta) return false
-                    if (name === 'HyperEVM Delta' && !showHyperEvmDelta) return false
-                    return true
-                }),
+                data: [
+                    ChartSeries.TotalCapital,
+                    ChartSeries.HyperEvmLps,
+                    ChartSeries.HyperEvmBalances,
+                    ChartSeries.HyperCorePerps,
+                    ChartSeries.HyperCoreSpots,
+                    ChartSeries.NetDelta,
+                ],
                 top: 10,
                 textStyle: {
-                    color: colors.foreground,
+                    color: colors.charts.text,
                 },
-                // By default, only show Net Delta - users can click to toggle others
                 selected: {
-                    'LP Delta': false,
-                    'Perp Delta': false,
-                    'Net Delta': true,
-                    'Spot Delta': false,
-                    'HyperEVM Delta': false,
+                    [ChartSeries.TotalCapital]: true,
+                    [ChartSeries.HyperEvmLps]: true,
+                    [ChartSeries.HyperEvmBalances]: false,
+                    [ChartSeries.HyperCorePerps]: true,
+                    [ChartSeries.HyperCoreSpots]: false,
+                    [ChartSeries.NetDelta]: true,
                 },
+                icon: 'roundRect',
+                itemWidth: 14,
+                itemHeight: 8,
+                itemGap: 15,
             },
-            grid: {
-                top: 50,
-                right: showDualAxes ? 60 : 20,
-                bottom: 60,
-                left: 60,
-                containLabel: true,
-            },
+            grid,
             xAxis: {
-                type: 'category',
-                data: formattedTimestamps,
-                boundaryGap: false,
-                axisLine: {
+                type: 'time',
+                axisLabel: {
+                    showMinLabel: false,
+                    fontSize: 10,
+                    opacity: 0.5,
+                    interval: 'auto',
+                    hideOverlap: true,
+                    show: true,
+                    color: colors.charts.text,
+                    formatter: (value: number) => DAYJS_FORMATS.dateTimeChart(value),
+                },
+                splitLine: {
+                    show: true,
                     lineStyle: {
-                        color: colors.border,
+                        color: colors.charts.line,
+                        opacity: 0.5,
+                        type: 'dashed',
                     },
                 },
-                axisLabel: {
-                    color: colors.muted,
-                    rotate: 45,
-                    interval: Math.floor(formattedTimestamps.length / 8), // Show ~8 labels
+                axisLine: {
+                    show: false,
+                },
+                axisTick: {
+                    show: false,
                 },
             },
-            yAxis: showDualAxes
-                ? [
-                      {
-                          type: 'value',
-                          name: 'USD Value',
-                          nameLocation: 'middle',
-                          nameGap: 60,
-                          position: 'left',
-                          min: -usdAxisMax,
-                          max: usdAxisMax,
-                          axisLine: {
-                              lineStyle: {
-                                  color: colors.border,
-                              },
-                          },
-                          axisLabel: {
-                              color: colors.muted,
-                              formatter: '${value}',
-                          },
-                          splitLine: {
-                              lineStyle: {
-                                  color: colors.border,
-                                  type: 'dashed',
-                              },
-                          },
-                      },
-                      {
-                          type: 'value',
-                          name: 'Delta Ratio',
-                          nameLocation: 'middle',
-                          nameGap: 50,
-                          position: 'right',
-                          min: -1,
-                          max: 1,
-                          axisLine: {
-                              lineStyle: {
-                                  color: colors.border,
-                              },
-                          },
-                          axisLabel: {
-                              color: colors.muted,
-                              formatter: function (value: number) {
-                                  if (Math.abs(value) < 0.01) return '0'
-                                  const sign = value > 0 ? '+' : ''
-                                  return `${sign}${value.toFixed(2)}`
-                              },
-                          },
-                          splitLine: {
-                              show: false,
-                          },
-                      },
-                  ]
-                : {
-                      type: 'value',
-                      name: 'USD Value',
-                      nameLocation: 'middle',
-                      nameGap: 60,
-                      min: -usdAxisMax,
-                      max: usdAxisMax,
-                      axisLine: {
-                          lineStyle: {
-                              color: colors.border,
-                          },
-                      },
-                      axisLabel: {
-                          color: colors.muted,
-                          formatter: '${value}',
-                      },
-                      splitLine: {
-                          lineStyle: {
-                              color: colors.border,
-                              type: 'dashed',
-                          },
-                      },
-                  },
-            series: series.map((s) => ({
-                ...s,
-                yAxisIndex: 0, // All series use the USD axis (left)
-                markLine: s.name === 'Net Delta' ? markLine : undefined,
-            })),
+            yAxis: [
+                {
+                    type: 'value',
+                    // name: 'USD exposure to HYPE {img|}',
+                    // nameLocation: 'middle',
+                    // nameGap: 55,
+                    // nameTextStyle: {
+                    //     color: colors.charts.text,
+                    //     fontSize: 14,
+                    //     fontWeight: 500,
+                    //     rich: {
+                    //         img: {
+                    //             backgroundColor: {
+                    //                 image: '/tokens/HYPE.svg',
+                    //             },
+                    //             width: 20,
+                    //             height: 20,
+                    //             borderRadius: 9999,
+                    //         },
+                    //     },
+                    // },
+                    position: 'left',
+                    axisLine: {
+                        show: false,
+                    },
+                    axisLabel: {
+                        opacity: 0.5,
+                        color: colors.charts.text,
+                        formatter: (value: number) => formatUSD(value),
+                        showMinLabel: false,
+                        showMaxLabel: true,
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: colors.charts.line,
+                            opacity: 0.5,
+                            type: 'dashed',
+                        },
+                    },
+                },
+            ],
+            series: [
+                {
+                    name: ChartSeries.TotalCapital,
+                    type: 'line',
+                    data: totalCapitalUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    yAxisIndex: 0,
+                    lineStyle: {
+                        color: STATUS_COLORS.info,
+                        width: 2,
+                        type: 'solid',
+                    },
+                    itemStyle: {
+                        color: STATUS_COLORS.info,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            return `${ChartSeries.TotalCapital} ${formatUSD(value)}`
+                        },
+                        color: STATUS_COLORS.info,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: STATUS_COLORS.info + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
+                    name: ChartSeries.HyperEvmLps,
+                    type: 'line',
+                    data: lpDeltasUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    lineStyle: {
+                        color: colors.hyperEvmLp,
+                        width: 2,
+                        type: 'dashed',
+                    },
+                    itemStyle: {
+                        color: colors.hyperEvmLp,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            return `${ChartSeries.HyperEvmLps} ${formattedValue}`
+                        },
+                        color: colors.hyperEvmLp,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperEvmLp + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
+                    name: ChartSeries.HyperEvmBalances,
+                    type: 'line',
+                    data: balancesDeltasUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    lineStyle: {
+                        color: colors.hyperEvmBalances,
+                        width: 2,
+                        type: 'dashed',
+                    },
+                    itemStyle: {
+                        color: colors.hyperEvmBalances,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            return `${ChartSeries.HyperEvmBalances} ${formattedValue}`
+                        },
+                        color: colors.hyperEvmBalances,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperEvmBalances + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
+                    name: ChartSeries.HyperCorePerps,
+                    type: 'line',
+                    data: perpDeltasUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    lineStyle: {
+                        color: colors.hyperCorePerp,
+                        width: 2,
+                        type: 'dashed',
+                    },
+                    itemStyle: {
+                        color: colors.hyperCorePerp,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            return `${ChartSeries.HyperCorePerps} ${formattedValue}`
+                        },
+                        color: colors.hyperCorePerp,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperCorePerp + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
+                    name: ChartSeries.NetDelta,
+                    type: 'line',
+                    data: netDeltasUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    lineStyle: {
+                        color: netDeltaColor,
+                        width: 2,
+                        type: 'solid',
+                    },
+                    itemStyle: {
+                        color: netDeltaColor,
+                    },
+                    areaStyle: {
+                        opacity: 0.2,
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [
+                                {
+                                    offset: 0,
+                                    color: netDeltaColor + '40', // 25% opacity
+                                },
+                                {
+                                    offset: 1,
+                                    color: netDeltaColor + '00', // 0% opacity
+                                },
+                            ],
+                        },
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    z: 10,
+                    markLine: {
+                        silent: true,
+                        symbol: 'none',
+                        data: [
+                            {
+                                yAxis: 0,
+                                label: {
+                                    show: false,
+                                },
+                                lineStyle: {
+                                    color: colors.charts.axis,
+                                    type: 'dashed',
+                                    width: 1,
+                                },
+                            },
+                        ],
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            // Hide label if value is very close to 0
+                            if (Math.abs(value) < 1) return ''
+                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            return `${ChartSeries.NetDelta} ${formattedValue}`
+                        },
+                        color: netDeltaColor,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: netDeltaColor + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
+                    name: ChartSeries.HyperCoreSpots,
+                    type: 'line',
+                    data: spotDeltasUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    lineStyle: {
+                        color: colors.hyperCoreSpot,
+                        width: 2,
+                        type: 'dashed',
+                    },
+                    itemStyle: {
+                        color: colors.hyperCoreSpot,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            const formattedValue = value >= 0 ? `+${formatUSD(value)}` : formatUSD(value)
+                            return `${ChartSeries.HyperCoreSpots} ${formattedValue}`
+                        },
+                        color: colors.hyperCoreSpot,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperCoreSpot + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+            ],
             dataZoom: [
                 {
                     type: 'inside',
-                    start: Math.max(0, 100 - (100 * 60) / history.timestamps.length), // Show last 60 points
-                    end: 100,
+                    start: zoomRangeRef.current?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
+                    end: zoomRangeRef.current?.end ?? 100,
                 },
                 {
                     type: 'slider',
-                    start: Math.max(0, 100 - (100 * 60) / history.timestamps.length),
-                    end: 100,
+                    start: zoomRangeRef.current?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
+                    end: zoomRangeRef.current?.end ?? 100,
                     height: 20,
                     bottom: 10,
+                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                    selectedDataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                        },
+                    },
+                    handleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                        borderWidth: 1,
+                    },
+                    moveHandleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                    },
+                    emphasis: {
+                        handleStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
+                        },
+                        moveHandleStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                        },
+                        handleLabel: {
+                            show: false,
+                        },
+                    },
+                    dataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                        },
+                    },
+                    textStyle: {
+                        color: colors.charts.text,
+                    },
                 },
             ],
         }
 
-        setOptions(chartOptions)
-    }, [history, colors, isDarkMode, showSpotDelta, showHyperEvmDelta, totalCapital, hypePrice])
+        // finally, set the options
+        setOptions(echartsOptions)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lastSnapshotAddedAt, resolvedTheme])
 
     if (!options) {
         return (
-            <div className="bg-card flex h-[300px] w-full items-center justify-center rounded-lg">
-                <div className="text-muted">Loading chart...</div>
+            <div className="flex size-full items-center justify-center">
+                <div className="text-default/50">Loading chart...</div>
             </div>
         )
     }
 
-    return (
-        <div className={cn('relative flex flex-col', className)}>
-            <h3 className="mb-2 text-sm font-semibold">Delta Tracking (Live)</h3>
-            <div className="min-h-[300px] flex-1">
-                <EchartWrapper options={options} className="size-full" />
-            </div>
-        </div>
-    )
+    return <EchartWrapper options={options} className="size-full h-[500px]" onDataZoomChange={handleDataZoom} />
 }

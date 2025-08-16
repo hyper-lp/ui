@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { IconIds, FileIds } from '@/enums'
 import IconWrapper from '@/components/icons/IconWrapper'
 import FileMapper from '@/components/common/FileMapper'
@@ -41,57 +41,55 @@ export function CollapsibleLPPositions({ positions, className }: CollapsibleLPPo
     const [expandedDexes, setExpandedDexes] = useState<Set<string>>(new Set())
 
     // Group positions by DEX and calculate summaries
-    const dexSummaries = useMemo(() => {
-        const grouped = positions.reduce(
-            (acc, position) => {
-                const dexKey = position.dex
-                if (!acc[dexKey]) {
-                    acc[dexKey] = {
-                        dex: dexKey,
-                        positions: [],
-                        totalValue: 0,
-                        positionCount: 0,
-                        hypeBalance: 0,
-                        usdtBalance: 0,
-                        tokenBalances: {},
-                    }
+    const grouped = positions.reduce(
+        (acc, position) => {
+            const dexKey = position.dex
+            if (!acc[dexKey]) {
+                acc[dexKey] = {
+                    dex: dexKey,
+                    positions: [],
+                    totalValue: 0,
+                    positionCount: 0,
+                    hypeBalance: 0,
+                    usdtBalance: 0,
+                    tokenBalances: {},
                 }
+            }
 
-                acc[dexKey].positions.push(position)
-                acc[dexKey].totalValue += position.valueUSD || 0
-                acc[dexKey].positionCount += 1
+            acc[dexKey].positions.push(position)
+            acc[dexKey].totalValue += position.valueUSD || 0
+            acc[dexKey].positionCount += 1
 
-                // Accumulate token balances
-                if (position.token0Symbol && position.token0Amount) {
-                    acc[dexKey].tokenBalances[position.token0Symbol] = (acc[dexKey].tokenBalances[position.token0Symbol] || 0) + position.token0Amount
+            // Accumulate token balances
+            if (position.token0Symbol && position.token0Amount) {
+                acc[dexKey].tokenBalances[position.token0Symbol] = (acc[dexKey].tokenBalances[position.token0Symbol] || 0) + position.token0Amount
 
-                    // Track HYPE and USDT0 separately
-                    if (position.token0Symbol === 'WHYPE' || position.token0Symbol === 'HYPE') {
-                        acc[dexKey].hypeBalance += position.token0Amount
-                    } else if (position.token0Symbol === 'USDT0' || position.token0Symbol === 'USD₮0') {
-                        acc[dexKey].usdtBalance += position.token0Amount
-                    }
+                // Track HYPE and USDT0 separately
+                if (position.token0Symbol === 'WHYPE' || position.token0Symbol === 'HYPE') {
+                    acc[dexKey].hypeBalance += position.token0Amount
+                } else if (position.token0Symbol === 'USDT0' || position.token0Symbol === 'USD₮0') {
+                    acc[dexKey].usdtBalance += position.token0Amount
                 }
+            }
 
-                if (position.token1Symbol && position.token1Amount) {
-                    acc[dexKey].tokenBalances[position.token1Symbol] = (acc[dexKey].tokenBalances[position.token1Symbol] || 0) + position.token1Amount
+            if (position.token1Symbol && position.token1Amount) {
+                acc[dexKey].tokenBalances[position.token1Symbol] = (acc[dexKey].tokenBalances[position.token1Symbol] || 0) + position.token1Amount
 
-                    // Track HYPE and USDT0 separately
-                    if (position.token1Symbol === 'WHYPE' || position.token1Symbol === 'HYPE') {
-                        acc[dexKey].hypeBalance += position.token1Amount
-                    } else if (position.token1Symbol === 'USDT0' || position.token1Symbol === 'USD₮0') {
-                        acc[dexKey].usdtBalance += position.token1Amount
-                    }
+                // Track HYPE and USDT0 separately
+                if (position.token1Symbol === 'WHYPE' || position.token1Symbol === 'HYPE') {
+                    acc[dexKey].hypeBalance += position.token1Amount
+                } else if (position.token1Symbol === 'USDT0' || position.token1Symbol === 'USD₮0') {
+                    acc[dexKey].usdtBalance += position.token1Amount
                 }
+            }
 
-                return acc
-            },
-            {} as Record<string, DexSummary>,
-        )
+            return acc
+        },
+        {} as Record<string, DexSummary>,
+    )
 
-        // Convert to array and sort by total value
-        return Object.values(grouped).sort((a, b) => b.totalValue - a.totalValue)
-    }, [positions])
+    // Convert to array and sort by total value
+    const dexSummaries = Object.values(grouped).sort((a, b) => b.totalValue - a.totalValue)
 
     const toggleDex = (dex: string) => {
         setExpandedDexes((prev) => {

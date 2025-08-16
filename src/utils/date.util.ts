@@ -11,7 +11,6 @@ dayjs.extend(relativeTime)
 type PossiblyADate = Date | string | number
 export const toUTC = (date: PossiblyADate, format: string) => {
     try {
-        // return `${dayjs(date).utc().format(format)} UTC`
         return dayjs(date).utc().format(format)
     } catch {
         return 'Not a date'
@@ -23,7 +22,8 @@ export const DAYJS_FORMATS = {
     date: (date: PossiblyADate) => toUTC(date, 'ddd. MMM. D ∙ hh:mm A'),
     dateShort: (date: PossiblyADate) => toUTC(date, 'MMM. D ∙ hh:mm A'),
     dateChart: (date: PossiblyADate) => toUTC(date, 'MMM. D'),
-    day: (date: PossiblyADate) => toUTC(date, 'MMM D'),
+    dateTimeChart: (date: PossiblyADate) => `${toUTC(date, 'hh:mm:ss')} UTC`,
+    custom: (date: PossiblyADate, format: string) => toUTC(date, format),
     timeAgo: (date: PossiblyADate) => dayjs(date).utc().fromNow(),
 }
 
@@ -37,6 +37,8 @@ export const getDurationBetween = ({
     showHours = true,
     showMinutes = true,
     showSeconds = true,
+    shortFormat = true,
+    ago = true,
 }: {
     startTs: number
     endTs: number
@@ -47,6 +49,8 @@ export const getDurationBetween = ({
     showHours?: boolean
     showMinutes?: boolean
     showSeconds?: boolean
+    shortFormat?: boolean
+    ago?: boolean
 }): {
     // details
     inSeconds: number
@@ -72,15 +76,25 @@ export const getDurationBetween = ({
     const inMonths = Math.floor(diffDuration.asMonths()) % 12
     const inYears = Math.floor(diffDuration.asYears())
 
+    // short format
+    const year = shortFormat ? 'y' : 'year'
+    const month = shortFormat ? 'M' : 'month'
+    const week = shortFormat ? 'w' : 'week'
+    const day = shortFormat ? 'd' : 'day'
+    const hour = shortFormat ? 'h' : 'hour'
+    const minute = shortFormat ? 'm' : 'minute'
+    const second = shortFormat ? 's' : 'second'
+    const space = shortFormat ? '' : ' '
+
     // format
     let oneLiner = ''
-    if (showYears && inYears) oneLiner += `${inYears} year${inYears > 1 ? 's' : ''}, `
-    if (showMonths && inMonths) oneLiner += `${inMonths} month${inMonths > 1 ? 's' : ''}, `
-    if (showWeeks && inWeeks) oneLiner += `${inWeeks} week${inWeeks > 1 ? 's' : ''}, `
-    if (showDays && inDays) oneLiner += `${inDays} day${inDays > 1 ? 's' : ''}, `
-    if (showHours && inHours) oneLiner += `${inHours} hour${inHours > 1 ? 's' : ''}, `
-    if (showMinutes && inMinutes) oneLiner += `${inMinutes} minute${inMinutes > 1 ? 's' : ''}, `
-    if (showSeconds && inSeconds) oneLiner += `${inSeconds} second${inSeconds > 1 ? 's' : ''}, `
+    if (showYears && inYears) oneLiner += `${inYears}${space}${year}${inYears > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showMonths && inMonths) oneLiner += `${inMonths}${space}${month}${inMonths > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showWeeks && inWeeks) oneLiner += `${inWeeks}${space}${week}${inWeeks > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showDays && inDays) oneLiner += `${inDays}${space}${day}${inDays > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showHours && inHours) oneLiner += `${inHours}${space}${hour}${inHours > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showMinutes && inMinutes) oneLiner += `${inMinutes}${space}${minute}${inMinutes > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showSeconds && inSeconds) oneLiner += `${inSeconds}${space}${second}${inSeconds > 1 ? 's' : ''}${shortFormat ? '' : ','} `
 
     return {
         // details
@@ -93,7 +107,7 @@ export const getDurationBetween = ({
         inYears,
 
         // format
-        oneLiner: oneLiner ? oneLiner.slice(0, -2).trim() : 'now',
+        oneLiner: diffInMilliseconds > 0 && oneLiner ? `${oneLiner.slice(0, -2).trim()}${ago ? ' ago' : ''}` : 'now',
         humanize: diffDuration.humanize(),
     }
 }

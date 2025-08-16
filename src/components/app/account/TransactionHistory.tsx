@@ -16,7 +16,7 @@ async function fetchTransactions(account: string, limit: number = 10): Promise<D
         limit: limit.toString(),
     })
 
-    const response = await fetch(`/api/public/account/${account}/transactions?${params}`)
+    const response = await fetch(`/api/account/${account}/transactions?${params}`)
     if (!response.ok) {
         throw new Error('Failed to fetch transactions')
     }

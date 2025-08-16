@@ -2,7 +2,6 @@ export { DeltaBreakdown } from './DeltaBreakdown'
 export { ValueSummary } from './ValueSummary'
 export { LPPositionsByDex } from './LPPositionsByDex'
 export { CollapsibleLPPositions } from './CollapsibleLPPositions'
-export { StrategyMonitoring } from './StrategyMonitoring'
 export { TransactionHistory } from './TransactionHistory'
 export { HyperCoreTransactionHistory } from './HyperCoreTransactionHistory'
 

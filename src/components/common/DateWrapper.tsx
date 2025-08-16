@@ -5,11 +5,9 @@ import StyledTooltip from './StyledTooltip'
 import { useState, useEffect } from 'react'
 
 interface DateWrapperProps {
-    date: string | number | Date
+    date?: string | number | Date | null
     className?: string
     children?: React.ReactNode
-    fetchTime?: number // in milliseconds
-    label?: string // e.g., "LP fetch time", "EVM fetch time"
 }
 
 export function DateWrapper(props: DateWrapperProps) {
@@ -20,6 +18,7 @@ export function DateWrapper(props: DateWrapperProps) {
         }, 1000)
         return () => clearInterval(interval)
     }, [])
+    if (!props.date) return null
     return (
         <StyledTooltip
             disableAnimation={true}
@@ -35,29 +34,17 @@ export function DateWrapper(props: DateWrapperProps) {
                                 showMonths: false,
                                 showWeeks: false,
                             }).oneLiner
-                        }{' '}
-                        ago
+                        }
                     </p>
-                    {props.fetchTime && props.label && (
-                        <p>
-                            {props.label}: {(props.fetchTime / 1000).toFixed(2)}s
-                        </p>
-                    )}
                 </div>
             }
         >
-            {typeof props.children === 'string' || !props.children ? (
-                <span className={cn('cursor-help text-sm text-default/50', props.className)}>
-                    {props.children || DAYJS_FORMATS.timeAgo(props.date)}
-                </span>
-            ) : (
-                <div className={cn('cursor-help', props.className)}>{props.children}</div>
-            )}
+            {props.children}
         </StyledTooltip>
     )
 }
 
-export function DateWrapperAccurate({ className = 'text-sm', ...props }: DateWrapperProps) {
+export function DateWrapperAccurate(props: DateWrapperProps) {
     const [now, setNow] = useState(new Date())
     useEffect(() => {
         const interval = setInterval(() => {
@@ -65,9 +52,10 @@ export function DateWrapperAccurate({ className = 'text-sm', ...props }: DateWra
         }, 1000)
         return () => clearInterval(interval)
     }, [])
+    if (!props.date) return null
     return (
         <DateWrapper date={props.date}>
-            <p className={cn('cursor-help truncate hover:underline', className)}>
+            <p className={cn('cursor-help truncate hover:underline', props.className)}>
                 {
                     getDurationBetween({
                         startTs: new Date(props.date).getTime(),
@@ -76,8 +64,7 @@ export function DateWrapperAccurate({ className = 'text-sm', ...props }: DateWra
                         showMonths: false,
                         showWeeks: false,
                     }).oneLiner
-                }{' '}
-                ago
+                }
             </p>
         </DateWrapper>
     )

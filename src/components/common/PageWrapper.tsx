@@ -1,12 +1,11 @@
 import { cn } from '@/utils'
 import { Suspense } from 'react'
 import { DefaultFallbackContent } from '../layouts/DefaultFallback'
-import { DEFAULT_PADDING_X } from '@/config/theme.config'
 
 export default function PageWrapper({
     children,
     className,
-    paddingX = DEFAULT_PADDING_X,
+    paddingX = 'px-4 md:px-6 lg:px-8',
     ...props
 }: {
     children: React.ReactNode
@@ -18,7 +17,7 @@ export default function PageWrapper({
             <div
                 {...props}
                 className={cn(
-                    'mx-auto mt-4 flex min-h-[calc(100vh-230px)] w-full flex-col overflow-x-hidden overflow-y-scroll md:mt-12 md:min-h-[calc(100vh-192px)]',
+                    'mx-auto mt-4 flex min-h-[calc(100vh-230px)] w-full flex-col overflow-visible md:mt-6 md:min-h-[calc(100vh-192px)]',
                     paddingX,
                     className,
                 )}

@@ -8,94 +8,82 @@ import type { LPPosition, PerpPosition, SpotBalance, HyperEvmBalance } from './p
 /**
  * Main account data interface - the single source of truth for account information
  */
-export interface AccountData {
+export interface AccountSnapshot {
     success: boolean
     error?: string
+    timestamp: number
+    evmAddress: string
+    coreAddress: string
 
-    // Account identification
-    account: {
-        evmAddress: string
-        coreAddress: string
-        name: string | null
-        isMonitored: boolean
-    }
-
-    // Positions organized by platform
+    // 1. Positions organized by platform
     positions: {
         hyperEvm: {
-            lp: Array<LPPosition>
+            lps: Array<LPPosition>
             balances: Array<HyperEvmBalance>
         }
         hyperCore: {
-            perp: Array<PerpPosition>
-            spot: Array<SpotBalance>
+            perps: Array<PerpPosition>
+            spots: Array<SpotBalance>
         }
     }
 
-    // Metrics organized by platform
+    // 2. Metrics organized by platform
     metrics: {
         hyperEvm: {
             values: {
-                lpUSD: number // LP positions value in USD
+                lpsUSD: number // LP positions value in USD
                 balancesUSD: number // Wallet balances value in USD
                 totalUSD: number // Total HyperEVM value in USD
             }
             deltas: {
-                lpHYPE: number // LP delta in HYPE units
+                lpsHYPE: number // LP delta in HYPE units
                 balancesHYPE: number // Wallet delta in HYPE units
                 totalHYPE: number // Total HyperEVM delta in HYPE units
             }
+            // add other risk assets deltas here
         }
         hyperCore: {
             values: {
-                perpUSD: number // Perp positions value in USD
+                perpsUSD: number // Perp positions value in USD
                 spotUSD: number // Spot balances value in USD
                 totalUSD: number // Total HyperCore value in USD
             }
             deltas: {
-                perpHYPE: number // Perp delta in HYPE units (negative for shorts)
+                perpsHYPE: number // Perp delta in HYPE units (negative for shorts)
                 spotHYPE: number // Spot delta in HYPE units
                 totalHYPE: number // Total HyperCore delta in HYPE units
+            }
+            perpAggregates: {
+                totalMargin: number // Total margin used across all perp positions
+                totalNotional: number // Total notional value (absolute) across all perp positions
+                totalPnl: number // Total unrealized PnL across all perp positions
+                avgLeverage: number // Average leverage across all perp positions
             }
             leverageRatio?: number // Leverage ratio (e.g., 2.5 for 2.5x)
             healthFactorPercent?: number // Health factor as percentage
         }
         portfolio: {
-            totalValueUSD: number // Total portfolio value in USD
+            totalUSD: number // Total portfolio value in USD
             netDeltaHYPE: number // Net delta exposure in HYPE units
-            netAPRPercent: number // Net APR as percentage (e.g., 25.5 for 25.5%)
-            lpFeeAPRPercent: number // LP fee APR as percentage
-            fundingAPRPercent: number // Funding APR as percentage
         }
     }
 
-    // APR snapshots
-    snapshots: {
-        last: {
-            timestamp: string
-            netAPRPercent: number // Net APR as percentage
-            lpFeeAPRPercent: number // LP fee APR as percentage
-            fundingAPRPercent: number // Funding APR as percentage
-        } | null
-        current: {
-            lpFeeAPRPercent: number // LP fee APR as percentage
-            fundingAPRPercent: number // Funding APR as percentage
-            netAPRPercent: number // Net APR as percentage
-            formula?: string // Optional formula description
-            note?: string // Optional note
-        } | null
+    // 3. prices
+    prices: {
+        HYPE: number // HYPE price in USD
+        USDC: number // USDC price in USD
+        USDT: number // USDT price in USD
     }
 
-    // Performance timings
+    // 4. Performance timings
     timings: {
         hyperEvm: {
-            lpMs?: number // LP fetch time in milliseconds
-            balancesMs?: number // Balances fetch time in milliseconds
+            lpsMs: number // LP fetch time in milliseconds
+            balancesMs: number // Balances fetch time in milliseconds
         }
         hyperCore: {
-            perpMs?: number // Perp fetch time in milliseconds
-            spotMs?: number // Spot fetch time in milliseconds
+            perpsMs: number // Perp fetch time in milliseconds
+            spotsMs: number // Spot fetch time in milliseconds
         }
-        totalMs: number // Total fetch time in milliseconds
     }
 }

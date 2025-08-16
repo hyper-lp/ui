@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { HyperEvmBalance } from '@/interfaces'
+// import type { HyperEvmBalance } from '@/interfaces'
 import { FileIds, IconIds } from '@/enums'
 import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
@@ -10,9 +10,9 @@ import { formatNumber, formatUSD } from '@/utils/format.util'
 import { cn, shortenValue } from '@/utils'
 import { NATIVE_HYPE_ADDRESS } from '@/config/hyperevm-tokens.config'
 import StyledTooltip from '@/components/common/StyledTooltip'
+import { useAppStore } from '@/stores/app.store'
 
 interface WalletBalancesTableProps {
-    balances: HyperEvmBalance[]
     className?: string
 }
 
@@ -29,8 +29,12 @@ export function WalletBalancesTableHeader() {
     )
 }
 
-export function WalletBalancesTable({ balances, className }: WalletBalancesTableProps) {
+export function WalletBalancesTable({ className }: WalletBalancesTableProps) {
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+
+    // Get balances directly from the store
+    const snapshot = useAppStore((state) => state.getLatestSnapshot())
+    const balances = snapshot?.positions?.hyperEvm?.balances || []
 
     if (!balances || balances.length === 0) {
         return <div className={cn('py-8 text-center text-default/50', className)}>No wallet balances</div>

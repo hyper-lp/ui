@@ -31,9 +31,8 @@ interface Balance {
 export function calculateHypePrice(positions: { lp?: Position[]; wallet?: Balance[] }): number {
     // Try to get from LP positions
     if (positions.lp?.length) {
-        const hypePosition = positions.lp.find((p) => 
-            (p.token0Symbol && isHypeToken(p.token0Symbol)) || 
-            (p.token1Symbol && isHypeToken(p.token1Symbol))
+        const hypePosition = positions.lp.find(
+            (p) => (p.token0Symbol && isHypeToken(p.token0Symbol)) || (p.token1Symbol && isHypeToken(p.token1Symbol)),
         )
         if (hypePosition) {
             const isToken0Hype = hypePosition.token0Symbol ? isHypeToken(hypePosition.token0Symbol) : false

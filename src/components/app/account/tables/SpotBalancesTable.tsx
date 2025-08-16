@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { SpotBalance } from '@/interfaces'
+// import type { SpotBalance } from '@/interfaces'
 import { IconIds } from '@/enums'
 import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
@@ -10,9 +10,9 @@ import { SpotRowTemplate } from './TableTemplates'
 import { formatNumber, formatUSD } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
+import { useAppStore } from '@/stores/app.store'
 
 interface SpotBalancesTableProps {
-    balances: SpotBalance[]
     className?: string
 }
 
@@ -28,8 +28,12 @@ export function SpotBalancesTableHeader() {
     )
 }
 
-export function SpotBalancesTable({ balances, className }: SpotBalancesTableProps) {
+export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+
+    // Get balances directly from the store
+    const snapshot = useAppStore((state) => state.getLatestSnapshot())
+    const balances = snapshot?.positions?.hyperCore?.spots || []
 
     if (!balances || balances.length === 0) {
         return <div className={cn('py-8 text-center text-default/50', className)}>No spot balances</div>

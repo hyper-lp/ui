@@ -13,6 +13,7 @@ import { ErrorBoundaryFallback } from '../../common/ErrorBoundaryFallback'
  */
 
 import numeral from 'numeral'
+import { AppThemes } from '@/enums'
 
 interface HeatmapDataConfig {
     showNegativeFunding?: boolean
@@ -129,9 +130,8 @@ interface HeatmapAprChartProps {
 function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = false, lpStepSize = 10, fundingStepSize = 5 }: HeatmapAprChartProps) {
     const [options, setOptions] = useState<EChartsOption | null>(null)
     const { resolvedTheme } = useTheme()
-    const isDarkMode = resolvedTheme === 'dark'
-    const colors = useMemo(() => getThemeColors(isDarkMode), [isDarkMode])
-
+    const colors = useMemo(() => getThemeColors(resolvedTheme), [resolvedTheme])
+    const isDarkMode = resolvedTheme === AppThemes.DARK
     const stableHighlightedCell = useMemo(
         () => highlightedCell,
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -186,7 +186,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 borderColor: colors.primary,
                 borderWidth: 1,
                 triggerOn: 'mousemove|click',
-                backgroundColor: colors.tooltipBackground,
+                backgroundColor: colors.charts.tooltipBackground,
                 borderRadius: 12,
                 appendToBody: true,
                 extraCssText: 'box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);',
@@ -260,7 +260,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 },
                 nameTextStyle: {
                     fontSize: 18,
-                    color: colors.foreground,
+                    color: colors.charts.text,
                     fontFamily: TEODOR_LIGHT_FONT.style.fontFamily,
                     fontWeight: 800,
                 },
@@ -269,7 +269,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 },
                 axisLabel: {
                     fontSize: isMobile ? 9 : 11,
-                    color: colors.foreground,
+                    color: colors.charts.text,
                     interval: isMobile ? 1 : 0,
                     rotate: isMobile ? 45 : 0,
                 },
@@ -286,7 +286,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 nameRotate: 90, // Always vertical
                 nameTextStyle: {
                     fontSize: 18,
-                    color: colors.foreground,
+                    color: colors.charts.text,
                     fontFamily: TEODOR_LIGHT_FONT.style.fontFamily,
                     fontWeight: 800,
                 },
@@ -298,7 +298,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 },
                 axisLabel: {
                     fontSize: isMobile ? 9 : 11,
-                    color: colors.foreground,
+                    color: colors.charts.text,
                     interval: isMobile ? 1 : 0,
                 },
                 axisTick: {
@@ -310,7 +310,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 min: minApr,
                 max: maxApr,
                 inRange: {
-                    color: colors.heatmapGradient,
+                    color: colors.charts.heatmapGradient,
                 },
             },
             series: [
@@ -377,7 +377,8 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
         }
 
         setOptions(chartOptions)
-    }, [heatmapData, colors, isMobile, stableHighlightedCell, isDarkMode, lpStepSize, fundingStepSize])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resolvedTheme])
 
     if (!options) {
         return <CustomFallback />

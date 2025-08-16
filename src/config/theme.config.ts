@@ -1,5 +1,6 @@
 import { AppThemes } from '@/enums/app.enum'
 import { IconIds } from '@/enums/icons.enum'
+import type { ThemeConfig } from '@/interfaces/app.interface'
 
 export const APP_THEMES = {
     [AppThemes.LIGHT]: { index: 0, iconId: IconIds.THEME_LIGHT },
@@ -7,36 +8,38 @@ export const APP_THEMES = {
 } as const
 
 /**
- * padding const to ease mobile/desktop padding
- */
-
-export const DEFAULT_PADDING_X = 'px-2 md:px-8 lg:px-10'
-
-/**
  * Unified color configuration for the entire application
  * This consolidates colors from multiple config files to follow DRY principle
  */
 
-export const COLORS = {
+/**
+ * Color constants and utilities
+ * CSS variables are defined in globals.css - this file provides JS/TS access to those colors
+ */
+
+// Status colors (not theme-dependent)
+export const STATUS_COLORS = {
+    success: '#10B981', // Green
+    warning: '#F59E0B', // Orange
+    error: '#EF4444', // Red
+    info: '#3B82F6', // Blue
+} as const
+
+// Chart colors that need hex values
+export const CHART_COLORS = {
     light: {
-        // Primary brand colors
-        primary: '#26a69a', // Hyperliquid signature teal
-        secondary: '#00ffbb',
-
-        // Base colors
-        background: '#ffffff',
-        foreground: '#000000',
-
-        // Additional UI colors
-        muted: '#6b7280', // Gray for muted text
-        border: '#e5e7eb', // Light gray for borders
-
-        // Chart specific
+        text: '#434651',
+        axis: 'rgba(46, 49, 60, 0.1)',
+        line: 'rgba(46, 49, 60, 0.2)',
         tooltipBackground: 'rgba(255, 255, 255, 0.98)',
-        folly: '#ff3366', // Red/pink for negative values
-        aquamarine: '#00ffbb', // Green for positive values
 
-        // Heatmap gradient (from light to dark for contrast)
+        // Platform colors for charts
+        hyperEvmLp: '#00bfa3',
+        hyperEvmBalances: '#4db8cc',
+        hyperCorePerp: '#ff3366',
+        hyperCoreSpot: '#ff9933',
+
+        // Heatmap colors
         heatmapGradient: [
             '#f6fefd', // Off-White (lowest)
             '#d1d4dc', // Light Gray
@@ -50,24 +53,18 @@ export const COLORS = {
         ],
     },
     dark: {
-        // Primary brand colors
-        primary: '#4db6ac', // Lighter teal for dark mode
-        secondary: '#00ffc4',
-
-        // Base colors
-        background: '#000000',
-        foreground: '#ffffff',
-
-        // Additional UI colors
-        muted: '#9ca3af', // Lighter gray for muted text in dark mode
-        border: '#374151', // Darker gray for borders in dark mode
-
-        // Chart specific
+        text: '#e6e8ef',
+        axis: 'rgba(209, 212, 220, 0.4)',
+        line: 'rgba(209, 212, 220, 0.2)',
         tooltipBackground: 'rgba(20, 30, 45, 0.99)',
-        folly: '#ff4d7a', // Brighter red/pink for dark mode
-        aquamarine: '#00ffc4', // Brighter green for dark mode
 
-        // Heatmap gradient (from dark to bright for contrast)
+        // Platform colors for charts
+        hyperEvmLp: '#00ffd4',
+        hyperEvmBalances: '#4dd4e6',
+        hyperCorePerp: '#ff6680',
+        hyperCoreSpot: '#ffaa44',
+
+        // Heatmap colors
         heatmapGradient: [
             '#0f1a1f', // Oil Black (lowest)
             '#142e61', // Deep Blue
@@ -82,11 +79,61 @@ export const COLORS = {
     },
 } as const
 
+// Type for theme colors
+export type ThemeColors = {
+    background: string
+    backgroundOpposite: string
+    primary: string
+    default: string
+    hyperEvmLp: string
+    hyperEvmBalances: string
+    hyperCorePerp: string
+    hyperCoreSpot: string
+    charts: {
+        text: string
+        axis: string
+        line: string
+        tooltipBackground: string
+        heatmapGradient: readonly string[]
+    }
+}
+
+/**
+ * Get theme colors for a specific mode
+ */
+export function getColorsByTheme(isDark: boolean): ThemeColors {
+    const mode = isDark ? 'dark' : 'light'
+    const chartColors = CHART_COLORS[mode]
+
+    return {
+        // Core colors (these would be read from CSS variables in a real app, but hardcoded for simplicity)
+        background: mode === 'dark' ? '#0f1a1f' : '#f6fefd',
+        backgroundOpposite: mode === 'dark' ? '#f6fefd' : '#0f1a1f',
+        primary: '#22ab94',
+        default: mode === 'dark' ? '#d1d4dc' : '#2e313c',
+        // Platform colors
+        hyperEvmLp: chartColors.hyperEvmLp,
+        hyperEvmBalances: chartColors.hyperEvmBalances,
+        hyperCorePerp: chartColors.hyperCorePerp,
+        hyperCoreSpot: chartColors.hyperCoreSpot,
+        charts: chartColors,
+    }
+}
+
+// Use the centralized color constants
+const lightColors = getColorsByTheme(false)
+const darkColors = getColorsByTheme(true)
+
+export const COLORS: ThemeConfig = {
+    light: lightColors,
+    dark: darkColors,
+} as const
+
 /**
  * Get colors based on current theme
  * @param isDarkMode - Whether dark mode is active
  * @returns Color configuration for the theme
  */
-export function getThemeColors(isDarkMode: boolean) {
-    return isDarkMode ? COLORS.dark : COLORS.light
+export function getThemeColors(mode?: string) {
+    return mode === AppThemes.DARK ? COLORS.dark : COLORS.light
 }

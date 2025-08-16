@@ -16,22 +16,22 @@ export function HypeDeltaTooltip({ delta, hypePrice, className, decimals = 1, ch
         <StyledTooltip
             content={
                 <div className="space-y-1">
-                    <div className="font-semibold">HYPE Delta Details</div>
-                    <div className="space-y-0.5 text-sm">
+                    <div className="font-semibold">HYPE Δ</div>
+                    <div className="space-y-0.5">
                         <div className="flex justify-between gap-4">
-                            <span>Amount:</span>
-                            <span className="font-mono">
+                            <span>= Amount</span>
+                            <span className="">
                                 {delta >= 0 ? '+' : ''}
                                 {delta} HYPE
                             </span>
                         </div>
                         <div className="flex justify-between gap-4">
-                            <span>USD Value:</span>
-                            <span className="font-mono">{formatUSD(Math.abs(delta * hypePrice))}</span>
+                            <span>* HYPE Price</span>
+                            <span className="">{formatUSD(hypePrice)}</span>
                         </div>
-                        <div className="flex justify-between gap-4">
-                            <span>HYPE Price:</span>
-                            <span className="font-mono">{formatUSD(hypePrice)}/HYPE</span>
+                        <div className="flex justify-between gap-4 border-t border-default/10 pt-1">
+                            <span>= USD Value</span>
+                            <span className="">{formatUSD(Math.abs(delta * hypePrice))}</span>
                         </div>
                     </div>
                 </div>

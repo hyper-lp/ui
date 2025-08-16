@@ -11,6 +11,10 @@ import { formatUSD, formatNumber, shortenValue } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
+import { RoundedAmount } from '@/components/common/RoundedAmount'
+import numeral from 'numeral'
+import LinkWrapper from '@/components/common/LinkWrapper'
+import { IS_DEV } from '@/config'
 
 interface LPPositionsTableProps {
     className?: string
@@ -28,15 +32,21 @@ function getDexLogo(dexName: string): FileIds | null {
 export function LPPositionsTableHeader() {
     return (
         <LPRowTemplate
-            dex={<p className="font-medium text-default/60">DEX</p>}
-            pair={<p className="font-medium text-default/60">Pair</p>}
-            range={<p className="font-medium text-default/60">Range</p>}
-            hype={<p className="text-right font-medium text-default/60">HYPE</p>}
-            usdt={<p className="text-right font-medium text-default/60">USDT0</p>}
-            value={<p className="text-right font-medium text-default/60">Value</p>}
-            apr={<p className="text-right font-medium text-default/60">24h APR</p>}
-            il={<p className="text-right font-medium text-default/60">IL</p>}
-            className="h-8 border-b border-default/10"
+            dex={<p className="truncate">DEX</p>}
+            feeTier={<p className="truncate">Fee</p>}
+            status={<p className="truncate font-medium">Status</p>}
+            poolAddress={<p className="truncate">Pool</p>}
+            nftId={<p className="truncate">NFT ID</p>}
+            hype={<FileMapper id={FileIds.TOKEN_HYPE} width={16} height={20} className="mx-auto rounded-full" />}
+            usdt={<FileMapper id={FileIds.TOKEN_USDT0} width={16} height={16} className="mx-auto rounded-full" />}
+            value={<p className="truncate">Value $</p>}
+            split={<p className="truncate">Split</p>}
+            tvl={<p className="truncate">TVL $</p>}
+            apr24h={<p className="truncate">24h</p>}
+            apr7d={<p className="truncate">7d</p>}
+            apr30d={<p className="truncate">30d</p>}
+            positionId={<p className="truncate">Position ID</p>}
+            className="h-8 border-b border-default/10 text-xs text-default/50"
         />
     )
 }
@@ -50,7 +60,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
     const poolAPRData = snapshot?.marketData?.poolAPR
 
     // Helper to find matching APR for a position
-    const findMatchingAPR = (position: LPPosition): PoolAPRData | null => {
+    const findPoolSnapshot = (position: LPPosition): PoolAPRData | null => {
         if (!poolAPRData?.pools || !position.pool) return null
 
         return (
@@ -95,66 +105,129 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                   ? position.token1Amount
                                   : 0
 
+                        const poolSnapshot = findPoolSnapshot(position)
                         return (
                             <div key={position.id}>
                                 <div onClick={() => toggleRow(position.id)} className="cursor-pointer">
                                     <LPRowTemplate
                                         dex={
                                             <div className="flex items-center gap-1.5">
-                                                <IconWrapper
-                                                    id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                                                    className="size-3 text-default/40"
-                                                />
+                                                {!IS_DEV && (
+                                                    <IconWrapper
+                                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                                                        className="size-4 text-default/40"
+                                                    />
+                                                )}
                                                 {getDexLogo(position.dex) && (
-                                                    <FileMapper id={getDexLogo(position.dex)!} width={20} height={20} className="rounded" />
+                                                    <FileMapper id={getDexLogo(position.dex)!} width={16} height={16} className="rounded" />
                                                 )}
                                             </div>
                                         }
-                                        pair={
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-default">
-                                                    {position.token0Symbol}/{position.token1Symbol}
-                                                </span>
-                                                {position.feeTier && (
-                                                    <span className="text-[10px] text-default/40">{Number(position.feeTier) / 10000}%</span>
+                                        feeTier={<p className="truncate">{position.feeTier}</p>}
+                                        positionId={<p className="truncate">{shortenValue(position.id)}</p>}
+                                        nftId={<p className="truncate">#{position.tokenId}</p>}
+                                        status={
+                                            <p className="truncate">
+                                                {position.isClosed ? (
+                                                    <span className="text-default/40">Closed</span>
+                                                ) : position.inRange !== undefined ? (
+                                                    <StyledTooltip
+                                                        content={
+                                                            <div className="flex flex-col gap-1">
+                                                                <p className="text-xs text-default/50">Tick Lower</p>
+                                                                <p>{position.tickLower}</p>
+                                                                <p className="text-xs text-default/50">Tick Upper</p>
+                                                                <p>{position.tickUpper}</p>
+                                                                <p className="text-xs text-default/50">Current Tick</p>
+                                                                <p>{position.tickCurrent}</p>
+                                                            </div>
+                                                        }
+                                                    >
+                                                        <span className={position.inRange ? 'text-green-500' : 'text-red-500'}>
+                                                            {position.inRange ? 'In Range' : 'Out'}
+                                                        </span>
+                                                    </StyledTooltip>
+                                                ) : (
+                                                    <span className="text-default/50">-</span>
                                                 )}
-                                            </div>
+                                            </p>
                                         }
-                                        range={
-                                            position.isClosed ? (
-                                                <span className="text-default/40">Closed</span>
-                                            ) : position.inRange !== undefined ? (
-                                                <span className={position.inRange ? 'text-green-500' : 'text-red-500'}>
-                                                    {position.inRange ? 'In Range' : 'Out'}
-                                                </span>
-                                            ) : (
-                                                <span className="text-default/50">-</span>
-                                            )
+                                        poolAddress={
+                                            <StyledTooltip content={position.pool}>
+                                                <LinkWrapper href={`https://app.hybra.io/pool/${position.pool}`} target="_blank">
+                                                    <p className="truncate">{shortenValue(position.pool || '')}</p>
+                                                </LinkWrapper>
+                                            </StyledTooltip>
                                         }
                                         hype={
                                             hypeAmount ? (
-                                                <span className="font-medium">{formatNumber(hypeAmount, 2)}</span>
+                                                <StyledTooltip content={hypeAmount}>
+                                                    <p className="font-medium hover:underline">{formatNumber(hypeAmount, 2)}</p>
+                                                </StyledTooltip>
                                             ) : (
                                                 <span className="text-default/50">-</span>
                                             )
                                         }
                                         usdt={
                                             usdtAmount ? (
-                                                <span className="font-medium">{formatNumber(usdtAmount, 0)}</span>
+                                                <StyledTooltip content={usdtAmount}>
+                                                    <p className="font-medium hover:underline">{formatNumber(usdtAmount, 0)}</p>
+                                                </StyledTooltip>
                                             ) : (
                                                 <span className="text-default/50">-</span>
                                             )
                                         }
-                                        value={<span className="font-medium text-primary">{formatUSD(position.valueUSD || 0)}</span>}
-                                        apr={(() => {
-                                            const aprData = findMatchingAPR(position)
-                                            return aprData ? (
-                                                <span className="font-medium text-green-600">{aprData.apr24h.toFixed(1)}%</span>
+                                        value={<RoundedAmount amount={position.valueUSD}>{formatUSD(position.valueUSD)}</RoundedAmount>}
+                                        split={
+                                            <StyledTooltip
+                                                content={
+                                                    <div className="flex flex-col gap-1">
+                                                        <p className="text-xs text-default/50">
+                                                            {position.token0Symbol} {formatUSD(position.token0ValueUSD || 0)}
+                                                        </p>
+                                                        <p className="text-xs text-default/50">
+                                                            {position.token1Symbol} {formatUSD(position.token1ValueUSD || 0)}
+                                                        </p>
+                                                    </div>
+                                                }
+                                            >
+                                                <div className="flex items-center justify-end">
+                                                    {/* percentage of hype and usdt */}
+                                                    <p className="truncate">
+                                                        {numeral((position.token0ValueUSD || 0) / position.valueUSD).format('0,0%')} /{' '}
+                                                        {numeral((position.token1ValueUSD || 0) / position.valueUSD).format('0,0%')}
+                                                    </p>
+                                                </div>
+                                            </StyledTooltip>
+                                        }
+                                        tvl={<RoundedAmount amount={poolSnapshot?.tvlUSD || 0}>{formatUSD(poolSnapshot?.tvlUSD || 0)}</RoundedAmount>}
+                                        apr24h={(() => {
+                                            return poolSnapshot ? (
+                                                <RoundedAmount amount={poolSnapshot.apr24h}>
+                                                    {numeral(poolSnapshot.apr24h).divide(100).format('0,0%')}
+                                                </RoundedAmount>
                                             ) : (
                                                 <span className="text-default/30">-</span>
                                             )
                                         })()}
-                                        il={<span className="text-default/30">-</span>}
+                                        apr7d={(() => {
+                                            return poolSnapshot ? (
+                                                <RoundedAmount amount={poolSnapshot.apr7d}>
+                                                    {numeral(poolSnapshot.apr7d).divide(100).format('0,0%')}
+                                                </RoundedAmount>
+                                            ) : (
+                                                <span className="text-default/30">-</span>
+                                            )
+                                        })()}
+                                        apr30d={(() => {
+                                            return poolSnapshot ? (
+                                                <RoundedAmount amount={poolSnapshot.apr30d}>
+                                                    {numeral(poolSnapshot.apr30d).divide(100).format('0,0%')}
+                                                </RoundedAmount>
+                                            ) : (
+                                                <span className="text-default/30">-</span>
+                                            )
+                                        })()}
                                         className="h-10 transition-colors hover:bg-default/5"
                                     />
                                 </div>
@@ -162,54 +235,6 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                 {/* Expanded Details */}
                                 {isExpanded && (
                                     <div className="space-y-4 border-t border-default/10 bg-default/5 px-4 py-4">
-                                        {/* Pool Performance Section */}
-                                        {(() => {
-                                            const aprData = findMatchingAPR(position)
-                                            return aprData ? (
-                                                <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                                                    <h4 className="mb-3 text-sm font-semibold text-green-800 dark:text-green-400">
-                                                        Pool Performance & APR Data
-                                                    </h4>
-                                                    <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3 lg:grid-cols-5">
-                                                        <div>
-                                                            <p className="text-xs text-default/50">24h APR</p>
-                                                            <p className="font-bold text-green-600">{aprData.apr24h.toFixed(2)}%</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-default/50">7d APR</p>
-                                                            <p className="font-bold text-green-600">{aprData.apr7d.toFixed(2)}%</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-default/50">30d APR</p>
-                                                            <p className="font-bold text-green-600">{aprData.apr30d.toFixed(2)}%</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-default/50">Pool TVL</p>
-                                                            <p className="font-medium">{formatUSD(aprData.tvlUSD)}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-default/50">24h Volume</p>
-                                                            <p className="font-medium">{formatUSD(aprData.volume24h)}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-default/50">24h Fees Generated</p>
-                                                            <p className="font-medium">{formatUSD(aprData.fees24h)}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-default/50">Pool Fee Tier</p>
-                                                            <p className="font-medium">{(aprData.feeTier / 10000).toFixed(2)}%</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-default/50">Token Pair</p>
-                                                            <p className="font-medium">
-                                                                {aprData.token0Symbol}/{aprData.token1Symbol}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ) : null
-                                        })()}
-
                                         {/* Position Details Grid */}
                                         <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3 lg:grid-cols-4">
                                             {/* Core Position Info */}
@@ -397,12 +422,11 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     </div>
                                                 </StyledTooltip>
                                                 {(() => {
-                                                    const aprData = findMatchingAPR(position)
-                                                    return aprData ? (
+                                                    return poolSnapshot ? (
                                                         <StyledTooltip
                                                             content={
                                                                 <pre className="max-h-96 max-w-2xl overflow-auto text-xs">
-                                                                    {JSON.stringify(aprData, null, 2)}
+                                                                    {JSON.stringify(poolSnapshot, null, 2)}
                                                                 </pre>
                                                             }
                                                             placement="left"

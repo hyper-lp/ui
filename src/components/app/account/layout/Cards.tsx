@@ -17,7 +17,7 @@ export function SectionCard({
     return (
         <div
             className={cn(
-                'flex flex-col rounded-xl border border-dashed border-default/10 bg-transparent p-3 transition-all duration-300 ease-in-out hover:border-default/50 dark:border-default/50',
+                'flex flex-col rounded-xl border border-default/10 bg-transparent p-3 transition-all duration-300 ease-in-out hover:border-solid hover:border-primary',
                 hoverable && 'hover:bg-default/50',
                 className,
                 padding,

@@ -3,9 +3,9 @@ export enum AppUrls {
     HOME = '/',
 
     // API routes - Account data
-    API_SNAPSHOT = '/api/snapshot/:account',
-    API_TRANSACTIONS = '/api/transactions/:account',
-    API_TRADES = '/api/trades/:account',
+    API_SNAPSHOT = '/api/snapshot',
+    API_TRANSACTIONS = '/api/transactions',
+    API_TRADES = '/api/trades',
 
     // API routes - Pools
     API_POOLS_TVL = '/api/pools/tvl',

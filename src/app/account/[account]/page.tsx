@@ -6,11 +6,10 @@ import { useState, useEffect } from 'react'
 import PageWrapper from '@/components/common/PageWrapper'
 import { useAccountData } from '@/hooks/useAccountData'
 import { useAppStore } from '@/stores/app.store'
-import { TransactionHistory } from '@/components/app/account'
 import { HyperCoreTransactionHistory } from '@/components/app/account/HyperCoreTransactionHistory'
 import { LPPositionsTable, WalletBalancesTable, PerpPositionsTable, SpotBalancesTable } from '@/components/app/account/tables'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
-import { CollapsibleSection as CollapsibleCard } from '@/components/app/account/CollapsibleCard'
+import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
 import { DEFAULT_TRANSACTION_LIMIT, REFRESH_INTERVALS } from '@/config/app.config'
 import { IS_DEV } from '@/config'
 import { formatUSD, shortenValue } from '@/utils'
@@ -22,15 +21,54 @@ import { DeltaDisplay } from '@/components/common/DeltaDisplay'
 import { DateWrapperAccurate } from '@/components/common/DateWrapper'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
-import { IconIds } from '@/enums'
+import { AppUrls, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import { env } from '@/env/t3-env'
+import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
 
 // Dynamically import chart to avoid SSR issues
 const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
     ssr: false,
     loading: () => <div className="flex size-full items-center justify-center text-sm text-default/50">Loading chart...</div>,
 })
+
+// Helper function for delta color
+const getDeltaColor = (value: number): string => {
+    const absValue = Math.abs(value)
+    if (absValue < 0.1) return 'text-default'
+    if (absValue < 10) return 'text-success'
+    if (absValue < 20) return 'text-warning'
+    return 'text-error'
+}
+
+// KPI Metric Component
+interface KPIMetricProps {
+    label: string
+    value: number | string
+    icon?: React.ReactNode
+    colorFn?: (value: number) => string
+    className?: string
+}
+
+const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, className }) => {
+    const baseClassName = cn('flex flex-col items-center lg:items-end', className)
+    const isNumber = typeof value === 'number'
+    const color = isNumber && colorFn ? colorFn(value) : undefined
+
+    return (
+        <div className={baseClassName}>
+            <span className="text-xs uppercase tracking-wider text-default/50">{label}</span>
+            {icon ? (
+                <div className="flex items-center gap-1">
+                    {icon}
+                    <span className={cn('text-base font-semibold', color)}>{isNumber ? `${value >= 0 ? '+' : ''}${value.toFixed(1)}` : value}</span>
+                </div>
+            ) : (
+                <span className="text-lg font-semibold">{value}</span>
+            )}
+        </div>
+    )
+}
 
 export default function AccountPage() {
     const params = useParams()
@@ -130,32 +168,73 @@ export default function AccountPage() {
     // Show loading state while initial data is being fetched or if we don't have price data
     if ((isLoading && !snapshot) || !hypePrice) {
         return (
-            <PageWrapper>
+            <PageWrapper className="px-4">
                 <AccountTemplate
                     header={
-                        <div className="mb-4 w-full">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-8 w-96 animate-pulse rounded bg-default/20" />
-                                    <div className="h-8 w-8 animate-pulse rounded bg-default/20" />
+                        <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
+                            {/* Address skeleton */}
+                            <div className="flex flex-col">
+                                <div className="flex items-baseline gap-2 text-sm">
+                                    <div className="h-7 w-96 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-12 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-10 animate-pulse rounded bg-default/20" />
                                 </div>
-                                <div className="hidden items-center gap-5 xl:flex">
-                                    <div className="h-12 w-20 animate-pulse rounded bg-default/20" />
-                                    <div className="h-12 w-20 animate-pulse rounded bg-default/20" />
-                                    <div className="h-12 w-20 animate-pulse rounded bg-default/20" />
-                                    <div className="h-12 w-20 animate-pulse rounded bg-default/20" />
-                                    <div className="h-12 w-20 animate-pulse rounded bg-default/20" />
-                                    <div className="h-8 w-px bg-default/20" />
-                                    <div className="h-12 w-20 animate-pulse rounded bg-default/20" />
+                                <div className="mt-1 flex items-center gap-1.5 text-sm">
+                                    <div className="h-6 w-6 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-48 animate-pulse rounded bg-default/20" />
+                                </div>
+                            </div>
+
+                            {/* KPIs skeleton */}
+                            <div className="flex items-center gap-6">
+                                <div className="flex flex-col items-center lg:items-end">
+                                    <div className="h-3 w-8 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 h-7 w-20 animate-pulse rounded bg-default/20" />
+                                </div>
+                                {/* <div className="h-8 w-px bg-default/20" />
+                                <div className="flex flex-col items-center lg:items-end">
+                                    <div className="h-3 w-10 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
+                                </div>
+                                <div className="hidden flex-col items-center md:flex lg:items-end">
+                                    <div className="h-3 w-14 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
+                                </div>
+                                <div className="flex flex-col items-center lg:items-end">
+                                    <div className="h-3 w-12 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
+                                </div>
+                                <div className="hidden flex-col items-center md:flex lg:items-end">
+                                    <div className="h-3 w-12 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
+                                </div> */}
+                                <div className="h-8 w-px bg-default/20" />
+                                <div className="flex flex-col items-end">
+                                    <div className="h-3 w-10 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
                                 </div>
                             </div>
                         </div>
                     }
+                    charts={<div className="flex size-full items-center justify-center text-sm text-default/50">Loading chart...</div>}
                     summary={null}
                     hyperEvm={{
-                        lp: <CollapsibleCard title="LPs" defaultExpanded={false} isLoading />,
-                        balances: <CollapsibleCard title="Wallet" defaultExpanded={false} isLoading />,
-                        txs: <CollapsibleCard title="Transactions" defaultExpanded={false} isLoading />,
+                        lp: (
+                            <CollapsibleCard
+                                title={<h3 className="text-hyper-evm-lps text-lg font-semibold">LPs</h3>}
+                                defaultExpanded={false}
+                                isLoading
+                            />
+                        ),
+                        balances: (
+                            <CollapsibleCard
+                                title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Balances</h3>}
+                                defaultExpanded={false}
+                                isLoading
+                            />
+                        ),
+                        txs: null,
                     }}
                     hyperCore={{
                         short: <CollapsibleCard title="Perpetuals" defaultExpanded={false} isLoading />,
@@ -182,28 +261,36 @@ export default function AccountPage() {
         <PageWrapper className="px-4">
             <AccountTemplate
                 header={
-                    <div className="flex items-center justify-between px-2 md:px-4">
+                    <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
+                        {/* Address */}
                         <div className="flex flex-col">
                             <div className="flex items-baseline gap-2 text-sm">
-                                <p className="hidden text-lg font-medium lg:flex">{accountFromUrl}</p>
-                                <p className="flex text-lg font-medium lg:hidden">{shortenValue(accountFromUrl, 6)}</p>
+                                <p className="hidden text-lg font-medium xl:flex">{accountFromUrl}</p>
+                                <p className="flex text-lg font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
                                 {[
                                     {
                                         name: 'debank',
+                                        description: 'DeBank profile',
                                         url: `https://debank.com/profile/${accountFromUrl}`,
                                     },
                                     {
                                         name: 'scan',
+                                        description: 'HyperEVM scan',
                                         url: `https://hyperevmscan.io/address/${accountFromUrl}`,
                                     },
                                     {
                                         name: 'raw',
-                                        url: `${env.NEXT_PUBLIC_APP_URL}/api/snapshot/${accountFromUrl}`,
+                                        description: 'API snapshot',
+                                        url: `${env.NEXT_PUBLIC_APP_URL}/${AppUrls.API_SNAPSHOT}/${accountFromUrl}`,
                                     },
                                 ].map((link) => (
-                                    <LinkWrapper key={link.name} target="_blank" href={link.url}>
-                                        <p className="cursor-alias text-default/50 hover:text-default hover:underline">{link.name}</p>
-                                    </LinkWrapper>
+                                    <div key={link.name}>
+                                        <StyledTooltip key={link.name} content={<p>{link.description}</p>}>
+                                            <LinkWrapper target="_blank" href={link.url}>
+                                                <p className="cursor-alias text-default/50 hover:text-default hover:underline">{link.name}</p>
+                                            </LinkWrapper>
+                                        </StyledTooltip>
+                                    </div>
                                 ))}
                             </div>
                             <div className="flex items-center gap-1.5 text-sm text-default/50">
@@ -216,7 +303,7 @@ export default function AccountPage() {
                                     <IconWrapper id={IconIds.REFRESH} className={cn('size-3.5', isFetching && 'animate-spin')} />
                                 </button>
                                 {isFetching ? (
-                                    <p>Refreshing with live data...</p>
+                                    <p>Fetching live onchain data</p>
                                 ) : (
                                     <>
                                         <p>Last updated</p>
@@ -233,112 +320,38 @@ export default function AccountPage() {
                         </div>
 
                         {/* Global KPIs */}
-                        <div className="hidden items-center gap-5 xl:flex">
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs uppercase tracking-wider text-default/50">AUM</span>
-                                <span className="text-lg font-semibold">{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
-                            </div>
+                        <div className="flex items-center gap-6">
+                            <KPIMetric label="AUM" value={formatUSD(metrics.portfolio?.totalUSD || 0)} />
                             <div className="h-8 w-px bg-default/20" />
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs uppercase tracking-wider text-default/50">LP Δ</span>
-                                <div className="flex items-center gap-1">
-                                    <HypeIcon size={14} />
-                                    <span
-                                        className={cn(
-                                            'text-base font-semibold',
-                                            Math.abs(metrics.hyperEvm?.deltas?.lpsHYPE || 0) < 0.1
-                                                ? 'text-default'
-                                                : Math.abs(metrics.hyperEvm?.deltas?.lpsHYPE || 0) < 10
-                                                  ? 'text-success'
-                                                  : Math.abs(metrics.hyperEvm?.deltas?.lpsHYPE || 0) < 20
-                                                    ? 'text-warning'
-                                                    : 'text-error',
-                                        )}
-                                    >
-                                        {metrics.hyperEvm?.deltas?.lpsHYPE >= 0 ? '+' : ''}
-                                        {metrics.hyperEvm?.deltas?.lpsHYPE?.toFixed(1) || '0.0'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs uppercase tracking-wider text-default/50">Wallet Δ</span>
-                                <div className="flex items-center gap-1">
-                                    <HypeIcon size={14} />
-                                    <span
-                                        className={cn(
-                                            'text-base font-semibold',
-                                            Math.abs(metrics.hyperEvm?.deltas?.balancesHYPE || 0) < 0.1
-                                                ? 'text-default'
-                                                : Math.abs(metrics.hyperEvm?.deltas?.balancesHYPE || 0) < 10
-                                                  ? 'text-success'
-                                                  : Math.abs(metrics.hyperEvm?.deltas?.balancesHYPE || 0) < 20
-                                                    ? 'text-warning'
-                                                    : 'text-error',
-                                        )}
-                                    >
-                                        {metrics.hyperEvm?.deltas?.balancesHYPE >= 0 ? '+' : ''}
-                                        {metrics.hyperEvm?.deltas?.balancesHYPE?.toFixed(1) || '0.0'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs uppercase tracking-wider text-default/50">Perp Δ</span>
-                                <div className="flex items-center gap-1">
-                                    <HypeIcon size={14} />
-                                    <span
-                                        className={cn(
-                                            'text-base font-semibold',
-                                            Math.abs(metrics.hyperCore?.deltas?.perpsHYPE || 0) < 0.1 ? 'text-default' : 'text-error',
-                                        )}
-                                    >
-                                        {metrics.hyperCore?.deltas?.perpsHYPE >= 0 ? '+' : ''}
-                                        {metrics.hyperCore?.deltas?.perpsHYPE?.toFixed(1) || '0.0'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs uppercase tracking-wider text-default/50">Spot Δ</span>
-                                <div className="flex items-center gap-1">
-                                    <HypeIcon size={14} />
-                                    <span
-                                        className={cn(
-                                            'text-base font-semibold',
-                                            Math.abs(metrics.hyperCore?.deltas?.spotHYPE || 0) < 0.1
-                                                ? 'text-default'
-                                                : Math.abs(metrics.hyperCore?.deltas?.spotHYPE || 0) < 10
-                                                  ? 'text-success'
-                                                  : Math.abs(metrics.hyperCore?.deltas?.spotHYPE || 0) < 20
-                                                    ? 'text-warning'
-                                                    : 'text-error',
-                                        )}
-                                    >
-                                        {metrics.hyperCore?.deltas?.spotHYPE >= 0 ? '+' : ''}
-                                        {metrics.hyperCore?.deltas?.spotHYPE?.toFixed(1) || '0.0'}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="h-8 w-px bg-default/20" />
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs uppercase tracking-wider text-default/50">Net Δ</span>
-                                <div className="flex items-center gap-1">
-                                    <HypeIcon size={14} />
-                                    <span
-                                        className={cn(
-                                            'text-base font-semibold',
-                                            Math.abs(metrics.portfolio?.netDeltaHYPE || 0) < 0.1
-                                                ? 'text-default'
-                                                : Math.abs(metrics.portfolio?.netDeltaHYPE || 0) < 10
-                                                  ? 'text-success'
-                                                  : Math.abs(metrics.portfolio?.netDeltaHYPE || 0) < 20
-                                                    ? 'text-warning'
-                                                    : 'text-error',
-                                        )}
-                                    >
-                                        {metrics.portfolio?.netDeltaHYPE >= 0 ? '+' : ''}
-                                        {metrics.portfolio?.netDeltaHYPE?.toFixed(1) || '0.0'}
-                                    </span>
-                                </div>
-                            </div>
+                            {/* <KPIMetric label="LP Δ" value={metrics.hyperEvm?.deltas?.lpsHYPE} icon={<HypeIcon size={15} />} colorFn={getDeltaColor} />
+                            <KPIMetric
+                                label="Wallet Δ"
+                                value={metrics.hyperEvm?.deltas?.balancesHYPE}
+                                icon={<HypeIcon size={15} />}
+                                colorFn={getDeltaColor}
+                                className="hidden md:flex"
+                            />
+                            <KPIMetric
+                                label="Perp Δ"
+                                value={metrics.hyperCore?.deltas?.perpsHYPE}
+                                icon={<HypeIcon size={15} />}
+                                colorFn={(v) => (Math.abs(v) < 0.1 ? 'text-default' : 'text-error')}
+                            />
+                            <KPIMetric
+                                label="Spot Δ"
+                                value={metrics.hyperCore?.deltas?.spotHYPE}
+                                icon={<HypeIcon size={15} />}
+                                colorFn={getDeltaColor}
+                                className="hidden md:flex"
+                            />
+                            <div className="h-8 w-px bg-default/20" /> */}
+                            <KPIMetric
+                                label="Net Δ"
+                                value={metrics.portfolio?.netDeltaHYPE}
+                                icon={<HypeIcon size={15} />}
+                                colorFn={getDeltaColor}
+                                className="items-end"
+                            />
                         </div>
                     </div>
                 }
@@ -347,20 +360,21 @@ export default function AccountPage() {
                 hyperEvm={{
                     lp: (
                         <CollapsibleCard
-                            title="Liquidity Positions"
+                            title={<h3 className="text-hyper-evm-lps text-lg font-semibold">LPs</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1 text-base text-default">
-                                        <span className="font-medium">
-                                            $ {(metrics.hyperEvm?.values?.lpsUSD || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        </span>
-                                        <span>•</span>
                                         <span>
                                             {positions.hyperEvm?.lps?.length || 0} LP{positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
                                         </span>
+                                        <span>•</span>
+                                        <span className="font-medium">
+                                            $ {(metrics.hyperEvm?.values?.lpsUSD || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        </span>
                                     </div>
-                                    <DeltaDisplay delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeIcon size={15} />
                                 </div>
                             }
                         >
@@ -369,7 +383,7 @@ export default function AccountPage() {
                     ),
                     balances: (
                         <CollapsibleCard
-                            title="Wallet"
+                            title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Balances</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
@@ -379,18 +393,15 @@ export default function AccountPage() {
                                             .toFixed(0)
                                             .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
-                                    <DeltaDisplay delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeIcon size={15} />
                                 </div>
                             }
                         >
                             <WalletBalancesTable />
                         </CollapsibleCard>
                     ),
-                    txs: (
-                        <CollapsibleCard title="Transactions" defaultExpanded={false}>
-                            <TransactionHistory account={accountFromUrl} limit={DEFAULT_TRANSACTION_LIMIT} />
-                        </CollapsibleCard>
-                    ),
+                    txs: null,
                     capital:
                         hyperEvmBreakdown.total > 0 ? (
                             <StyledTooltip
@@ -428,19 +439,20 @@ export default function AccountPage() {
                 hyperCore={{
                     short: (
                         <CollapsibleCard
-                            title="Perpetuals"
+                            title={<h3 className="text-hyper-core-perps text-lg font-semibold">Perpetuals</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1.5 text-base text-default">
+                                        <span>{(metrics.hyperCore?.perpAggregates?.avgLeverage || 0).toFixed(1)}x lev</span>
+                                        <span>•</span>
                                         <span>
                                             $ {(metrics.hyperCore?.perpAggregates?.totalMargin || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}{' '}
                                             margin
                                         </span>
-                                        <span>•</span>
-                                        <span>{(metrics.hyperCore?.perpAggregates?.avgLeverage || 0).toFixed(1)}x lev</span>
                                     </div>
-                                    <DeltaDisplay delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeIcon size={15} />
                                 </div>
                             }
                         >
@@ -449,7 +461,7 @@ export default function AccountPage() {
                     ),
                     spot: (
                         <CollapsibleCard
-                            title="Spot"
+                            title={<h3 className="text-hyper-core-spots text-lg font-semibold">Spot</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
@@ -459,7 +471,8 @@ export default function AccountPage() {
                                             .toFixed(0)
                                             .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
-                                    <DeltaDisplay delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
+                                    <HypeIcon size={15} />
                                 </div>
                             }
                         >

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 
 interface DateWrapperProps {
     date?: string | number | Date | null
+    showAgo?: boolean
     className?: string
     children?: React.ReactNode
 }
@@ -25,17 +26,19 @@ export function DateWrapper(props: DateWrapperProps) {
             content={
                 <div className="space-y-1">
                     <p>{DAYJS_FORMATS.dateLong(props.date)} UTC</p>
-                    <p>
-                        {
-                            getDurationBetween({
-                                startTs: new Date(props.date).getTime(),
-                                endTs: now.getTime(),
-                                showYears: false,
-                                showMonths: false,
-                                showWeeks: false,
-                            }).oneLiner
-                        }
-                    </p>
+                    {props.showAgo && (
+                        <p>
+                            {
+                                getDurationBetween({
+                                    startTs: new Date(props.date).getTime(),
+                                    endTs: now.getTime(),
+                                    showYears: false,
+                                    showMonths: false,
+                                    showWeeks: false,
+                                }).oneLiner
+                            }
+                        </p>
+                    )}
                 </div>
             }
         >

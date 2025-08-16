@@ -39,7 +39,10 @@ export default function StyledTooltip({
             isDisabled={isDisabled}
             content={
                 <div
-                    className={cn('z-[9999] -mt-1 flex rounded-xl p-3 text-sm shadow-lg backdrop-blur-lg will-change-transform', className)}
+                    className={cn(
+                        'z-[9999] -mb-2 flex rounded-xl bg-background/80 px-3 py-2 text-sm shadow-lg backdrop-blur-lg will-change-transform',
+                        className,
+                    )}
                     role="tooltip"
                 >
                     {content}

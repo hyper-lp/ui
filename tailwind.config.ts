@@ -19,10 +19,10 @@ const config: Config = {
                 'hl-dark-green': 'hsl(var(--color-hl-dark-green) / <alpha-value>)',
 
                 // Platform-specific colors
-                'hyper-evm-lp': 'hsl(var(--color-hyper-evm-lp) / <alpha-value>)',
+                'hyper-evm-lps': 'hsl(var(--color-hyper-evm-lps) / <alpha-value>)',
                 'hyper-evm-balances': 'hsl(var(--color-hyper-evm-balances) / <alpha-value>)',
-                'hyper-core-perp': 'hsl(var(--color-hyper-core-perp) / <alpha-value>)',
-                'hyper-core-spot': 'hsl(var(--color-hyper-core-spot) / <alpha-value>)',
+                'hyper-core-perps': 'hsl(var(--color-hyper-core-perps) / <alpha-value>)',
+                'hyper-core-spots': 'hsl(var(--color-hyper-core-spots) / <alpha-value>)',
 
                 // Status colors
                 success: 'hsl(var(--color-success) / <alpha-value>)',

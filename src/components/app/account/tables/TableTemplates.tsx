@@ -8,25 +8,37 @@ import { cn } from '@/utils'
  */
 export const LPRowTemplate = (props: {
     dex: ReactNode
-    pair: ReactNode
-    range: ReactNode
+    poolAddress: ReactNode
+    feeTier: ReactNode
+    status: ReactNode
     hype: ReactNode
     usdt: ReactNode
     value: ReactNode
-    apr: ReactNode
-    il: ReactNode
+    split: ReactNode
+    tvl: ReactNode
+    apr24h: ReactNode
+    apr7d: ReactNode
+    apr30d: ReactNode
+    positionId: ReactNode
+    nftId: ReactNode
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center text-xs', props.className)}>
-            <div className="w-[60px] px-2">{props.dex}</div>
-            <div className="w-[140px] px-2">{props.pair}</div>
-            <div className="w-[80px] px-2">{props.range}</div>
-            <div className="w-[100px] px-2 text-right">{props.hype}</div>
-            <div className="w-[100px] px-2 text-right">{props.usdt}</div>
-            <div className="w-[100px] px-2 text-right">{props.value}</div>
-            <div className="w-[80px] px-2 text-right">{props.apr}</div>
-            <div className="w-[80px] px-2 text-right">{props.il}</div>
+        <div className={cn('flex items-center gap-1 px-2 text-sm', props.className)}>
+            <div className="w-[70px] pl-2">{props.dex}</div>
+            <div className="w-[70px]">{props.poolAddress}</div>
+            <div className="w-[55px]">{props.feeTier}</div>
+            <div className="w-[55px]">{props.status}</div>
+            <div className="w-[60px] text-center">{props.value}</div>
+            <div className="w-[60px] text-center">{props.hype}</div>
+            <div className="w-[60px] text-center">{props.usdt}</div>
+            <div className="w-[70px] text-center">{props.split}</div>
+            <div className="w-[50px] text-center">{props.tvl}</div>
+            <div className="w-[60px] text-center">{props.apr24h}</div>
+            <div className="w-[60px] text-center">{props.apr7d}</div>
+            <div className="w-[65px] text-center">{props.apr30d}</div>
+            <div className="w-[80px] text-center">{props.positionId}</div>
+            <div className="w-[80px] text-right">{props.nftId}</div>
         </div>
     )
 }

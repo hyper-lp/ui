@@ -4,10 +4,11 @@ import { cn } from '@/utils'
 import { ReactNode } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 // import FileMapper from '@/components/common/FileMapper'
-import IconWrapper from '@/components/icons/IconWrapper'
-import { IconIds } from '@/enums'
-import { useAppStore } from '@/stores/app.store'
+import { FileIds } from '@/enums'
 import { SectionCard, ThemeCard } from './Cards'
+import FileMapper from '@/components/common/FileMapper'
+import { useTheme } from 'next-themes'
+import { AppThemes } from '@/enums'
 
 export function ErrorBoundaryTemplate(props: { error: string }) {
     return (
@@ -42,9 +43,7 @@ export default function AccountTemplate(props: {
     charts?: ReactNode
     className?: string
 }) {
-    const { sectionStates, toggleSection } = useAppStore()
-    const hyperEvmExpanded = sectionStates.hyperEvm
-    const hyperCoreExpanded = sectionStates.hyperCore
+    const { resolvedTheme } = useTheme()
 
     return (
         <div className={cn('flex flex-col gap-4', props.className)}>
@@ -54,10 +53,10 @@ export default function AccountTemplate(props: {
             {/* --------------- Content */}
             <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
                 {/* 1. historic of snapshots */}
-                <SectionCard className="min-h-[400px]">{props.charts}</SectionCard>
+                <SectionCard className="h-[400px] w-full !p-1 md:!p-2">{props.charts}</SectionCard>
 
                 {/* 2. last snapshot */}
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid h-min grid-cols-1 gap-2">
                     {/* Global summary section - only render if summary is provided */}
                     {props.summary && (
                         <SectionCard>
@@ -87,79 +86,43 @@ export default function AccountTemplate(props: {
                     )}
 
                     {/* HyperEvm */}
-                    <SectionCard>
-                        <div className="flex items-center justify-between px-4 pb-2 pt-4">
-                            <button onClick={() => toggleSection('hyperEvm')} className="flex items-center gap-2">
-                                <IconWrapper
-                                    id={hyperEvmExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                                    className="size-5 text-default/50"
-                                />
-                                <p>HyperEvm</p>
-                                {/* <FileMapper id={FileIds.HYPER_EVM_DARK} width={140} height={20} className="rounded-none" /> */}
-                            </button>
-                            <div className="flex items-center gap-3">
-                                {props.hyperEvm.delta}
-                                {props.hyperEvm.capital}
-                            </div>
+                    <SectionCard className="!border-none !px-0">
+                        <FileMapper
+                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_WHITE : FileIds.HYPER_EVM_DARK}
+                            width={140}
+                            height={24}
+                            className="mb-1 ml-2 rounded-none"
+                        />
+                        <div className="flex flex-col gap-2 p-2">
+                            {/* HYPE LPs */}
+                            <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm LPs" />}>{props.hyperEvm.lp}</ErrorBoundary>
+
+                            {/* Balances */}
+                            <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm balances" />}>
+                                {props.hyperEvm.balances}
+                            </ErrorBoundary>
                         </div>
-
-                        {/* sections */}
-                        {hyperEvmExpanded && (
-                            <div className="flex flex-col gap-2 p-2">
-                                {/* HYPE LPs */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm LPs" />}>
-                                    {props.hyperEvm.lp}
-                                </ErrorBoundary>
-
-                                {/* Balances */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm balances" />}>
-                                    {props.hyperEvm.balances}
-                                </ErrorBoundary>
-
-                                {/* Txs */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm TXs" />}>
-                                    {props.hyperEvm.txs}
-                                </ErrorBoundary>
-                            </div>
-                        )}
                     </SectionCard>
 
                     {/* HyperCore */}
-                    <SectionCard>
-                        <div className="flex items-center justify-between px-4 pb-2 pt-4">
-                            <button onClick={() => toggleSection('hyperCore')} className="flex items-center gap-2">
-                                <IconWrapper
-                                    id={hyperCoreExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                                    className="size-5 text-default/50"
-                                />
-                                <p>HyperCore</p>
-                                {/* <FileMapper id={FileIds.HYPER_CORE_DARK} width={140} height={20} /> */}
-                            </button>
-                            <div className="flex items-center gap-3">
-                                {props.hyperCore.delta}
-                                {props.hyperCore.capital}
-                            </div>
+                    <SectionCard className="h-min !border-none !px-0">
+                        <FileMapper
+                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_WHITE : FileIds.HYPER_CORE_DARK}
+                            width={140}
+                            height={24}
+                            className="mb-1 ml-2 rounded-none"
+                        />
+                        <div className="flex flex-col gap-2 p-2">
+                            {/* HYPE Short */}
+                            <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperCore Short" />}>
+                                {props.hyperCore.short}
+                            </ErrorBoundary>
+
+                            {/* Spot */}
+                            <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperCore Spot" />}>
+                                {props.hyperCore.spot}
+                            </ErrorBoundary>
                         </div>
-
-                        {/* sections */}
-                        {hyperCoreExpanded && (
-                            <div className="flex flex-col gap-2 p-2">
-                                {/* HYPE Short */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperCore Short" />}>
-                                    {props.hyperCore.short}
-                                </ErrorBoundary>
-
-                                {/* Spot */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperCore Spot" />}>
-                                    {props.hyperCore.spot}
-                                </ErrorBoundary>
-
-                                {/* Txs */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperCore TXs" />}>
-                                    {props.hyperCore.txs}
-                                </ErrorBoundary>
-                            </div>
-                        )}
                     </SectionCard>
                 </div>
             </div>

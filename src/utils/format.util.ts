@@ -73,13 +73,6 @@ export const formatUSD = (amount: number | string) => {
 }
 
 /**
- * Format value as percentage
- */
-export function formatPercentage(value: number, decimals = 2): string {
-    return `${formatNumber(value, decimals)}%`
-}
-
-/**
  * Convert wei/smallest unit to token amount
  */
 export function formatTokenAmount(amount: bigint | string | number, decimals: number): number {
@@ -88,30 +81,10 @@ export function formatTokenAmount(amount: bigint | string | number, decimals: nu
 }
 
 /**
- * Format large numbers with K, M, B suffixes
- */
-export function formatCompactNumber(value: number): string {
-    const formatter = new Intl.NumberFormat('en-US', {
-        notation: 'compact',
-        maximumFractionDigits: 2,
-    })
-    return formatter.format(value)
-}
-
-/**
  * Format token amount with symbol
  */
 export function formatTokenWithSymbol(amount: number, symbol: string, decimals = 4): string {
     return `${formatNumber(amount, decimals)} ${symbol}`
-}
-
-/**
- * Format APR/APY as percentage
- */
-export function formatAPR(value: number): string {
-    if (value === 0) return '0%'
-    if (value < 0.01) return '<0.01%'
-    return formatPercentage(value, value < 1 ? 2 : 0)
 }
 
 /**

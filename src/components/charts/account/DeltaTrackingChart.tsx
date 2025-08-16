@@ -13,11 +13,10 @@ import numeral from 'numeral'
 const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in dataZoom
 
 const grid = {
-    top: 50,
+    top: 70,
     right: 100,
     bottom: 50,
     left: 45,
-    // left: 15,
     containLabel: true,
 }
 
@@ -317,9 +316,9 @@ export default function DeltaTrackingChart() {
                         },
                     },
                 },
-                itemSize: 12,
+                itemSize: 10,
                 top: 15,
-                right: 5,
+                right: 0,
             },
             grid,
             xAxis: {
@@ -656,8 +655,8 @@ export default function DeltaTrackingChart() {
                     xAxisIndex: 0,
                     start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / storedSnapshots.length),
                     end: zoomRangeRef.current?.x?.end ?? 100,
-                    height: 12,
-                    bottom: 15,
+                    height: 16,
+                    bottom: 20,
                     backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
                     borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
                     fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
@@ -716,8 +715,8 @@ export default function DeltaTrackingChart() {
                     yAxisIndex: 0,
                     start: zoomRangeRef.current?.y?.start ?? 0,
                     end: zoomRangeRef.current?.y?.end ?? 100,
-                    width: 12,
-                    left: 10,
+                    width: 16,
+                    left: 12,
                     backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
                     borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
                     fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',

@@ -6,9 +6,6 @@
 export const DEFAULT_TRANSACTION_LIMIT = 10
 export const TRANSACTION_PAGE_SIZE = 50
 
-// Price Defaults
-export const DEFAULT_HYPE_PRICE = 30
-
 // Delta Thresholds
 export const DELTA_THRESHOLDS = {
     NEUTRAL: 0.01,
@@ -28,7 +25,7 @@ export const TIME_INTERVALS = {
 // Refresh Intervals
 export const REFRESH_INTERVALS = {
     DEV: TIME_INTERVALS.MINUTES_5, // 5 minutes for development
-    PROD: TIME_INTERVALS.SECONDS_10, // 10 seconds for production
+    PROD: TIME_INTERVALS.SECONDS_30, // 30 seconds for production
     CACHE_GC: TIME_INTERVALS.MINUTES_5, // Query cache garbage collection
     RATE_LIMIT: TIME_INTERVALS.MINUTES_5, // Rate limit window
 } as const

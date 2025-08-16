@@ -19,7 +19,7 @@ export const LPRowTemplate = (props: {
 }) => {
     return (
         <div className={cn('flex items-center text-xs', props.className)}>
-            <div className="w-[140px] px-2">{props.dex}</div>
+            <div className="w-[60px] px-2">{props.dex}</div>
             <div className="w-[140px] px-2">{props.pair}</div>
             <div className="w-[80px] px-2">{props.range}</div>
             <div className="w-[100px] px-2 text-right">{props.hype}</div>

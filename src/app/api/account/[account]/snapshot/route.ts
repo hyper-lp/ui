@@ -1,61 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { positionFetcher } from '@/services/core/position-fetcher.service'
+import { poolAPRService } from '@/services/dex/pool-apr.service'
+import { priceAggregator } from '@/services/price/price-aggregator.service'
 import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { LPPosition } from '@/interfaces'
 
-// Helper function to calculate total USD value
 const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
 
 const sumNotionalValue = (items: Array<{ notionalValue: number }>) => items.reduce((sum, item) => sum + item.notionalValue, 0)
 
-// Helper function to format LP positions with fee tier
 const formatLPPositions = (positions: LPPosition[]) =>
     positions.map((p) => ({
         ...p,
         feeTier: p.fee ? `${(p.fee / 10000).toFixed(2)}%` : null,
     }))
 
-// Helper to build metrics for a platform
-const buildPlatformMetrics = (values: { primary: number; secondary: number }, deltas: { primary: number; secondary: number }) => ({
-    values: {
-        lpsUSD: values.primary,
-        balancesUSD: values.secondary,
-        totalUSD: values.primary + values.secondary,
-    },
-    deltas: {
-        lpsHYPE: deltas.primary,
-        balancesHYPE: deltas.secondary,
-        totalHYPE: deltas.primary + deltas.secondary,
-    },
-})
-
-const buildCorePlatformMetrics = (values: { perps: number; spots: number }, deltas: { perps: number; spots: number }) => ({
-    values: {
-        perpsUSD: values.perps,
-        spotUSD: values.spots,
-        totalUSD: values.perps + values.spots,
-    },
-    deltas: {
-        perpsHYPE: deltas.perps,
-        spotHYPE: deltas.spots,
-        totalHYPE: deltas.perps + deltas.spots,
-    },
-})
-
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ account: string }> }) {
     try {
         const { account } = await params
         const accountAddress = account.toLowerCase()
 
-        // Fetch all positions from blockchain
+        // Fetch all positions and pool APR data in parallel
+        const [positionsData, poolAPRData] = await Promise.all([positionFetcher.fetchAllPositions(accountAddress), poolAPRService.fetchAllPoolAPR()])
+
         const {
             lpData: lpPositions,
             spotData: spotBalances,
             perpData: perpPositions,
             hyperEvmData: hyperEvmBalances,
             timings: fetchTimings,
-        } = await positionFetcher.fetchAllPositions(accountAddress)
+        } = positionsData
 
         // Calculate USD values
         const usdValues = {
@@ -107,15 +82,29 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             },
 
             metrics: {
-                hyperEvm: buildPlatformMetrics(
-                    { primary: usdValues.lps, secondary: usdValues.balances },
-                    { primary: deltaValues.lps, secondary: deltaValues.balances },
-                ),
+                hyperEvm: {
+                    values: {
+                        lpsUSD: usdValues.lps,
+                        balancesUSD: usdValues.balances,
+                        totalUSD: usdValues.lps + usdValues.balances,
+                    },
+                    deltas: {
+                        lpsHYPE: deltaValues.lps,
+                        balancesHYPE: deltaValues.balances,
+                        totalHYPE: deltaValues.lps + deltaValues.balances,
+                    },
+                },
                 hyperCore: {
-                    ...buildCorePlatformMetrics(
-                        { perps: usdValues.perps, spots: usdValues.spots },
-                        { perps: deltaValues.perps, spots: deltaValues.spots },
-                    ),
+                    values: {
+                        perpsUSD: usdValues.perps,
+                        spotUSD: usdValues.spots,
+                        totalUSD: usdValues.perps + usdValues.spots,
+                    },
+                    deltas: {
+                        perpsHYPE: deltaValues.perps,
+                        spotHYPE: deltaValues.spots,
+                        totalHYPE: deltaValues.perps + deltaValues.spots,
+                    },
                     perpAggregates,
                 },
                 portfolio: {
@@ -124,11 +113,14 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
                 },
             },
 
-            // Price data - get real HYPE price from positionFetcher
+            marketData: {
+                poolAPR: poolAPRData,
+            },
+
             prices: {
-                HYPE: positionFetcher.getTokenPrice('HYPE') || positionFetcher.getTokenPrice('WHYPE') || 100,
-                USDC: 1,
-                USDT: 1,
+                HYPE: positionFetcher.getTokenPrice('HYPE') || positionFetcher.getTokenPrice('WHYPE') || (await priceAggregator.getTokenPrice('HYPE')) || 0,
+                USDC: positionFetcher.getTokenPrice('USDC') || 1,
+                USDT: positionFetcher.getTokenPrice('USDT') || 1,
             },
 
             timings: {

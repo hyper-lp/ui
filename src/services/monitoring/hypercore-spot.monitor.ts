@@ -2,6 +2,7 @@ import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import type { MonitoredAccount, SpotBalance as DbSpotBalance } from '@/generated/prisma-monitoring'
 import type { SpotBalance } from '@/interfaces'
 import { Prisma } from '@prisma/client-monitoring'
+import { priceAggregator } from '@/services/price/price-aggregator.service'
 
 const { Decimal } = Prisma
 
@@ -244,18 +245,27 @@ export class HyperCoreSpotMonitor {
             this.tokenPriceCache.set('USDT0', 1)
             this.tokenPriceCache.set('USDC', 1)
 
-            // Fallback prices if not found
+            // Fetch HYPE price from aggregator if not found
             if (!this.tokenPriceCache.has('HYPE')) {
-                this.tokenPriceCache.set('HYPE', 44.8)
+                const hypePrice = await priceAggregator.getTokenPrice('HYPE')
+                if (hypePrice !== null) {
+                    this.tokenPriceCache.set('HYPE', hypePrice)
+                }
             }
 
             this.cacheTimestamp = Date.now()
         } catch (error) {
             console.error('Error fetching token prices:', error)
-            // Use fallback prices on error
-            this.tokenPriceCache.set('HYPE', 44.8)
-            this.tokenPriceCache.set('USDT0', 1)
-            this.tokenPriceCache.set('USDC', 1)
+            // Use price aggregator for fallback prices
+            const fallbackPrices = await priceAggregator.getTokenPrices(['HYPE', 'USDT0', 'USDC'])
+            for (const [symbol, price] of fallbackPrices) {
+                if (price !== null) {
+                    this.tokenPriceCache.set(symbol, price)
+                }
+            }
+            // Set stable coin prices to 1 if not found
+            if (!this.tokenPriceCache.has('USDT0')) this.tokenPriceCache.set('USDT0', 1)
+            if (!this.tokenPriceCache.has('USDC')) this.tokenPriceCache.set('USDC', 1)
         }
     }
 

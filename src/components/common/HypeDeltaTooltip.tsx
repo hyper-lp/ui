@@ -2,17 +2,16 @@
 
 import StyledTooltip from './StyledTooltip'
 import { formatUSD, formatDelta, getDeltaColor } from '@/utils/format.util'
-import { DEFAULT_HYPE_PRICE } from '@/config/app.config'
 
 interface HypeDeltaTooltipProps {
     delta: number
-    hypePrice?: number
+    hypePrice: number // Now required
     className?: string
     decimals?: number
     children?: React.ReactNode
 }
 
-export function HypeDeltaTooltip({ delta, hypePrice = DEFAULT_HYPE_PRICE, className, decimals = 1, children }: HypeDeltaTooltipProps) {
+export function HypeDeltaTooltip({ delta, hypePrice, className, decimals = 1, children }: HypeDeltaTooltipProps) {
     return (
         <StyledTooltip
             content={

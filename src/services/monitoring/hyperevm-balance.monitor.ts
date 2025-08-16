@@ -6,6 +6,7 @@ import type { MonitoredAccount } from '@/generated/prisma-monitoring'
 import type { HyperEvmBalance } from '@/interfaces'
 import { Prisma } from '@prisma/client-monitoring'
 import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
+import { priceAggregator } from '@/services/price/price-aggregator.service'
 
 const { Decimal } = Prisma
 
@@ -283,20 +284,32 @@ export class HyperEvmBalanceMonitor {
             this.tokenPriceCache.set('USDT0', 1)
             this.tokenPriceCache.set('USDC', 1)
 
-            // Fallback prices if not found in API
+            // Fetch HYPE price from aggregator if not found
             if (!this.tokenPriceCache.has('HYPE')) {
-                this.tokenPriceCache.set('HYPE', 44.8)
-                this.tokenPriceCache.set('WHYPE', 44.8)
+                const hypePrice = await priceAggregator.getTokenPrice('HYPE')
+                if (hypePrice !== null) {
+                    this.tokenPriceCache.set('HYPE', hypePrice)
+                    this.tokenPriceCache.set('WHYPE', hypePrice)
+                }
             }
 
             this.cacheTimestamp = Date.now()
         } catch (error) {
             console.error('Error fetching token prices:', error)
-            // Use fallback prices on error
-            this.tokenPriceCache.set('HYPE', 44.8)
-            this.tokenPriceCache.set('WHYPE', 44.8)
-            this.tokenPriceCache.set('USDT0', 1)
-            this.tokenPriceCache.set('USDC', 1)
+            // Use price aggregator for fallback prices
+            const fallbackPrices = await priceAggregator.getTokenPrices(['HYPE', 'USDT0', 'USDC'])
+            for (const [symbol, price] of fallbackPrices) {
+                if (price !== null) {
+                    this.tokenPriceCache.set(symbol, price)
+                    // Also set WHYPE price same as HYPE
+                    if (symbol === 'HYPE') {
+                        this.tokenPriceCache.set('WHYPE', price)
+                    }
+                }
+            }
+            // Set stable coin prices to 1 if not found
+            if (!this.tokenPriceCache.has('USDT0')) this.tokenPriceCache.set('USDT0', 1)
+            if (!this.tokenPriceCache.has('USDC')) this.tokenPriceCache.set('USDC', 1)
         }
     }
 

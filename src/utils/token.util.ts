@@ -2,7 +2,7 @@
  * Token-related utility functions
  */
 
-import { HYPE_TOKENS, STABLE_TOKENS, DEFAULT_HYPE_PRICE } from '@/config/constants.config'
+import { HYPE_TOKENS, STABLE_TOKENS } from '@/config/constants.config'
 
 export function isHypeToken(symbol: string): boolean {
     return (HYPE_TOKENS as readonly string[]).includes(symbol)
@@ -28,7 +28,7 @@ interface Balance {
     decimals: number
 }
 
-export function calculateHypePrice(positions: { lp?: Position[]; wallet?: Balance[] }): number {
+export function calculateHypePrice(positions: { lp?: Position[]; wallet?: Balance[] }): number | null {
     // Try to get from LP positions
     if (positions.lp?.length) {
         const hypePosition = positions.lp.find(
@@ -54,8 +54,8 @@ export function calculateHypePrice(positions: { lp?: Position[]; wallet?: Balanc
         }
     }
 
-    // Default fallback
-    return DEFAULT_HYPE_PRICE
+    // Return null if we can't determine the price
+    return null
 }
 
 export interface TokenBreakdown {

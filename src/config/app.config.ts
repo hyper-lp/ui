@@ -8,7 +8,6 @@ import { Lato } from 'next/font/google'
 // Re-export from constants for backward compatibility
 export {
     DEFAULT_TRANSACTION_LIMIT,
-    DEFAULT_HYPE_PRICE,
     DELTA_THRESHOLDS,
     CACHE_DURATION,
     REFRESH_INTERVALS,

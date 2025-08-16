@@ -4,8 +4,6 @@ export const DELTA_THRESHOLDS = {
     NEAR_NEUTRAL: 1,
 } as const
 
-export const DEFAULT_HYPE_PRICE = 30
-
 export const POSITION_COLORS = {
     LONG: {
         bg: 'bg-green-100',

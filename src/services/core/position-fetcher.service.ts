@@ -7,6 +7,7 @@ import { calculateTokenAmounts } from '@/utils/uniswap-v3.util'
 import { keccak256, encodePacked, getAddress } from 'viem'
 import type { PoolState, LPPosition, SpotBalance, PerpPosition, HyperEvmBalance } from '@/interfaces'
 import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
+import { priceAggregator } from '@/services/price/price-aggregator.service'
 
 export class PositionFetcher {
     private poolStateCache = new Map<string, PoolState>()
@@ -221,8 +222,20 @@ export class PositionFetcher {
             })
 
             // Destructure position data from the contract response
-            const [, , token0, token1, fee, tickLower, tickUpper, liquidity, , , tokensOwed0, tokensOwed1] = 
-                positionData as readonly [bigint, string, string, string, number, number, number, bigint, bigint, bigint, bigint, bigint]
+            const [, , token0, token1, fee, tickLower, tickUpper, liquidity, , , tokensOwed0, tokensOwed1] = positionData as readonly [
+                bigint,
+                string,
+                string,
+                string,
+                number,
+                number,
+                number,
+                bigint,
+                bigint,
+                bigint,
+                bigint,
+                bigint,
+            ]
 
             // For now, show all positions - we can filter later
             // if (!this.isHypeUsdt0Pair(token0 as string, token1 as string)) {
@@ -627,10 +640,13 @@ export class PositionFetcher {
             this.tokenPriceCache.set('USDT0', 1)
             this.tokenPriceCache.set('USDC', 1)
 
-            // Fallback prices if not found in API
+            // Fetch HYPE price from aggregator if not found
             if (!this.tokenPriceCache.has('HYPE')) {
-                this.tokenPriceCache.set('HYPE', 44.8)
-                this.tokenPriceCache.set('WHYPE', 44.8)
+                const hypePrice = await priceAggregator.getTokenPrice('HYPE')
+                if (hypePrice !== null) {
+                    this.tokenPriceCache.set('HYPE', hypePrice)
+                    this.tokenPriceCache.set('WHYPE', hypePrice)
+                }
             }
             if (!this.tokenPriceCache.has('BTC')) {
                 this.tokenPriceCache.set('BTC', 100000)
@@ -642,12 +658,20 @@ export class PositionFetcher {
             // Token prices fetched and cached
         } catch (error) {
             console.error('Error fetching token prices:', error)
-            // Use fallback prices on error
-            this.tokenPriceCache.set('HYPE', 44.8)
-            this.tokenPriceCache.set('WHYPE', 44.8)
-            this.tokenPriceCache.set('USDT0', 1)
-            this.tokenPriceCache.set('USDC', 1)
-            this.tokenPriceCache.set('BTC', 100000)
+            // Use price aggregator for fallback prices
+            const fallbackPrices = await priceAggregator.getTokenPrices(['HYPE', 'USDT0', 'USDC', 'BTC'])
+            for (const [symbol, price] of fallbackPrices) {
+                if (price !== null) {
+                    this.tokenPriceCache.set(symbol, price)
+                    // Also set WHYPE price same as HYPE
+                    if (symbol === 'HYPE') {
+                        this.tokenPriceCache.set('WHYPE', price)
+                    }
+                }
+            }
+            // Set stable coin prices to 1 if not found
+            if (!this.tokenPriceCache.has('USDT0')) this.tokenPriceCache.set('USDT0', 1)
+            if (!this.tokenPriceCache.has('USDC')) this.tokenPriceCache.set('USDC', 1)
             this.tokenPriceCache.set('ETH', 3800)
         }
     }
@@ -762,7 +786,7 @@ export class PositionFetcher {
             const balances: HyperEvmBalance[] = []
 
             // Add native HYPE balance
-            const hypePrice = this.tokenPriceCache.get('HYPE') || 44.8
+            const hypePrice = this.tokenPriceCache.get('HYPE') || (await priceAggregator.getTokenPrice('HYPE')) || 0
             const nativeHypeAmount = Number(nativeBalance) / 10 ** 18
             if (nativeHypeAmount > 0.0001) {
                 balances.push({

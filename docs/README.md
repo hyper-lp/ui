@@ -1,94 +1,72 @@
 # HyperLP Documentation
 
-Comprehensive technical documentation for the HyperLP delta-neutral liquidity vault on Hyperliquid.
+Essential technical documentation for the HyperLP delta-neutral liquidity vault.
 
-## 📚 Documentation Index
+## 📚 Core Documentation
 
-### 🏗️ Architecture & Design
-- [Architecture Overview](./architecture/ARCHITECTURE.md) - System architecture and components
-- [Architecture Changes](./architecture/ARCHITECTURE_CHANGES.md) - Major architectural decisions and evolution
-- [Data Flow](./architecture/DATA_FLOW.md) - How data moves through the system
-- [Terminology Guide](./architecture/TERMINOLOGY.md) - Business and trading terminology
-- [Technical Identifiers](./architecture/TECHNICAL_IDENTIFIERS.md) - Token IDs, Spot IDs, and Asset IDs on Hyperliquid
+### [Architecture](./ARCHITECTURE.md)
+System overview, tech stack, components, and development patterns.
 
-### 🚀 Setup & Deployment
-- [Database Setup](./setup/DATABASE_SETUP.md) - PostgreSQL configuration with Prisma
-- [Migration Guide](./setup/MIGRATION_GUIDE.md) - Database migration procedures
+### [Data Flow](./DATA_FLOW.md)
+Complete data flow from component → hook → API → service → blockchain and back.
 
-### 🔧 Development
-- [Multiple Databases](./development/MULTIPLE_DATABASES.md) - Multi-database architecture with separate monitoring and referrals DBs
+### [Database](./DATABASE.md)
+Multi-database setup with Prisma, migration management, and Vercel deployment.
 
-### 💡 Features
-- [LP Indexing](./features/LP_INDEXING.md) - Comprehensive guide for indexing LP positions and P&L tracking
+### [P&L Tracking](./PNL_TRACKING.md)
+P&L calculation formulas, rebalancing logic, and implementation roadmap.
 
-### 🔒 Security
-- [Security Policies](./security/SECURITY.md) - Security best practices and guidelines
+## 🚀 Quick Start
 
-## 🎯 Quick Start
+1. **Setup Environment**
+   ```bash
+   cp .env.example .env.local
+   pnpm install
+   pnpm prisma:generate
+   ```
 
-### For Developers
-1. Start with [Architecture Overview](./architecture/ARCHITECTURE.md)
-2. Review [Terminology Guide](./architecture/TERMINOLOGY.md) for domain concepts
-3. Check [Technical Identifiers](./architecture/TECHNICAL_IDENTIFIERS.md) for blockchain integration
-4. Follow [Database Setup](./setup/DATABASE_SETUP.md) for local development
+2. **Start Development**
+   ```bash
+   pnpm dev
+   ```
 
-### For Contributors
-1. Read [CLAUDE.md](../CLAUDE.md) for AI-assisted development guidelines
-2. Review [Architecture Changes](./architecture/ARCHITECTURE_CHANGES.md) for context
-3. Check [Data Flow](./architecture/DATA_FLOW.md) to understand system interactions
+3. **Database Commands**
+   ```bash
+   pnpm prisma:studio      # Open Prisma Studio
+   pnpm db:sync           # Check database sync
+   pnpm db:migrate        # Run migrations
+   ```
+
+## 🎯 Key Concepts
+
+### Delta-Neutral Strategy
+- Provide liquidity on HyperEVM DEXs
+- Hedge with perpetual shorts on HyperCore
+- Maintain neutral exposure while earning fees
+
+### Supported DEXs
+- Hyperswap V3
+- Project X
+- Hybra Finance
+
+### Token Pairs
+- HYPE/USDT0 (primary focus)
+- HYPE token: `0x5555555555555555555555555555555555`
+- USDT0 token: `0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb`
 
 ## 📁 Project Structure
 
 ```
 docs/
-├── architecture/          # System design and technical concepts
-│   ├── ARCHITECTURE.md
-│   ├── ARCHITECTURE_CHANGES.md
-│   ├── DATA_FLOW.md
-│   ├── TECHNICAL_IDENTIFIERS.md
-│   └── TERMINOLOGY.md
-├── development/          # Development guides and tools
-│   └── MULTIPLE_DATABASES.md
-├── features/             # Feature implementations
-│   └── LP_INDEXING.md
-├── security/             # Security documentation
-│   └── SECURITY.md
-├── setup/                # Installation and setup
-│   ├── DATABASE_SETUP.md
-│   └── MIGRATION_GUIDE.md
-└── README.md            # This file
+├── README.md          # This file
+├── ARCHITECTURE.md    # System design and components
+├── DATABASE.md        # Database configuration
+└── PNL_TRACKING.md    # P&L calculation and tracking
 ```
 
 ## 🔗 Related Resources
 
-### Internal
-- [Main Project README](../README.md) - Project overview and getting started
+- [Main README](../README.md) - Project overview
 - [CLAUDE.md](../CLAUDE.md) - AI assistant configuration
-- [Scripts Documentation](../scripts/README.md) - Utility scripts
-
-### External
 - [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs/)
-- [HyperEVM Documentation](https://docs.hyperevm.com/)
-- [Prisma Documentation](https://www.prisma.io/docs/)
-
-## 📝 Documentation Standards
-
-### Adding New Documentation
-1. **Location**: Place in the appropriate subdirectory
-2. **Naming**: Use UPPERCASE.md for important docs, lowercase.md for guides
-3. **Format**: Follow existing markdown conventions
-4. **Index**: Update this README with new entries
-5. **Cross-references**: Link related documents
-
-### Document Types
-- **Architecture**: System design, data flow, technical decisions
-- **Setup**: Installation, configuration, deployment guides
-- **Implementation**: Feature specs, integration guides
-- **Security**: Security policies, vulnerability handling
-
-## 🚧 Upcoming Documentation
-- Smart contract integration guide
-- Rebalancer bot implementation
-- API documentation
-- Performance optimization guide
-- Monitoring and alerting setup
+- [Prisma Docs](https://www.prisma.io/docs/)

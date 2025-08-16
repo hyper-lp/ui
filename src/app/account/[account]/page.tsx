@@ -23,6 +23,8 @@ import { DateWrapperAccurate } from '@/components/common/DateWrapper'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { IconIds } from '@/enums'
+import LinkWrapper from '@/components/common/LinkWrapper'
+import { env } from '@/env/t3-env'
 
 // Dynamically import chart to avoid SSR issues
 const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
@@ -125,8 +127,8 @@ export default function AccountPage() {
     // Get HYPE price from the latest snapshot data, fallback to calculated price
     const hypePrice = prices?.HYPE || calculateHypePrice({ lp: positions.hyperEvm?.lps, wallet: positions.hyperEvm?.balances })
 
-    // Show loading state while initial data is being fetched
-    if (isLoading && !snapshot) {
+    // Show loading state while initial data is being fetched or if we don't have price data
+    if ((isLoading && !snapshot) || !hypePrice) {
         return (
             <PageWrapper>
                 <AccountTemplate
@@ -181,20 +183,40 @@ export default function AccountPage() {
             <AccountTemplate
                 header={
                     <div className="flex items-center justify-between px-2 md:px-4">
-                        <div className="flex flex-col gap-1">
-                            <p className="hidden text-lg font-medium md:flex">{accountFromUrl}</p>
-                            <p className="flex text-lg font-medium md:hidden">{shortenValue(accountFromUrl, 6)}</p>
-                            <div className="flex items-center gap-1 text-sm text-default/50">
+                        <div className="flex flex-col">
+                            <div className="flex items-baseline gap-2 text-sm">
+                                <p className="hidden text-lg font-medium lg:flex">{accountFromUrl}</p>
+                                <p className="flex text-lg font-medium lg:hidden">{shortenValue(accountFromUrl, 6)}</p>
+                                {[
+                                    {
+                                        name: 'debank',
+                                        url: `https://debank.com/profile/${accountFromUrl}`,
+                                    },
+                                    {
+                                        name: 'scan',
+                                        url: `https://hyperevmscan.io/address/${accountFromUrl}`,
+                                    },
+                                    {
+                                        name: 'raw',
+                                        url: `${env.NEXT_PUBLIC_APP_URL}/api/account/0xB0Aa56926bE166Bcc5FB6Cf1169f56d9Fd7A25d7/snapshot`,
+                                    },
+                                ].map((link) => (
+                                    <LinkWrapper key={link.name} target="_blank" href={link.url}>
+                                        <p className="cursor-alias text-default/50 hover:text-default hover:underline">{link.name}</p>
+                                    </LinkWrapper>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-sm text-default/50">
                                 <button
                                     onClick={() => refetch()}
                                     disabled={isFetching}
-                                    className="rounded p-1 hover:bg-default/10 disabled:opacity-50"
+                                    className="rounded bg-default/5 p-1 hover:bg-default/10 hover:text-default disabled:opacity-50"
                                     title="Refresh all page data for this address"
                                 >
-                                    <IconWrapper id={IconIds.REFRESH} className={cn(`size-4`, isFetching && 'animate-spin')} />
+                                    <IconWrapper id={IconIds.REFRESH} className={cn('size-3.5', isFetching && 'animate-spin')} />
                                 </button>
                                 {isFetching ? (
-                                    <p>Updating with latest data...</p>
+                                    <p>Refreshing with live data...</p>
                                 ) : (
                                     <>
                                         <p>Last updated</p>

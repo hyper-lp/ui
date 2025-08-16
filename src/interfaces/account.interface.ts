@@ -4,6 +4,7 @@
  */
 
 import type { LPPosition, PerpPosition, SpotBalance, HyperEvmBalance } from './positions.interface'
+import type { AggregatedPoolAPR } from './pool-apr.interface'
 
 /**
  * Main account data interface - the single source of truth for account information
@@ -68,14 +69,19 @@ export interface AccountSnapshot {
         }
     }
 
-    // 3. prices
+    // 3. Market data (not user-specific)
+    marketData: {
+        poolAPR?: AggregatedPoolAPR // HYPE/USDT0 pool APR data across all DEXs
+    }
+
+    // 4. prices
     prices: {
         HYPE: number // HYPE price in USD
         USDC: number // USDC price in USD
         USDT: number // USDT price in USD
     }
 
-    // 4. Performance timings
+    // 5. Performance timings
     timings: {
         hyperEvm: {
             lpsMs: number // LP fetch time in milliseconds

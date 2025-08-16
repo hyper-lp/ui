@@ -25,7 +25,19 @@ export function AccountSummaryCards() {
     }
 
     const { positions, metrics, prices } = snapshot
-    const hypePrice = prices?.HYPE || 100
+    const hypePrice = prices?.HYPE
+
+    // If we don't have price data, show loading state
+    if (!hypePrice) {
+        return (
+            <>
+                <ThemeCard isLoading />
+                <ThemeCard isLoading />
+                <ThemeCard isLoading />
+                <ThemeCard isLoading />
+            </>
+        )
+    }
 
     return (
         <>

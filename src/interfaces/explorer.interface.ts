@@ -95,7 +95,7 @@ export interface TokenPair {
 /**
  * Pool information for filtering
  */
-export interface PoolInfo {
+export interface ExplorerPoolInfo {
     address: string
     dex: DexProtocol
     token0: string

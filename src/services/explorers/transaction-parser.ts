@@ -1,4 +1,4 @@
-import type { ExplorerTransaction, ParsedDexTransaction } from '@/interfaces/explorers'
+import type { ExplorerTransaction, ParsedDexTransaction } from '@/interfaces'
 import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
 import { DexProtocol } from '@/enums'
 import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS } from '@/config/hyperevm-tokens.config'

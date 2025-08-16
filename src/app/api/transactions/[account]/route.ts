@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { HyperEVMScanService } from '@/services/explorers/hyperevmscan.service'
 import { filterDexTransactions, groupTransactionsByDex, getTransactionStats } from '@/services/explorers/transaction-parser'
-import type { ParsedDexTransaction } from '@/interfaces/explorers'
+import type { ParsedDexTransaction } from '@/interfaces'
 import { DexProtocol } from '@/enums'
 import { env } from '@/env/t3-env'
 

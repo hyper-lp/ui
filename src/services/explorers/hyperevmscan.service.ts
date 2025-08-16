@@ -1,4 +1,4 @@
-import type { ExplorerTransaction, HyperEVMScanResponse, TransactionFilter, ExplorerConfig } from '@/interfaces/explorers'
+import type { ExplorerTransaction, HyperEVMScanResponse, TransactionFilter, ExplorerConfig } from '@/interfaces'
 import { API_TIMEOUT } from '@/config/app.config'
 
 /**

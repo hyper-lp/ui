@@ -2,7 +2,7 @@
  * API response interfaces
  */
 
-import type { ParsedDexTransaction } from './explorers'
+import type { ParsedDexTransaction } from './explorer.interface'
 import type { HyperCoreTransaction } from '@/services/explorers/hypercore.service'
 import type { DexProtocol } from '@/enums'
 

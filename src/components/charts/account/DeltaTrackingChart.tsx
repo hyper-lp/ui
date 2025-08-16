@@ -46,11 +46,12 @@ export enum ChartSeries {
 
 export default function DeltaTrackingChart() {
     const [options, setOptions] = useState<EChartsOption | null>(null)
+    const [isInitialLoad, setIsInitialLoad] = useState(true)
     const { resolvedTheme } = useTheme()
     const colors = getThemeColors(resolvedTheme)
 
     // Create loading skeleton options dynamically based on theme
-    const createLoadingOptions = (): EChartsOption => {
+    const createLoadingOptions = useCallback((): EChartsOption => {
         const netDeltaColor = colors.charts.text || '#ffffff'
         const aumColor = resolvedTheme === 'dark' ? '#ffffff' : '#000000'
         const textOpacity = resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
@@ -325,7 +326,7 @@ export default function DeltaTrackingChart() {
                 },
             ],
         }
-    }
+    }, [colors, resolvedTheme])
 
     // Store dataZoom range to persist between refreshes
     const [, setZoomRange] = useState<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
@@ -354,12 +355,23 @@ export default function DeltaTrackingChart() {
         // Force re-render with default zoom values
     }, [])
 
+    // Show skeleton briefly on initial load for better UX
     useEffect(() => {
+        if (isInitialLoad) {
+            setOptions(createLoadingOptions())
+            const timer = setTimeout(() => {
+                setIsInitialLoad(false)
+            }, 1500) // Show skeleton for 1.5 seconds
+            return () => clearTimeout(timer)
+        }
+    }, [isInitialLoad, createLoadingOptions])
+
+    useEffect(() => {
+        // Skip if still showing initial loading state
+        if (isInitialLoad) return
+
         // 1. get stored snapshots
         let storedSnapshots = getSnapshots()
-
-        // TEMPORARY: Force loading state for testing
-        // storedSnapshots = []
 
         // Show loading skeleton if no data
         if (storedSnapshots.length === 0) {
@@ -1081,7 +1093,7 @@ export default function DeltaTrackingChart() {
         // finally, set the options
         setOptions(echartsOptions)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [lastSnapshotAddedAt, resolvedTheme])
+    }, [lastSnapshotAddedAt, resolvedTheme, isInitialLoad])
 
     if (!options) {
         return (

@@ -14,6 +14,29 @@ export const DELTA_THRESHOLDS = {
     EXPOSED: 5,
 } as const
 
+// Position Colors (from account.constants.ts)
+export const POSITION_COLORS = {
+    LONG: {
+        bg: 'bg-green-100',
+        text: 'text-green-800',
+        darkBg: 'dark:bg-green-900',
+        darkText: 'dark:text-green-200',
+    },
+    SHORT: {
+        bg: 'bg-red-100',
+        text: 'text-red-800',
+        darkBg: 'dark:bg-red-900',
+        darkText: 'dark:text-red-200',
+    },
+} as const
+
+// Delta Status Messages (from account.constants.ts)
+export const DELTA_STATUS = {
+    NEUTRAL: '✓ Neutral',
+    NEAR_NEUTRAL: '⚠ Near neutral',
+    REBALANCE_NEEDED: '⚠ Rebalance needed',
+} as const
+
 // Time Intervals (in milliseconds)
 export const TIME_INTERVALS = {
     SECONDS_10: 10000,

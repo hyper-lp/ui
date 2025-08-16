@@ -23,7 +23,7 @@ export default function Footer(props: { className?: string }) {
     }, [])
     if (!commitDate) return null
     return (
-        <footer className={cn('flex w-full justify-between gap-2 px-6 text-xs font-light md:gap-0', props.className)}>
+        <footer className={cn('flex min-h-16 w-full items-center justify-between gap-2 px-6 text-xs font-light md:gap-0', props.className)}>
             {/* left */}
             <div className="flex flex-row gap-8">
                 <div className="hidden md:flex">

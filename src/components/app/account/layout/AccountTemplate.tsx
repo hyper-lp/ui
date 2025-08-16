@@ -51,7 +51,7 @@ export default function AccountTemplate(props: {
             {props.header}
 
             {/* --------------- Content */}
-            <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* 1. historic of snapshots */}
                 <SectionCard className="h-[400px] w-full !p-1 md:!p-2">{props.charts}</SectionCard>
 
@@ -91,7 +91,7 @@ export default function AccountTemplate(props: {
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_WHITE : FileIds.HYPER_EVM_DARK}
                             width={140}
                             height={24}
-                            className="mb-1 ml-2 rounded-none"
+                            className="mb-1 ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
                             {/* HYPE LPs */}
@@ -110,7 +110,7 @@ export default function AccountTemplate(props: {
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_WHITE : FileIds.HYPER_CORE_DARK}
                             width={140}
                             height={24}
-                            className="mb-1 ml-2 rounded-none"
+                            className="mb-1 ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
                             {/* HYPE Short */}

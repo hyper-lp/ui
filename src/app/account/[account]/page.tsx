@@ -11,7 +11,7 @@ import { HyperCoreTransactionHistory } from '@/components/app/account/HyperCoreT
 import { LPPositionsTable, WalletBalancesTable, PerpPositionsTable, SpotBalancesTable } from '@/components/app/account/tables'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { CollapsibleSection as CollapsibleCard } from '@/components/app/account/CollapsibleCard'
-import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
+import { DEFAULT_TRANSACTION_LIMIT, REFRESH_INTERVALS } from '@/config/app.config'
 import { IS_DEV } from '@/config'
 import { formatUSD, shortenValue } from '@/utils'
 import { cn } from '@/utils'
@@ -54,7 +54,7 @@ export default function AccountPage() {
     useEffect(() => {
         if (!lastRefreshTime) return
 
-        const updateInterval = IS_DEV ? 300000 : 30000 // 5 min in dev, 30 sec in prod
+        const updateInterval = IS_DEV ? REFRESH_INTERVALS.DEV : REFRESH_INTERVALS.PROD
 
         const calculateTimeLeft = () => {
             const now = Date.now()

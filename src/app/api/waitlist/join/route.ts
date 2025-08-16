@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server'
 import { prismaReferrals } from '@/lib/prisma-referrals'
 import { decodeReferralCode } from '@/utils/referral.util'
 import { checkRateLimit } from '@/utils/rate-limit.util'
+import { REFRESH_INTERVALS } from '@/config/app.config'
 import { getClientIp, isValidTwitterId, isValidTwitterHandle, sanitizeInput } from '@/utils/validation.util'
 import { requireTwitterAuth } from '@/lib/privy-server'
 
@@ -11,8 +12,8 @@ export async function POST(request: NextRequest) {
         const clientIp = getClientIp(request)
 
         // Rate limit by IP
-        if (!checkRateLimit(`ip:${clientIp}`, 10, 300000)) {
-            // 10 requests per 5 minutes
+        if (!checkRateLimit(`ip:${clientIp}`, 10, REFRESH_INTERVALS.RATE_LIMIT)) {
+            // 10 requests per rate limit window
             return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
         }
 

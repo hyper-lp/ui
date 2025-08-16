@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { HyperCoreTransactionResponse } from '@/interfaces/api.interface'
-import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
+import { DEFAULT_TRANSACTION_LIMIT, TIME_INTERVALS, REFRESH_INTERVALS } from '@/config/app.config'
 import { getHyperCoreAssetBySymbol } from '@/config/hypercore-assets.config'
 
 interface HyperCoreTransactionHistoryProps {
@@ -27,8 +27,8 @@ export function HyperCoreTransactionHistory({ account, limit = DEFAULT_TRANSACTI
         queryKey: ['hypercore-trades', account, limit],
         queryFn: () => fetchTransactions(account, limit),
         enabled: !!account,
-        staleTime: 60000, // 1 minute
-        gcTime: 300000, // 5 minutes
+        staleTime: TIME_INTERVALS.MINUTE_1,
+        gcTime: REFRESH_INTERVALS.CACHE_GC,
         refetchOnWindowFocus: false,
     })
 

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { DexTransactionResponse } from '@/interfaces/api.interface'
 import { DexProtocol } from '@/enums'
-import { DEFAULT_TRANSACTION_LIMIT } from '@/config/app.config'
+import { DEFAULT_TRANSACTION_LIMIT, TIME_INTERVALS, REFRESH_INTERVALS } from '@/config/app.config'
 
 interface TransactionHistoryProps {
     account: string
@@ -30,8 +30,8 @@ export function TransactionHistory({ account, limit = DEFAULT_TRANSACTION_LIMIT 
         queryKey: ['transactions', account, limit],
         queryFn: () => fetchTransactions(account, limit),
         enabled: !!account,
-        staleTime: 60000, // 1 minute
-        gcTime: 300000, // 5 minutes
+        staleTime: TIME_INTERVALS.MINUTE_1,
+        gcTime: REFRESH_INTERVALS.CACHE_GC,
         refetchOnWindowFocus: false, // Don't refetch on window focus to avoid unnecessary API calls
     })
 

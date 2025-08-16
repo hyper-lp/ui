@@ -1,4 +1,5 @@
 import type { ExplorerTransaction, HyperEVMScanResponse, TransactionFilter, ExplorerConfig } from '@/interfaces/explorers'
+import { API_TIMEOUT } from '@/config/app.config'
 
 /**
  * HyperEVMScan API client service
@@ -12,7 +13,7 @@ export class HyperEVMScanService {
     constructor(config?: Partial<ExplorerConfig>) {
         this.baseUrl = config?.apiUrl || 'https://api.hyperevmscan.io/api'
         this.apiKey = config?.apiKey
-        this.timeout = config?.timeout || 30000
+        this.timeout = config?.timeout || API_TIMEOUT
     }
 
     /**

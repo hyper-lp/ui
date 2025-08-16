@@ -28,7 +28,7 @@ export default function Footer(props: { className?: string }) {
             <div className="flex flex-row gap-8">
                 <div className="hidden md:flex">
                     <StyledTooltip closeDelay={500} content={<p>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</p>}>
-                        <p className="truncate">Alpha - Aug. 2025</p>
+                        <p className="truncate">August 2025</p>
                     </StyledTooltip>
                 </div>
 

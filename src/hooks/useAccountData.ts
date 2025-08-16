@@ -4,7 +4,7 @@ import { useEffect, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/stores/app.store'
 import type { AccountSnapshot } from '@/interfaces'
-import { IS_DEV } from '@/config'
+import { IS_DEV, REFRESH_INTERVALS } from '@/config'
 
 /**
  * Simplified hook that only handles fetching account data and updating the store.
@@ -46,9 +46,9 @@ export function useAccountData(address: string) {
             return response.json()
         },
         enabled: !!address,
-        staleTime: IS_DEV ? 300000 : 30000, // Dev: 5 min, Prod: 30 sec
-        gcTime: 300000, // Keep in cache for 5 minutes
-        refetchInterval: IS_DEV ? 300000 : 30000, // Dev: 5 min, Prod: 30 sec
+        staleTime: IS_DEV ? REFRESH_INTERVALS.DEV : REFRESH_INTERVALS.PROD,
+        gcTime: REFRESH_INTERVALS.CACHE_GC,
+        refetchInterval: IS_DEV ? REFRESH_INTERVALS.DEV : REFRESH_INTERVALS.PROD,
     })
 
     // Update store when data changes

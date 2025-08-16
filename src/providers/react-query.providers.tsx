@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { API_RETRY_MAX_DELAY } from '@/config/app.config'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -15,7 +16,7 @@ const queryClient = new QueryClient({
                 // Retry up to 3 times with exponential backoff
                 return failureCount < 3
             },
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, API_RETRY_MAX_DELAY),
             // Don't refetch on window focus by default
             refetchOnWindowFocus: false,
             // Keep trying when offline

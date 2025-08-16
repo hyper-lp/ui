@@ -118,7 +118,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             },
 
             prices: {
-                HYPE: positionFetcher.getTokenPrice('HYPE') || positionFetcher.getTokenPrice('WHYPE') || (await priceAggregator.getTokenPrice('HYPE')) || 0,
+                HYPE:
+                    positionFetcher.getTokenPrice('HYPE') ||
+                    positionFetcher.getTokenPrice('WHYPE') ||
+                    (await priceAggregator.getTokenPrice('HYPE')) ||
+                    0,
                 USDC: positionFetcher.getTokenPrice('USDC') || 1,
                 USDT: positionFetcher.getTokenPrice('USDT') || 1,
             },

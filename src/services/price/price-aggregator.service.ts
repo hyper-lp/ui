@@ -62,7 +62,7 @@ export class PriceAggregatorService {
      */
     async getTokenPrices(symbols: string[]): Promise<Map<string, number | null>> {
         const prices = new Map<string, number | null>()
-        
+
         // Fetch all prices in parallel
         const promises = symbols.map(async (symbol) => {
             const price = await this.getTokenPrice(symbol)
@@ -88,7 +88,7 @@ export class PriceAggregatorService {
             if (spotResponse.ok) {
                 const data = await spotResponse.json()
                 const tokens = data.tokens || []
-                
+
                 for (const token of tokens) {
                     if (token.name === symbol && token.markPx) {
                         return parseFloat(token.markPx)
@@ -122,8 +122,8 @@ export class PriceAggregatorService {
                 if (assetResponse.ok) {
                     const assetData = await assetResponse.json()
                     // Look for HYPE in the response
-                    if (assetData[0]?.['universe']?.find((asset: any) => asset.name === 'HYPE')) {
-                        const hypeAsset = assetData[0]['universe'].find((asset: any) => asset.name === 'HYPE')
+                    if (assetData[0]?.['universe']?.find((asset: { name: string }) => asset.name === 'HYPE')) {
+                        const hypeAsset = assetData[0]['universe'].find((asset: { name: string; markPx?: string }) => asset.name === 'HYPE')
                         if (hypeAsset?.markPx) {
                             return parseFloat(hypeAsset.markPx)
                         }
@@ -145,14 +145,14 @@ export class PriceAggregatorService {
         try {
             // Map symbols to CoinGecko IDs
             const coinGeckoMap: Record<string, string> = {
-                'HYPE': 'hyperliquid',
-                'BTC': 'bitcoin',
-                'ETH': 'ethereum',
-                'SOL': 'solana',
-                'ARB': 'arbitrum',
-                'USDC': 'usd-coin',
-                'USDT': 'tether',
-                'USDT0': 'tether', // Map USDT0 to Tether
+                HYPE: 'hyperliquid',
+                BTC: 'bitcoin',
+                ETH: 'ethereum',
+                SOL: 'solana',
+                ARB: 'arbitrum',
+                USDC: 'usd-coin',
+                USDT: 'tether',
+                USDT0: 'tether', // Map USDT0 to Tether
             }
 
             const coinId = coinGeckoMap[symbol]
@@ -160,14 +160,11 @@ export class PriceAggregatorService {
                 return null
             }
 
-            const response = await fetch(
-                `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`,
-                {
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                }
-            )
+            const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`, {
+                headers: {
+                    Accept: 'application/json',
+                },
+            })
 
             if (response.ok) {
                 const data = await response.json()
@@ -201,10 +198,10 @@ export class PriceAggregatorService {
     private normalizeSymbol(symbol: string): string {
         // Handle WHYPE -> HYPE mapping
         if (symbol === 'WHYPE') return 'HYPE'
-        
+
         // Handle USD₮0 -> USDT0 mapping
         if (symbol === 'USD₮0') return 'USDT0'
-        
+
         return symbol.toUpperCase()
     }
 

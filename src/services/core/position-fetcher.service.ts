@@ -77,15 +77,8 @@ export class PositionFetcher {
      * Fetch LP positions using multicall batching
      */
     private async fetchLPPositionsBatched(account: string): Promise<LPPosition[]> {
-        console.log('[PositionFetcher] Starting LP position fetch for account:', account)
         const client = getViemClient(HYPEREVM_CHAIN_ID)
         const positionManagers = getAllPositionManagers()
-        console.log(
-            '[PositionFetcher] Found',
-            positionManagers.length,
-            'position managers:',
-            positionManagers.map((pm) => pm.protocol),
-        )
 
         // Step 1: Batch all balanceOf calls
         const balanceCalls = positionManagers.map((pm) => ({
@@ -97,14 +90,14 @@ export class PositionFetcher {
             }),
         }))
 
-        console.log('[PositionFetcher] Making', balanceCalls.length, 'balance calls via multicall')
+        // Make multicall for all balanceOf calls
         const balanceResults = (await client.readContract({
             address: MULTICALL3_ADDRESS,
             abi: MULTICALL3_ABI,
             functionName: 'tryAggregate',
             args: [false, balanceCalls],
         })) as Array<{ success: boolean; returnData: `0x${string}` }>
-        console.log('[PositionFetcher] Balance results:', balanceResults.length, 'responses')
+        // Process balance results
 
         // Step 2: Build tokenId fetch calls for positions with balance > 0
         const tokenIdCalls: Array<{
@@ -116,7 +109,7 @@ export class PositionFetcher {
 
         for (let i = 0; i < positionManagers.length; i++) {
             if (!balanceResults[i].success) {
-                console.log('[PositionFetcher] Balance call failed for', positionManagers[i].protocol)
+                // Balance call failed, skip this protocol
                 continue
             }
 
@@ -126,7 +119,7 @@ export class PositionFetcher {
                 data: balanceResults[i].returnData,
             }) as bigint
 
-            console.log('[PositionFetcher]', positionManagers[i].protocol, 'balance:', balance.toString())
+            // Process positions for this protocol
 
             if (balance > 0n) {
                 for (let j = 0; j < Number(balance); j++) {
@@ -147,7 +140,7 @@ export class PositionFetcher {
             }
         }
 
-        console.log('[PositionFetcher] Found', tokenIdCalls.length, 'positions to fetch')
+        // Fetch position details for all token IDs
         if (tokenIdCalls.length === 0) return []
 
         // Step 3: Batch fetch all tokenIds
@@ -212,6 +205,8 @@ export class PositionFetcher {
             tickUpper: number
             liquidity: bigint
             poolAddress: string
+            tokensOwed0: bigint
+            tokensOwed1: bigint
         }> = []
 
         const uniquePools = new Set<string>()
@@ -225,16 +220,9 @@ export class PositionFetcher {
                 data: positionResults[i].returnData,
             })
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const [, , token0, token1, fee, tickLower, tickUpper, liquidity] = positionData as unknown as any[]
-
-            console.log('[PositionFetcher] Position', i, '- Token0:', token0, 'Token1:', token1, 'Liquidity:', liquidity?.toString())
-
-            // Skip if no liquidity
-            if (liquidity === 0n) {
-                console.log('[PositionFetcher] Skipping position - no liquidity')
-                continue
-            }
+            // Destructure position data from the contract response
+            const [, , token0, token1, fee, tickLower, tickUpper, liquidity, , , tokensOwed0, tokensOwed1] = 
+                positionData as readonly [bigint, string, string, string, number, number, number, bigint, bigint, bigint, bigint, bigint]
 
             // For now, show all positions - we can filter later
             // if (!this.isHypeUsdt0Pair(token0 as string, token1 as string)) {
@@ -259,12 +247,12 @@ export class PositionFetcher {
                 })) as string
 
                 if (!poolAddress || poolAddress === NATIVE_HYPE_ADDRESS) {
-                    console.log('[PositionFetcher] No pool found in factory for tokens', token0, token1, 'fee', fee)
+                    // No pool found in factory
                     continue
                 }
-                console.log('[PositionFetcher] Found pool address from factory:', poolAddress)
-            } catch (error) {
-                console.log('[PositionFetcher] Failed to get pool from factory, computing address', error)
+                // Pool address found
+            } catch {
+                // Failed to get pool from factory, computing address
                 // Fallback to computing pool address
                 poolAddress = this.computePoolAddress(token0 as string, token1 as string, Number(fee), factoryAddress as string)
             }
@@ -281,13 +269,15 @@ export class PositionFetcher {
                 tickUpper: Number(tickUpper),
                 liquidity,
                 poolAddress,
+                tokensOwed0: tokensOwed0 || 0n,
+                tokensOwed1: tokensOwed1 || 0n,
             })
         }
 
         // Step 7: Batch fetch pool states
-        console.log('[PositionFetcher] Fetching pool states for', uniquePools.size, 'pools')
+        // Fetch pool states for all unique pools
         const poolStates = await this.fetchPoolStates(Array.from(uniquePools))
-        console.log('[PositionFetcher] Got pool states for', poolStates.size, 'pools')
+        // Pool states fetched
 
         // Step 8: Get token prices
         await this.fetchTokenPrices()
@@ -298,7 +288,7 @@ export class PositionFetcher {
             const dex = getDexByPositionManager(pos.pmAddress) || pos.protocol
 
             if (!poolState) {
-                console.log('[PositionFetcher] No pool state for position', pos.tokenId, 'at pool', pos.poolAddress)
+                // No pool state available for this position
             }
 
             // Determine if position is in range
@@ -332,10 +322,15 @@ export class PositionFetcher {
             const token1ValueUSD = token1Amount * token1Price
             const valueUSD = token0ValueUSD + token1ValueUSD
 
+            // Calculate uncollected fees (only shows fees already collected from pool but not withdrawn)
+            const fees0Uncollected = pos.tokensOwed0 > 0n ? Number(pos.tokensOwed0) / 10 ** token0Decimals : 0
+            const fees1Uncollected = pos.tokensOwed1 > 0n ? Number(pos.tokensOwed1) / 10 ** token1Decimals : 0
+
             return {
                 id: pos.tokenId,
                 tokenId: pos.tokenId,
                 dex: dex.toUpperCase(),
+                pool: pos.poolAddress,
                 token0: pos.token0,
                 token1: pos.token1,
                 token0Symbol,
@@ -343,13 +338,18 @@ export class PositionFetcher {
                 fee: pos.fee,
                 tickLower: pos.tickLower,
                 tickUpper: pos.tickUpper,
+                tickCurrent: poolState?.tick,
                 liquidity: pos.liquidity.toString(),
+                sqrtPriceX96: poolState?.sqrtPriceX96?.toString(),
                 inRange,
                 valueUSD,
                 token0Amount,
                 token1Amount,
                 token0ValueUSD,
                 token1ValueUSD,
+                fees0Uncollected: fees0Uncollected > 0 ? fees0Uncollected : undefined,
+                fees1Uncollected: fees1Uncollected > 0 ? fees1Uncollected : undefined,
+                isClosed: pos.liquidity === 0n,
             }
         })
     }
@@ -409,7 +409,7 @@ export class PositionFetcher {
                         !liquidityResults[i].returnData ||
                         liquidityResults[i].returnData === '0x'
                     ) {
-                        console.log('[PositionFetcher] Pool', uncachedPools[i], 'returned empty data - pool may not exist')
+                        // Pool returned empty data - may not exist
                         continue
                     }
 
@@ -434,12 +434,12 @@ export class PositionFetcher {
 
                         this.poolStateCache.set(uncachedPools[i], state)
                         states.set(uncachedPools[i], state)
-                        console.log('[PositionFetcher] Pool state cached for', uncachedPools[i])
-                    } catch (error) {
-                        console.log('[PositionFetcher] Failed to decode pool state for', uncachedPools[i], error)
+                        // Pool state cached
+                    } catch {
+                        // Failed to decode pool state
                     }
                 } else {
-                    console.log('[PositionFetcher] Pool calls failed for', uncachedPools[i])
+                    // Pool calls failed
                 }
             }
         }
@@ -639,7 +639,7 @@ export class PositionFetcher {
                 this.tokenPriceCache.set('ETH', 3800)
             }
 
-            console.log('[PositionFetcher] Token prices fetched:', Array.from(this.tokenPriceCache.entries()))
+            // Token prices fetched and cached
         } catch (error) {
             console.error('Error fetching token prices:', error)
             // Use fallback prices on error
@@ -668,7 +668,7 @@ export class PositionFetcher {
 
         const factoryLower = factory.toLowerCase()
         const initCodeHash = INIT_CODE_HASHES[factoryLower] || '0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54' // Default to standard Uniswap V3 hash
-        console.log('[PositionFetcher] Using init code hash', initCodeHash, 'for factory', factory)
+        // Using init code hash for pool address computation
 
         const salt = keccak256(encodePacked(['address', 'address', 'uint24'], [getAddress(tokenA), getAddress(tokenB), fee]))
 
@@ -678,7 +678,7 @@ export class PositionFetcher {
             ).slice(26)}`,
         )
 
-        console.log('[PositionFetcher] Computed pool address:', poolAddress, 'for factory:', factory)
+        // Pool address computed
         return poolAddress
     }
 

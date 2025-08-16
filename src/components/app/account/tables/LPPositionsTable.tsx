@@ -106,7 +106,9 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             </div>
                                         }
                                         range={
-                                            position.inRange !== undefined ? (
+                                            position.isClosed ? (
+                                                <span className="text-default/40">Closed</span>
+                                            ) : position.inRange !== undefined ? (
                                                 <span className={position.inRange ? 'text-green-500' : 'text-red-500'}>
                                                     {position.inRange ? 'In Range' : 'Out'}
                                                 </span>
@@ -192,9 +194,54 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                 </div>
                                             )}
 
-                                            {/* Fees would go here if available */}
+                                            {/* Uncollected Fees */}
+                                            {[
+                                                { symbol: position.token0Symbol, fees: position.fees0Uncollected },
+                                                { symbol: position.token1Symbol, fees: position.fees1Uncollected }
+                                            ].map(({ symbol, fees }) => (
+                                                <div key={symbol}>
+                                                    <p className="text-xs text-default/50">
+                                                        Claimable {symbol}
+                                                        {!position.isClosed && !fees && <span className="text-default/30"> *</span>}
+                                                    </p>
+                                                    <p className={`font-medium ${fees ? 'text-green-500' : 'text-default/30'}`}>
+                                                        {formatNumber(fees || 0, 6)}
+                                                    </p>
+                                                </div>
+                                            ))}
+
+                                            {/* Pool Address */}
+                                            {position.pool && (
+                                                <div>
+                                                    <p className="text-xs text-default/50">Pool Address</p>
+                                                    <p className="font-mono text-xs">{shortenValue(position.pool)}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Fee Tier */}
+                                            {position.fee !== undefined && (
+                                                <div>
+                                                    <p className="text-xs text-default/50">Fee Tier</p>
+                                                    <p className="font-medium">{(position.fee / 10000).toFixed(2)}%</p>
+                                                </div>
+                                            )}
+
+                                            {/* Current Price */}
+                                            {position.sqrtPriceX96 && (
+                                                <div>
+                                                    <p className="text-xs text-default/50">Sqrt Price X96</p>
+                                                    <p className="font-mono text-xs">{position.sqrtPriceX96.toString()}</p>
+                                                </div>
+                                            )}
                                         </div>
 
+                                        {/* Note about fees */}
+                                        {!position.isClosed && !position.fees0Uncollected && !position.fees1Uncollected && (
+                                            <div className="col-span-full mt-2 text-xs text-default/40">
+                                                * Active position fees need to be collected to be shown
+                                            </div>
+                                        )}
+                                        
                                         {/* Raw JSON */}
                                         <div className="mt-4 flex justify-end">
                                             <StyledTooltip

@@ -10,6 +10,8 @@ import { DAYJS_FORMATS, formatUSD } from '@/utils'
 import { useAppStore } from '@/stores/app.store'
 import numeral from 'numeral'
 
+const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in dataZoom
+
 const grid = {
     top: 50,
     right: 100,
@@ -645,14 +647,14 @@ export default function DeltaTrackingChart() {
                 {
                     type: 'inside',
                     xAxisIndex: 0,
-                    start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
+                    start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / storedSnapshots.length),
                     end: zoomRangeRef.current?.x?.end ?? 100,
                 },
                 // X-axis slider
                 {
                     type: 'slider',
                     xAxisIndex: 0,
-                    start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * 60) / storedSnapshots.length),
+                    start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / storedSnapshots.length),
                     end: zoomRangeRef.current?.x?.end ?? 100,
                     height: 12,
                     bottom: 15,

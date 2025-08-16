@@ -26,6 +26,7 @@ export interface LPPosition {
     feeTier?: string | null
     fees0Uncollected?: number
     fees1Uncollected?: number
+    isClosed?: boolean
 }
 
 export interface SpotBalance {

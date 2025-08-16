@@ -201,13 +201,37 @@ export default function AccountPage() {
                     charts={<div className="flex size-full items-center justify-center text-sm text-default/50">Loading chart...</div>}
                     summary={null}
                     hyperEvm={{
-                        lp: <CollapsibleCard title="Liquidity Positions" defaultExpanded={false} isLoading />,
-                        balances: <CollapsibleCard title="Wallet" defaultExpanded={false} isLoading />,
+                        lp: (
+                            <CollapsibleCard
+                                title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
+                                defaultExpanded={false}
+                                isLoading
+                            />
+                        ),
+                        balances: (
+                            <CollapsibleCard
+                                title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Wallet</h3>}
+                                defaultExpanded={false}
+                                isLoading
+                            />
+                        ),
                         txs: null,
                     }}
                     hyperCore={{
-                        short: <CollapsibleCard title="Perpetuals" defaultExpanded={false} isLoading />,
-                        spot: <CollapsibleCard title="Spot" defaultExpanded={false} isLoading />,
+                        short: (
+                            <CollapsibleCard
+                                title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perpetuals leg</h3>}
+                                defaultExpanded={false}
+                                isLoading
+                            />
+                        ),
+                        spot: (
+                            <CollapsibleCard
+                                title={<h3 className="text-lg font-semibold text-hyper-core-spots">Spot</h3>}
+                                defaultExpanded={false}
+                                isLoading
+                            />
+                        ),
                         txs: null,
                     }}
                 />
@@ -307,8 +331,8 @@ export default function AccountPage() {
                 hyperEvm={{
                     lp: (
                         <CollapsibleCard
-                            title="Liquidity Positions"
-                            defaultExpanded={false}
+                            title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
+                            defaultExpanded={true}
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1 text-base text-default">
@@ -329,7 +353,7 @@ export default function AccountPage() {
                     ),
                     balances: (
                         <CollapsibleCard
-                            title="Wallet"
+                            title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Wallet</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
@@ -384,7 +408,7 @@ export default function AccountPage() {
                 hyperCore={{
                     short: (
                         <CollapsibleCard
-                            title="Perpetuals"
+                            title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perpetuals leg</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
@@ -405,7 +429,7 @@ export default function AccountPage() {
                     ),
                     spot: (
                         <CollapsibleCard
-                            title="Spot"
+                            title={<h3 className="text-lg font-semibold text-hyper-core-spots">Spot</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">

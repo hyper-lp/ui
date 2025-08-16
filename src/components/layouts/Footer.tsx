@@ -39,6 +39,22 @@ export default function Footer(props: { className?: string }) {
 
             {/* right */}
             <div className="flex flex-row gap-8">
+                <StyledTooltip
+                    closeDelay={500}
+                    content={
+                        <div className="flex flex-col">
+                            <p className="text-lg font-bold">Altitude</p>
+                            <p>Lightning-fast RPC nodes for investors & developers</p>
+                            <p>
+                                <LinkWrapper href="https://rpc.reachaltitude.xyz/" target="_blank">
+                                    <p className="cursor-alias truncate underline hover:text-primary">https://rpc.reachaltitude.xyz/</p>
+                                </LinkWrapper>
+                            </p>
+                        </div>
+                    }
+                >
+                    <p className="truncate">Sponsors</p>
+                </StyledTooltip>
                 <LinkWrapper href={AppUrls.STATUS} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Status</p>
                 </LinkWrapper>

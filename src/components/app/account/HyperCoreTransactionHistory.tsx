@@ -15,7 +15,7 @@ async function fetchTransactions(account: string, limit: number): Promise<HyperC
         limit: limit.toString(),
     })
 
-    const response = await fetch(`/api/account/${account}/trades?${params}`)
+    const response = await fetch(`/api/trades/${account}?${params}`)
     if (!response.ok) {
         throw new Error('Failed to fetch HyperCore trades')
     }

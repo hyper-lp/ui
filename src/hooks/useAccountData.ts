@@ -38,7 +38,7 @@ export function useAccountData(address: string) {
         queryFn: async (): Promise<AccountSnapshot> => {
             // Add cache buster to force fresh fetch
             const cacheBuster = Date.now()
-            const response = await fetch(`/api/account/${address}/snapshot?t=${cacheBuster}`)
+            const response = await fetch(`/api/snapshot/${address}?t=${cacheBuster}`)
             if (!response.ok) {
                 if (response.status === 404) throw new Error('Account not found')
                 throw new Error('Failed to fetch account data')

@@ -2,10 +2,10 @@ export enum AppUrls {
     // App pages
     HOME = '/',
 
-    // API routes - Account
-    API_ACCOUNT_SNAPSHOT = '/api/account/:account/snapshot',
-    API_ACCOUNT_TRANSACTIONS = '/api/account/:account/transactions',
-    API_ACCOUNT_TRADES = '/api/account/:account/trades',
+    // API routes - Account data
+    API_SNAPSHOT = '/api/snapshot/:account',
+    API_TRANSACTIONS = '/api/transactions/:account',
+    API_TRADES = '/api/trades/:account',
 
     // API routes - Pools
     API_POOLS_TVL = '/api/pools/tvl',

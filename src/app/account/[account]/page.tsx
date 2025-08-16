@@ -198,7 +198,7 @@ export default function AccountPage() {
                                     },
                                     {
                                         name: 'raw',
-                                        url: `${env.NEXT_PUBLIC_APP_URL}/api/account/0xB0Aa56926bE166Bcc5FB6Cf1169f56d9Fd7A25d7/snapshot`,
+                                        url: `${env.NEXT_PUBLIC_APP_URL}/api/snapshot/${accountFromUrl}`,
                                     },
                                 ].map((link) => (
                                     <LinkWrapper key={link.name} target="_blank" href={link.url}>

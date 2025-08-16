@@ -6,11 +6,10 @@ import { useState, useEffect } from 'react'
 import PageWrapper from '@/components/common/PageWrapper'
 import { useAccountData } from '@/hooks/useAccountData'
 import { useAppStore } from '@/stores/app.store'
-import { HyperCoreTransactionHistory } from '@/components/app/account/HyperCoreTransactionHistory'
 import { LPPositionsTable, WalletBalancesTable, PerpPositionsTable, SpotBalancesTable } from '@/components/app/account/tables'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
-import { DEFAULT_TRANSACTION_LIMIT, REFRESH_INTERVALS } from '@/config/app.config'
+import { REFRESH_INTERVALS } from '@/config/app.config'
 import { IS_DEV } from '@/config'
 import { formatUSD, shortenValue } from '@/utils'
 import { cn } from '@/utils'
@@ -24,7 +23,6 @@ import IconWrapper from '@/components/icons/IconWrapper'
 import { AppUrls, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import { env } from '@/env/t3-env'
-import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
 
 // Dynamically import chart to avoid SSR issues
 const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
@@ -192,23 +190,6 @@ export default function AccountPage() {
                                     <div className="h-3 w-8 animate-pulse rounded bg-default/20" />
                                     <div className="mt-1 h-7 w-20 animate-pulse rounded bg-default/20" />
                                 </div>
-                                {/* <div className="h-8 w-px bg-default/20" />
-                                <div className="flex flex-col items-center lg:items-end">
-                                    <div className="h-3 w-10 animate-pulse rounded bg-default/20" />
-                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
-                                </div>
-                                <div className="hidden flex-col items-center md:flex lg:items-end">
-                                    <div className="h-3 w-14 animate-pulse rounded bg-default/20" />
-                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
-                                </div>
-                                <div className="flex flex-col items-center lg:items-end">
-                                    <div className="h-3 w-12 animate-pulse rounded bg-default/20" />
-                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
-                                </div>
-                                <div className="hidden flex-col items-center md:flex lg:items-end">
-                                    <div className="h-3 w-12 animate-pulse rounded bg-default/20" />
-                                    <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
-                                </div> */}
                                 <div className="h-8 w-px bg-default/20" />
                                 <div className="flex flex-col items-end">
                                     <div className="h-3 w-10 animate-pulse rounded bg-default/20" />
@@ -220,26 +201,14 @@ export default function AccountPage() {
                     charts={<div className="flex size-full items-center justify-center text-sm text-default/50">Loading chart...</div>}
                     summary={null}
                     hyperEvm={{
-                        lp: (
-                            <CollapsibleCard
-                                title={<h3 className="text-hyper-evm-lps text-lg font-semibold">LPs</h3>}
-                                defaultExpanded={false}
-                                isLoading
-                            />
-                        ),
-                        balances: (
-                            <CollapsibleCard
-                                title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Balances</h3>}
-                                defaultExpanded={false}
-                                isLoading
-                            />
-                        ),
+                        lp: <CollapsibleCard title="Liquidity Positions" defaultExpanded={false} isLoading />,
+                        balances: <CollapsibleCard title="Wallet" defaultExpanded={false} isLoading />,
                         txs: null,
                     }}
                     hyperCore={{
                         short: <CollapsibleCard title="Perpetuals" defaultExpanded={false} isLoading />,
                         spot: <CollapsibleCard title="Spot" defaultExpanded={false} isLoading />,
-                        txs: <CollapsibleCard title="Trades" defaultExpanded={false} isLoading />,
+                        txs: null,
                     }}
                 />
             </PageWrapper>
@@ -323,28 +292,6 @@ export default function AccountPage() {
                         <div className="flex items-center gap-6">
                             <KPIMetric label="AUM" value={formatUSD(metrics.portfolio?.totalUSD || 0)} />
                             <div className="h-8 w-px bg-default/20" />
-                            {/* <KPIMetric label="LP Δ" value={metrics.hyperEvm?.deltas?.lpsHYPE} icon={<HypeIcon size={15} />} colorFn={getDeltaColor} />
-                            <KPIMetric
-                                label="Wallet Δ"
-                                value={metrics.hyperEvm?.deltas?.balancesHYPE}
-                                icon={<HypeIcon size={15} />}
-                                colorFn={getDeltaColor}
-                                className="hidden md:flex"
-                            />
-                            <KPIMetric
-                                label="Perp Δ"
-                                value={metrics.hyperCore?.deltas?.perpsHYPE}
-                                icon={<HypeIcon size={15} />}
-                                colorFn={(v) => (Math.abs(v) < 0.1 ? 'text-default' : 'text-error')}
-                            />
-                            <KPIMetric
-                                label="Spot Δ"
-                                value={metrics.hyperCore?.deltas?.spotHYPE}
-                                icon={<HypeIcon size={15} />}
-                                colorFn={getDeltaColor}
-                                className="hidden md:flex"
-                            />
-                            <div className="h-8 w-px bg-default/20" /> */}
                             <KPIMetric
                                 label="Net Δ"
                                 value={metrics.portfolio?.netDeltaHYPE}
@@ -360,21 +307,20 @@ export default function AccountPage() {
                 hyperEvm={{
                     lp: (
                         <CollapsibleCard
-                            title={<h3 className="text-hyper-evm-lps text-lg font-semibold">LPs</h3>}
+                            title="Liquidity Positions"
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1 text-base text-default">
-                                        <span>
-                                            {positions.hyperEvm?.lps?.length || 0} LP{positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
-                                        </span>
-                                        <span>•</span>
                                         <span className="font-medium">
                                             $ {(metrics.hyperEvm?.values?.lpsUSD || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                         </span>
+                                        <span>•</span>
+                                        <span>
+                                            {positions.hyperEvm?.lps?.length || 0} LP{positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
+                                        </span>
                                     </div>
-                                    <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
-                                    <HypeIcon size={15} />
+                                    <DeltaDisplay delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
@@ -383,7 +329,7 @@ export default function AccountPage() {
                     ),
                     balances: (
                         <CollapsibleCard
-                            title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Balances</h3>}
+                            title="Wallet"
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
@@ -393,8 +339,7 @@ export default function AccountPage() {
                                             .toFixed(0)
                                             .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
-                                    <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
-                                    <HypeIcon size={15} />
+                                    <DeltaDisplay delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
@@ -439,20 +384,19 @@ export default function AccountPage() {
                 hyperCore={{
                     short: (
                         <CollapsibleCard
-                            title={<h3 className="text-hyper-core-perps text-lg font-semibold">Perpetuals</h3>}
+                            title="Perpetuals"
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1.5 text-base text-default">
-                                        <span>{(metrics.hyperCore?.perpAggregates?.avgLeverage || 0).toFixed(1)}x lev</span>
-                                        <span>•</span>
                                         <span>
                                             $ {(metrics.hyperCore?.perpAggregates?.totalMargin || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}{' '}
                                             margin
                                         </span>
+                                        <span>•</span>
+                                        <span>{(metrics.hyperCore?.perpAggregates?.avgLeverage || 0).toFixed(1)}x lev</span>
                                     </div>
-                                    <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
-                                    <HypeIcon size={15} />
+                                    <DeltaDisplay delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
@@ -461,7 +405,7 @@ export default function AccountPage() {
                     ),
                     spot: (
                         <CollapsibleCard
-                            title={<h3 className="text-hyper-core-spots text-lg font-semibold">Spot</h3>}
+                            title="Spot"
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-2">
@@ -471,19 +415,14 @@ export default function AccountPage() {
                                             .toFixed(0)
                                             .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
-                                    <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
-                                    <HypeIcon size={15} />
+                                    <DeltaDisplay delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                 </div>
                             }
                         >
                             <SpotBalancesTable />
                         </CollapsibleCard>
                     ),
-                    txs: (
-                        <CollapsibleCard title="Trades" defaultExpanded={false}>
-                            <HyperCoreTransactionHistory account={accountFromUrl} limit={DEFAULT_TRANSACTION_LIMIT} />
-                        </CollapsibleCard>
-                    ),
+                    txs: null,
                     capital:
                         hyperCoreBreakdown.total > 0 ? (
                             <StyledTooltip

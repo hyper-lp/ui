@@ -14,9 +14,9 @@ const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in data
 
 const grid = {
     top: 70,
-    right: 100,
+    right: 110,
     bottom: 50,
-    left: 65,
+    left: 55,
     containLabel: true,
 }
 
@@ -843,7 +843,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
+                            const formattedValue = numeral(value).format('+0,0a$')
                             return `${ChartSeries.HyperEvmLps} ${formattedValue}`
                         },
                         color: colors.hyperEvmLp,
@@ -878,7 +878,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
+                            const formattedValue = numeral(value).format('+0,0a$')
                             return `${ChartSeries.HyperEvmBalances} ${formattedValue}`
                         },
                         color: colors.hyperEvmBalances,
@@ -913,7 +913,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
+                            const formattedValue = numeral(value).format('+0,0a$')
                             return `${ChartSeries.HyperCorePerps} ${formattedValue}`
                         },
                         color: colors.hyperCorePerp,
@@ -988,7 +988,7 @@ export default function DeltaTrackingChart() {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
                             // Hide label if value is very close to 0
                             if (Math.abs(value) < 1) return ''
-                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
+                            const formattedValue = numeral(value).format('+0,0a$')
                             return `${ChartSeries.NetDelta} ${formattedValue}`
                         },
                         color: netDeltaColor,
@@ -1044,7 +1044,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
+                            const formattedValue = numeral(value).format('+0,0a$')
                             return `${ChartSeries.StrategyDelta} ${formattedValue}`
                         },
                         color: netDeltaColor,
@@ -1080,7 +1080,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
+                            const formattedValue = numeral(value).format('+0,0a$')
                             return `${ChartSeries.HyperCoreSpots} ${formattedValue}`
                         },
                         color: colors.hyperCoreSpot,
@@ -1106,8 +1106,8 @@ export default function DeltaTrackingChart() {
                     xAxisIndex: 0,
                     start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / storedSnapshots.length),
                     end: zoomRangeRef.current?.x?.end ?? 100,
-                    height: 16,
-                    bottom: 20,
+                    height: 18,
+                    bottom: 15,
                     backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
                     borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
                     fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',

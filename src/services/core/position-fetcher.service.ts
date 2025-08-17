@@ -230,6 +230,8 @@ export class PositionFetcher {
             poolAddress: string
             tokensOwed0: bigint
             tokensOwed1: bigint
+            feeGrowthInside0LastX128: bigint
+            feeGrowthInside1LastX128: bigint
         }> = []
 
         const uniquePools = new Set<string>()
@@ -244,20 +246,20 @@ export class PositionFetcher {
             })
 
             // Destructure position data from the contract response
-            const [, , token0, token1, fee, tickLower, tickUpper, liquidity, , , tokensOwed0, tokensOwed1] = positionData as readonly [
-                bigint,
-                string,
-                string,
-                string,
-                number,
-                number,
-                number,
-                bigint,
-                bigint,
-                bigint,
-                bigint,
-                bigint,
-            ]
+            const [
+                ,
+                ,
+                token0,
+                token1,
+                fee,
+                tickLower,
+                tickUpper,
+                liquidity,
+                feeGrowthInside0LastX128,
+                feeGrowthInside1LastX128,
+                tokensOwed0,
+                tokensOwed1,
+            ] = positionData as readonly [bigint, string, string, string, number, number, number, bigint, bigint, bigint, bigint, bigint]
 
             // For now, show all positions - we can filter later
             // if (!this.isHypeUsdt0Pair(token0 as string, token1 as string)) {
@@ -305,6 +307,8 @@ export class PositionFetcher {
                 poolAddress,
                 tokensOwed0: tokensOwed0 || 0n,
                 tokensOwed1: tokensOwed1 || 0n,
+                feeGrowthInside0LastX128: feeGrowthInside0LastX128 || 0n,
+                feeGrowthInside1LastX128: feeGrowthInside1LastX128 || 0n,
             })
         }
 
@@ -316,7 +320,29 @@ export class PositionFetcher {
         // Step 8: Get token prices
         await this.fetchTokenPrices()
 
-        // Step 9: Calculate values for each position
+        // Step 9: Batch fetch tick data for all positions with liquidity
+        const tickDataMap = new Map<
+            string,
+            { feeGrowthOutside0Lower: bigint; feeGrowthOutside1Lower: bigint; feeGrowthOutside0Upper: bigint; feeGrowthOutside1Upper: bigint }
+        >()
+
+        // Only fetch tick data for positions with liquidity and fee growth data available
+        const positionsNeedingTickData = positions.filter(
+            (pos) => pos.liquidity > 0n && poolStates.get(pos.poolAddress)?.feeGrowthGlobal0X128 !== undefined,
+        )
+
+        // Batch fetch tick data
+        for (const pos of positionsNeedingTickData) {
+            const key = `${pos.poolAddress}-${pos.tickLower}-${pos.tickUpper}`
+            if (!tickDataMap.has(key)) {
+                const tickData = await this.fetchTickData(pos.poolAddress, pos.tickLower, pos.tickUpper)
+                if (tickData) {
+                    tickDataMap.set(key, tickData)
+                }
+            }
+        }
+
+        // Step 10: Calculate values for each position
         return positions.map((pos) => {
             const poolState = poolStates.get(pos.poolAddress)
             const dex = getDexByPositionManager(pos.pmAddress) || pos.protocol
@@ -360,6 +386,50 @@ export class PositionFetcher {
             const fees0Uncollected = pos.tokensOwed0 > 0n ? Number(pos.tokensOwed0) / 10 ** token0Decimals : 0
             const fees1Uncollected = pos.tokensOwed1 > 0n ? Number(pos.tokensOwed1) / 10 ** token1Decimals : 0
 
+            // Calculate unclaimed fees (fees earned but not yet collected from the pool)
+            let unclaimedFees0 = 0
+            let unclaimedFees1 = 0
+            let unclaimedFeesUSD = 0
+
+            if (poolState && pos.liquidity > 0n) {
+                const tickDataKey = `${pos.poolAddress}-${pos.tickLower}-${pos.tickUpper}`
+                const tickData = tickDataMap.get(tickDataKey)
+
+                if (tickData && poolState.feeGrowthGlobal0X128 !== undefined && poolState.feeGrowthGlobal1X128 !== undefined) {
+                    // Calculate fee growth inside for token0
+                    const feeGrowthInside0 = this.calculateFeeGrowthInside(
+                        pos.tickLower,
+                        pos.tickUpper,
+                        poolState.tick,
+                        poolState.feeGrowthGlobal0X128,
+                        tickData.feeGrowthOutside0Lower,
+                        tickData.feeGrowthOutside0Upper,
+                    )
+
+                    // Calculate fee growth inside for token1
+                    const feeGrowthInside1 = this.calculateFeeGrowthInside(
+                        pos.tickLower,
+                        pos.tickUpper,
+                        poolState.tick,
+                        poolState.feeGrowthGlobal1X128,
+                        tickData.feeGrowthOutside1Lower,
+                        tickData.feeGrowthOutside1Upper,
+                    )
+
+                    // Calculate unclaimed fees
+                    const unclaimedFees0Raw = this.calculateUnclaimedFees(pos.liquidity, feeGrowthInside0, pos.feeGrowthInside0LastX128)
+
+                    const unclaimedFees1Raw = this.calculateUnclaimedFees(pos.liquidity, feeGrowthInside1, pos.feeGrowthInside1LastX128)
+
+                    // Convert to human-readable values
+                    unclaimedFees0 = Number(unclaimedFees0Raw) / 10 ** token0Decimals
+                    unclaimedFees1 = Number(unclaimedFees1Raw) / 10 ** token1Decimals
+
+                    // Calculate USD value
+                    unclaimedFeesUSD = unclaimedFees0 * token0Price + unclaimedFees1 * token1Price
+                }
+            }
+
             return {
                 id: pos.tokenId,
                 tokenId: pos.tokenId,
@@ -383,9 +453,127 @@ export class PositionFetcher {
                 token1ValueUSD,
                 fees0Uncollected: fees0Uncollected > 0 ? fees0Uncollected : undefined,
                 fees1Uncollected: fees1Uncollected > 0 ? fees1Uncollected : undefined,
+                unclaimedFees0: unclaimedFees0 > 0 ? unclaimedFees0 : undefined,
+                unclaimedFees1: unclaimedFees1 > 0 ? unclaimedFees1 : undefined,
+                unclaimedFeesUSD: unclaimedFeesUSD > 0 ? unclaimedFeesUSD : undefined,
                 isClosed: pos.liquidity === 0n,
             }
         })
+    }
+
+    /**
+     * Calculate fee growth inside a position range
+     */
+    private calculateFeeGrowthInside(
+        tickLower: number,
+        tickUpper: number,
+        tickCurrent: number,
+        feeGrowthGlobal: bigint,
+        feeGrowthOutsideLower: bigint,
+        feeGrowthOutsideUpper: bigint,
+    ): bigint {
+        let feeGrowthBelow: bigint
+        let feeGrowthAbove: bigint
+
+        // Calculate fee growth below
+        if (tickCurrent >= tickLower) {
+            feeGrowthBelow = feeGrowthOutsideLower
+        } else {
+            feeGrowthBelow = feeGrowthGlobal - feeGrowthOutsideLower
+        }
+
+        // Calculate fee growth above
+        if (tickCurrent < tickUpper) {
+            feeGrowthAbove = feeGrowthOutsideUpper
+        } else {
+            feeGrowthAbove = feeGrowthGlobal - feeGrowthOutsideUpper
+        }
+
+        // Calculate fee growth inside
+        return feeGrowthGlobal - feeGrowthBelow - feeGrowthAbove
+    }
+
+    /**
+     * Calculate unclaimed fees for a position
+     */
+    private calculateUnclaimedFees(liquidity: bigint, feeGrowthInside: bigint, feeGrowthInsideLast: bigint): bigint {
+        // Handle underflow for fee growth
+        const feeGrowthDelta =
+            feeGrowthInside >= feeGrowthInsideLast
+                ? feeGrowthInside - feeGrowthInsideLast
+                : BigInt(2) ** BigInt(256) - feeGrowthInsideLast + feeGrowthInside
+
+        // Calculate unclaimed fees: (feeGrowthDelta * liquidity) / 2^128
+        return (feeGrowthDelta * liquidity) / BigInt(2) ** BigInt(128)
+    }
+
+    /**
+     * Fetch tick data for fee calculations
+     */
+    private async fetchTickData(
+        poolAddress: string,
+        tickLower: number,
+        tickUpper: number,
+    ): Promise<{
+        feeGrowthOutside0Lower: bigint
+        feeGrowthOutside1Lower: bigint
+        feeGrowthOutside0Upper: bigint
+        feeGrowthOutside1Upper: bigint
+    } | null> {
+        try {
+            const client = getViemClient(HYPEREVM_CHAIN_ID)
+
+            // Fetch tick data for both tickLower and tickUpper
+            const tickCalls = [
+                {
+                    target: poolAddress as Address,
+                    callData: encodeFunctionData({
+                        abi: UNISWAP_V3_POOL_ABI,
+                        functionName: 'ticks',
+                        args: [tickLower],
+                    }),
+                },
+                {
+                    target: poolAddress as Address,
+                    callData: encodeFunctionData({
+                        abi: UNISWAP_V3_POOL_ABI,
+                        functionName: 'ticks',
+                        args: [tickUpper],
+                    }),
+                },
+            ]
+
+            const results = (await client.readContract({
+                address: MULTICALL3_ADDRESS,
+                abi: MULTICALL3_ABI,
+                functionName: 'tryAggregate',
+                args: [false, tickCalls],
+            })) as Array<{ success: boolean; returnData: `0x${string}` }>
+
+            if (results[0].success && results[1].success) {
+                const tickLowerData = decodeFunctionResult({
+                    abi: UNISWAP_V3_POOL_ABI,
+                    functionName: 'ticks',
+                    data: results[0].returnData,
+                }) as [bigint, bigint, bigint, bigint, bigint, bigint, number, boolean]
+
+                const tickUpperData = decodeFunctionResult({
+                    abi: UNISWAP_V3_POOL_ABI,
+                    functionName: 'ticks',
+                    data: results[1].returnData,
+                }) as [bigint, bigint, bigint, bigint, bigint, bigint, number, boolean]
+
+                return {
+                    feeGrowthOutside0Lower: tickLowerData[2],
+                    feeGrowthOutside1Lower: tickLowerData[3],
+                    feeGrowthOutside0Upper: tickUpperData[2],
+                    feeGrowthOutside1Upper: tickUpperData[3],
+                }
+            }
+        } catch {
+            // Failed to fetch tick data
+        }
+        return null
     }
 
     /**
@@ -401,10 +589,10 @@ export class PositionFetcher {
         const uncachedPools = poolAddresses.filter((addr) => !this.poolStateCache.has(addr))
 
         if (uncachedPools.length > 0) {
-            // Build combined multicall for both slot0 and liquidity in a single batch
+            // Build combined multicall for slot0, liquidity, and fee growth in a single batch
             const poolCalls: Array<{ target: Address; callData: `0x${string}` }> = []
 
-            // Add slot0 calls first, then liquidity calls
+            // Add calls for each pool: slot0, liquidity, feeGrowthGlobal0X128, feeGrowthGlobal1X128
             for (const poolAddress of uncachedPools) {
                 // slot0 call
                 poolCalls.push({
@@ -422,6 +610,22 @@ export class PositionFetcher {
                         functionName: 'liquidity',
                     }),
                 })
+                // feeGrowthGlobal0X128 call
+                poolCalls.push({
+                    target: poolAddress as Address,
+                    callData: encodeFunctionData({
+                        abi: UNISWAP_V3_POOL_ABI,
+                        functionName: 'feeGrowthGlobal0X128',
+                    }),
+                })
+                // feeGrowthGlobal1X128 call
+                poolCalls.push({
+                    target: poolAddress as Address,
+                    callData: encodeFunctionData({
+                        abi: UNISWAP_V3_POOL_ABI,
+                        functionName: 'feeGrowthGlobal1X128',
+                    }),
+                })
             }
 
             // Single multicall for all pool state data
@@ -432,10 +636,12 @@ export class PositionFetcher {
                 args: [false, poolCalls],
             })) as Array<{ success: boolean; returnData: `0x${string}` }>
 
-            // Process results (slot0 and liquidity are interleaved)
+            // Process results (slot0, liquidity, feeGrowth0, feeGrowth1 are grouped per pool)
             for (let i = 0; i < uncachedPools.length; i++) {
-                const slot0Index = i * 2
-                const liquidityIndex = i * 2 + 1
+                const slot0Index = i * 4
+                const liquidityIndex = i * 4 + 1
+                const feeGrowth0Index = i * 4 + 2
+                const feeGrowth1Index = i * 4 + 3
 
                 if (poolResults[slot0Index].success && poolResults[liquidityIndex].success) {
                     // Check for empty data
@@ -462,10 +668,40 @@ export class PositionFetcher {
                             data: poolResults[liquidityIndex].returnData,
                         }) as bigint
 
+                        // Decode fee growth values if available
+                        let feeGrowthGlobal0X128: bigint | undefined
+                        let feeGrowthGlobal1X128: bigint | undefined
+
+                        if (poolResults[feeGrowth0Index]?.success && poolResults[feeGrowth0Index].returnData) {
+                            try {
+                                feeGrowthGlobal0X128 = decodeFunctionResult({
+                                    abi: UNISWAP_V3_POOL_ABI,
+                                    functionName: 'feeGrowthGlobal0X128',
+                                    data: poolResults[feeGrowth0Index].returnData,
+                                }) as bigint
+                            } catch {
+                                // Failed to decode fee growth
+                            }
+                        }
+
+                        if (poolResults[feeGrowth1Index]?.success && poolResults[feeGrowth1Index].returnData) {
+                            try {
+                                feeGrowthGlobal1X128 = decodeFunctionResult({
+                                    abi: UNISWAP_V3_POOL_ABI,
+                                    functionName: 'feeGrowthGlobal1X128',
+                                    data: poolResults[feeGrowth1Index].returnData,
+                                }) as bigint
+                            } catch {
+                                // Failed to decode fee growth
+                            }
+                        }
+
                         const state = {
                             sqrtPriceX96: slot0[0],
                             tick: slot0[1],
                             liquidity,
+                            feeGrowthGlobal0X128,
+                            feeGrowthGlobal1X128,
                         }
 
                         this.poolStateCache.set(uncachedPools[i], state)

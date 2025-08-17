@@ -70,6 +70,9 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                 ? await poolAPRService.fetchPoolAPRByAddresses(userPoolAddresses)
                 : { pools: [], averageAPR24h: 0, totalTVL: 0, totalVolume24h: 0, totalFees24h: 0, lastUpdated: Date.now() }
 
+        // Calculate unclaimed fees total
+        const unclaimedFeesTotal = lpPositions.reduce((sum, lp) => sum + (lp.unclaimedFeesUSD || 0), 0)
+
         // Calculate USD values
         const usdValues = {
             lps: sumUSDValue(lpPositions),
@@ -256,8 +259,10 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                 hyperEvm: {
                     values: {
                         lpsUSD: usdValues.lps,
+                        lpsUSDWithFees: usdValues.lps + unclaimedFeesTotal,
+                        unclaimedFeesUSD: unclaimedFeesTotal,
                         balancesUSD: usdValues.balances,
-                        totalUSD: usdValues.lps + usdValues.balances,
+                        totalUSD: usdValues.lps + unclaimedFeesTotal + usdValues.balances,
                     },
                     deltas: {
                         lpsHYPE: deltaValues.lps,
@@ -291,8 +296,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                     },
                 },
                 portfolio: {
-                    totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0) + (withdrawableUSDC || 0),
-                    deployedAUM: usdValues.lps + usdValues.perps,
+                    totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0) + (withdrawableUSDC || 0) + unclaimedFeesTotal,
+                    deployedAUM: usdValues.lps + unclaimedFeesTotal + usdValues.perps,
                     netDeltaHYPE: Object.values(deltaValues).reduce((sum, val) => sum + val, 0),
                     strategyDelta: deltaValues.lps + deltaValues.perps,
                     apr: {

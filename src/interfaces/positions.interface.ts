@@ -26,6 +26,9 @@ export interface LPPosition {
     feeTier?: string | null
     fees0Uncollected?: number
     fees1Uncollected?: number
+    unclaimedFees0?: number // Unclaimed fees in token0 (not yet collected from pool)
+    unclaimedFees1?: number // Unclaimed fees in token1 (not yet collected from pool)
+    unclaimedFeesUSD?: number // Total USD value of unclaimed fees
     isClosed?: boolean
 }
 
@@ -62,6 +65,8 @@ export interface PoolState {
     sqrtPriceX96: bigint
     tick: number
     liquidity: bigint
+    feeGrowthGlobal0X128?: bigint
+    feeGrowthGlobal1X128?: bigint
 }
 
 export interface PoolInfo {

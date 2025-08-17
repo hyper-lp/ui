@@ -11,7 +11,6 @@ import { formatUSD, formatNumber, shortenValue } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
-import { RoundedAmount } from '@/components/common/RoundedAmount'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import { getDexConfig, IS_DEV } from '@/config'
@@ -194,7 +193,59 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                 <span className="text-default/50">-</span>
                                             )
                                         }
-                                        value={<RoundedAmount amount={position.valueUSD}>{formatUSD(position.valueUSD)}</RoundedAmount>}
+                                        value={
+                                            position.unclaimedFeesUSD && position.unclaimedFeesUSD > 0.01 ? (
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center justify-between gap-4">
+                                                                <span className="text-default/70">Position Value:</span>
+                                                                <span className="font-medium">{numeral(position.valueUSD).format('0,0.00$')}</span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-4">
+                                                                <span className="text-default/70">Unclaimed Fees:</span>
+                                                                <span className="font-medium text-success">
+                                                                    {numeral(position.unclaimedFeesUSD).format('0,0.00$')}
+                                                                </span>
+                                                            </div>
+                                                            {(position.unclaimedFees0 || position.unclaimedFees1) && (
+                                                                <div className="space-y-1 border-t border-default/10 pt-2 text-xs">
+                                                                    {position.unclaimedFees0 && position.unclaimedFees0 > 0 && (
+                                                                        <div className="flex items-center justify-between gap-2">
+                                                                            <span className="text-default/50">{position.token0Symbol}:</span>
+                                                                            <span>{formatNumber(position.unclaimedFees0, 4)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {position.unclaimedFees1 && position.unclaimedFees1 > 0 && (
+                                                                        <div className="flex items-center justify-between gap-2">
+                                                                            <span className="text-default/50">{position.token1Symbol}:</span>
+                                                                            <span>{formatNumber(position.unclaimedFees1, 4)}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            <div className="border-t border-default/10 pt-2">
+                                                                <div className="flex items-center justify-between gap-4">
+                                                                    <span className="font-medium text-default">Total:</span>
+                                                                    <span className="font-semibold">
+                                                                        {numeral(position.valueUSD + position.unclaimedFeesUSD).format('0,0.00$')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                >
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="font-medium">
+                                                            {formatUSD(position.valueUSD + position.unclaimedFeesUSD)}
+                                                        </span>
+                                                        {/* <span className="text-xs text-success">+{formatUSD(position.unclaimedFeesUSD)} fees</span> */}
+                                                    </div>
+                                                </StyledTooltip>
+                                            ) : (
+                                                <span className="font-medium">{formatUSD(position.valueUSD)}</span>
+                                            )
+                                        }
                                         split={
                                             <StyledTooltip
                                                 content={
@@ -217,7 +268,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                 </div>
                                             </StyledTooltip>
                                         }
-                                        tvl={<RoundedAmount amount={poolSnapshot?.tvlUSD || 0}>{formatUSD(poolSnapshot?.tvlUSD || 0)}</RoundedAmount>}
+                                        tvl={<span className="font-medium">{formatUSD(poolSnapshot?.tvlUSD || 0)}</span>}
                                         apr24h={(() => {
                                             return poolSnapshot ? (
                                                 <StyledTooltip

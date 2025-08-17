@@ -32,7 +32,9 @@ export interface AccountSnapshot {
     metrics: {
         hyperEvm: {
             values: {
-                lpsUSD: number // LP positions value in USD
+                lpsUSD: number // LP positions value in USD (without unclaimed fees)
+                lpsUSDWithFees: number // LP positions value including unclaimed fees
+                unclaimedFeesUSD: number // Total unclaimed fees in USD
                 balancesUSD: number // Wallet balances value in USD
                 totalUSD: number // Total HyperEVM value in USD
             }

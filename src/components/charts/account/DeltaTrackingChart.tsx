@@ -1223,7 +1223,7 @@ export default function DeltaTrackingChart() {
 
     if (!options) {
         return (
-            <div className="flex size-full items-center justify-center">
+            <div className="flex h-[400px] w-full items-center justify-center md:h-[500px]">
                 <div className="text-default/50">Loading chart...</div>
             </div>
         )

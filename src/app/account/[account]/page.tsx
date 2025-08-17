@@ -30,7 +30,7 @@ import numeral from 'numeral'
 // Dynamically import chart to avoid SSR issues
 const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
     ssr: false,
-    loading: () => <div className="flex size-full items-center justify-center text-sm text-default/50">Loading chart...</div>,
+    loading: () => <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[500px]">Loading chart...</div>,
 })
 
 // Helper function for delta color
@@ -142,7 +142,7 @@ export default function AccountPage() {
     const positions = snapshot?.positions || { hyperEvm: { lps: [], balances: [] }, hyperCore: { perps: [], spots: [] } }
     const metrics = snapshot?.metrics || {
         hyperEvm: {
-            values: { lpsUSD: 0, balancesUSD: 0, totalUSD: 0 },
+            values: { lpsUSD: 0, lpsUSDWithFees: 0, unclaimedFeesUSD: 0, balancesUSD: 0, totalUSD: 0 },
             deltas: { lpsHYPE: 0, balancesHYPE: 0, totalHYPE: 0 },
             apr: { weightedAvg24h: null, weightedAvg7d: null, weightedAvg30d: null },
         },
@@ -259,7 +259,9 @@ export default function AccountPage() {
                             </div>
                         </div>
                     }
-                    charts={<div className="flex size-full items-center justify-center text-sm text-default/50">Loading chart...</div>}
+                    charts={
+                        <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[500px]">Loading chart...</div>
+                    }
                     summary={null}
                     hyperEvm={{
                         lp: (
@@ -457,14 +459,7 @@ export default function AccountPage() {
                         <div className="flex items-center gap-6">
                             <KPIMetric label="AUM on HL" value={formatUSD(metrics.portfolio?.totalUSD || 0)} className="hidden md:flex" />
                             <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
-                            <KPIMetric
-                                label="DeployedAUM"
-                                value={formatUSD(
-                                    metrics.portfolio?.deployedAUM ||
-                                        (metrics.hyperEvm?.values?.lpsUSD || 0) + (metrics.hyperCore?.values?.perpsUSD || 0),
-                                )}
-                                className="hidden md:flex"
-                            />
+                            <KPIMetric label="Deployed AUM" value={formatUSD(metrics.portfolio?.deployedAUM || 0)} className="hidden md:flex" />
                             <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
                             <KPIMetric
                                 label="STRATEGY Δ"
@@ -594,12 +589,6 @@ export default function AccountPage() {
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-1">
-                                        <p>
-                                            {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)} on {positions.hyperEvm?.lps?.length || 0} LP
-                                            {positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
-                                        </p>
-                                    </div>
                                     {weightedAvgAPR !== null && (
                                         <StyledTooltip
                                             content={
@@ -640,6 +629,9 @@ export default function AccountPage() {
                                         </StyledTooltip>
                                     )}
                                     <div className="flex items-center gap-1">
+                                        <p>{formatUSD(metrics.hyperEvm?.values?.lpsUSDWithFees || 0)}</p>
+                                    </div>
+                                    <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>
@@ -657,7 +649,7 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     <p>{formatUSD(positions.hyperEvm?.balances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}</p>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>
@@ -710,11 +702,10 @@ export default function AccountPage() {
                 hyperCore={{
                     short: (
                         <CollapsibleCard
-                            title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perpetuals leg</h3>}
+                            title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perps leg</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
-                                    <p>{formatUSD(metrics.hyperCore?.values?.totalUSD || 0)} margin</p>
                                     {perpFundingAPR != null && (
                                         <StyledTooltip
                                             content={
@@ -764,7 +755,8 @@ export default function AccountPage() {
                                             </div>
                                         </StyledTooltip>
                                     )}
-                                    <div className="flex items-center gap-1">
+                                    <p>{formatUSD(metrics.hyperCore?.values?.totalUSD || 0)}</p>
+                                    <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>
@@ -782,7 +774,7 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     <p>{formatUSD(positions.hyperCore?.spots?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}</p>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>

@@ -12,6 +12,7 @@ import type { AggregatedPoolAPR } from './pool-apr.interface'
 export interface AccountSnapshot {
     success: boolean
     error?: string
+    schemaVersion: string // Semantic versioning for data structure (e.g., '1.0.0')
     timestamp: number
     evmAddress: string
     coreAddress: string

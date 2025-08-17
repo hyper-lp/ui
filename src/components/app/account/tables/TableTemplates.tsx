@@ -57,10 +57,10 @@ export const WalletRowTemplate = (props: {
     return (
         <div className={cn('flex items-center text-sm', props.className)}>
             <div className="w-[140px] px-2">{props.token}</div>
+            <div className="w-[100px] px-2 text-right">{props.price}</div>
             <div className="w-[120px] px-2 text-right">{props.balance}</div>
             <div className="w-[100px] px-2 text-right">{props.value}</div>
-            <div className="w-[100px] px-2 text-right">{props.price}</div>
-            <div className="w-[200px] px-2 text-[10px] text-default/50">{props.address}</div>
+            {/* <div className="w-[200px] px-2 text-[10px] text-default/50">{props.address}</div> */}
         </div>
     )
 }
@@ -104,9 +104,9 @@ export const SpotRowTemplate = (props: { asset: ReactNode; balance: ReactNode; v
     return (
         <div className={cn('flex items-center text-sm', props.className)}>
             <div className="w-[140px] px-2">{props.asset}</div>
+            {props.price !== undefined && <div className="w-[100px] px-2 text-right">{props.price}</div>}
             <div className="w-[120px] px-2 text-right">{props.balance}</div>
             <div className="w-[100px] px-2 text-right">{props.value}</div>
-            {props.price !== undefined && <div className="w-[80px] px-2 text-right">{props.price}</div>}
         </div>
     )
 }

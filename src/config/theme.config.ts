@@ -1,6 +1,9 @@
 import { AppThemes } from '@/enums/app.enum'
 import { IconIds } from '@/enums/icons.enum'
 import type { ThemeConfig } from '@/interfaces/app.interface'
+import { AppFontFamilies } from '@/enums/app.enum'
+import localFont from 'next/font/local'
+import { Lato } from 'next/font/google'
 
 export const APP_THEMES = {
     [AppThemes.LIGHT]: { index: 0, iconId: IconIds.THEME_LIGHT },
@@ -136,4 +139,79 @@ export const COLORS: ThemeConfig = {
  */
 export function getThemeColors(mode?: string) {
     return mode === AppThemes.DARK ? COLORS.dark : COLORS.light
+}
+
+/**
+ * fonts
+ */
+
+// export const INTER_FONT = Inter({
+//     weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+//     subsets: ['latin'],
+//     variable: '--font-inter',
+//     display: 'swap',
+//     preload: true,
+// })
+
+// export const INTER_TIGHT_FONT = Inter_Tight({
+//     weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+//     subsets: ['latin'],
+//     variable: '--font-inter-tight',
+// })
+
+export const LATO_FONT = Lato({ weight: ['100', '300', '400', '700', '900'], subsets: ['latin'] })
+export const TEODOR_LIGHT_FONT = localFont({
+    src: [
+        {
+            path: '../../public/fonts/Teodor-Light.woff2',
+            weight: '300',
+            style: 'normal',
+        },
+        {
+            path: '../../public/fonts/Teodor-Light.woff',
+            weight: '300',
+            style: 'normal',
+        },
+        {
+            path: '../../public/fonts/Teodor-Light.ttf',
+            weight: '300',
+            style: 'normal',
+        },
+        {
+            path: '../../public/fonts/Teodor-LightItalic.woff2',
+            weight: '300',
+            style: 'italic',
+        },
+        {
+            path: '../../public/fonts/Teodor-LightItalic.woff',
+            weight: '300',
+            style: 'italic',
+        },
+        {
+            path: '../../public/fonts/Teodor-LightItalic.ttf',
+            weight: '300',
+            style: 'italic',
+        },
+    ],
+    variable: '--font-teodor-light',
+    display: 'swap',
+    preload: true,
+})
+export const PVP_TRADE_FONT = localFont({
+    src: [
+        {
+            path: '../../public/fonts/Pvp-Trade.ttf',
+            weight: '400',
+            style: 'normal',
+        },
+    ],
+    variable: '--font-pvp-trade',
+    display: 'swap',
+    preload: true,
+})
+
+export const APP_FONT_FAMILIES: Record<AppFontFamilies, string> = {
+    [AppFontFamilies.TEODOR_LIGHT]: TEODOR_LIGHT_FONT.variable,
+    [AppFontFamilies.LATO]: LATO_FONT.className,
+    [AppFontFamilies.PVP_TRADE]: PVP_TRADE_FONT.className,
 }

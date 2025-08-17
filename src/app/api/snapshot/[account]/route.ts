@@ -6,6 +6,7 @@ import { priceAggregator } from '@/services/price/price-aggregator.service'
 import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { LPPosition } from '@/interfaces'
+import { SCHEMA_VERSION } from '@/constants/schema.constants'
 
 // Simple in-memory cache with 5-second TTL
 const CACHE_TTL = 5000 // 5 seconds
@@ -240,6 +241,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
         // Build the account snapshot
         const accountData: AccountSnapshot = {
             success: true,
+            schemaVersion: SCHEMA_VERSION.CURRENT, // Use constant for schema version
             timestamp: Date.now(),
             evmAddress: accountAddress,
             coreAddress: accountAddress,

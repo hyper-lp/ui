@@ -25,20 +25,20 @@ export default function Footer(props: { className?: string }) {
     return (
         <footer className={cn('flex min-h-16 w-full items-center justify-between gap-2 px-6 text-xs font-light md:gap-0', props.className)}>
             {/* left */}
-            <div className="flex flex-row gap-8">
-                <div className="hidden md:flex">
+            <div className="hidden flex-row gap-8 md:flex">
+                <div>
                     <StyledTooltip closeDelay={500} content={<p>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</p>}>
                         <p className="truncate">August 2025</p>
                     </StyledTooltip>
                 </div>
 
-                <LinkWrapper href={AppUrls.TAIKAI} target="_blank" className="hidden md:flex">
+                <LinkWrapper href={AppUrls.TAIKAI} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Hyperliquid Community Hackathon</p>
                 </LinkWrapper>
             </div>
 
             {/* right */}
-            <div className="flex flex-row gap-8">
+            <div className="mx-auto flex flex-row items-center justify-center gap-8 md:mx-0 md:justify-end">
                 <StyledTooltip
                     closeDelay={500}
                     content={

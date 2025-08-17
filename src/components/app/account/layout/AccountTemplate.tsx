@@ -51,40 +51,12 @@ export default function AccountTemplate(props: {
             {props.header}
 
             {/* --------------- Content */}
-            <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            <div className="flex flex-col gap-6 lg:flex-row lg:gap-4">
                 {/* 1. historic of snapshots */}
-                <SectionCard className="h-[400px] w-full !p-1 md:!p-2">{props.charts}</SectionCard>
+                <SectionCard className="h-[400px] flex-1 !p-1 md:!p-2">{props.charts}</SectionCard>
 
                 {/* 2. last snapshot */}
-                <div className="grid h-min grid-cols-1 gap-4">
-                    {/* Global summary section - only render if summary is provided */}
-                    {props.summary && (
-                        <SectionCard>
-                            <h3 className="mb-3 text-base font-medium text-default">Global</h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                {/* Address */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading address" />}>
-                                    {props.summary.address}
-                                </ErrorBoundary>
-
-                                {/* Total AUM USD */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading total AUM USD" />}>
-                                    {props.summary.aum}
-                                </ErrorBoundary>
-
-                                {/* Net HYPE delta USD */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading net HYPE delta USD" />}>
-                                    {props.summary.netDelta}
-                                </ErrorBoundary>
-
-                                {/* Current APR */}
-                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading current APR" />}>
-                                    {props.summary.apr}
-                                </ErrorBoundary>
-                            </div>
-                        </SectionCard>
-                    )}
-
+                <div className="flex h-min w-[500px] flex-col gap-4 xl:w-[600px]">
                     {/* HyperEvm */}
                     <div>
                         <FileMapper

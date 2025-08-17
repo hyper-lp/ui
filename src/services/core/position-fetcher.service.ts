@@ -1049,7 +1049,7 @@ export class PositionFetcher {
         if (cached !== undefined) return cached
 
         // Default prices for stablecoins
-        if (symbol === 'USDT0' || symbol === 'USDC') {
+        if (symbol === 'USDT0' || symbol === 'USDT' || symbol === 'USDC' || symbol === 'USD₮0') {
             return 1.0
         }
 

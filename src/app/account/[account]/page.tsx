@@ -385,284 +385,296 @@ export default function AccountPage() {
         <PageWrapper className="px-4">
             <AccountTemplate
                 header={
-                    <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
-                        {/* Address */}
-                        <div className="flex flex-col">
-                            <div className="mb-10 flex flex-wrap items-center gap-1">
-                                <p className="text-wrap text-primary">Example of Delta Neutral LP</p>
-                                <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-primary" />
-                                <p className="text-wrap text-primary">Farm</p>
-                                <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
-                                <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
-                                <p className="text-wrap text-primary">APRs with a dynamic short leg</p>
-                            </div>
-                            <div className="flex items-baseline gap-2 text-sm">
-                                <p className="hidden text-lg font-medium xl:flex">{accountFromUrl}</p>
-                                <p className="flex text-lg font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
-                                {[
-                                    {
-                                        name: 'debank',
-                                        description: 'DeBank profile',
-                                        url: `https://debank.com/profile/${accountFromUrl}`,
-                                    },
-                                    {
-                                        name: 'scan',
-                                        description: 'HyperEVM scan',
-                                        url: `https://hyperevmscan.io/address/${accountFromUrl}`,
-                                    },
-                                    {
-                                        name: 'raw',
-                                        description: 'API snapshot',
-                                        url: `${env.NEXT_PUBLIC_APP_URL}/${AppUrls.API_SNAPSHOT}/${accountFromUrl}`,
-                                    },
-                                ].map((link) => (
-                                    <div key={link.name}>
-                                        <StyledTooltip key={link.name} content={<p>{link.description}</p>}>
-                                            <LinkWrapper target="_blank" href={link.url}>
-                                                <p className="cursor-alias text-default/50 hover:text-default hover:underline">{link.name}</p>
-                                            </LinkWrapper>
-                                        </StyledTooltip>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-sm text-default/50">
-                                <button
-                                    onClick={() => refetch()}
-                                    disabled={isFetching}
-                                    className="rounded bg-default/5 p-1 hover:bg-default/10 hover:text-default disabled:opacity-50"
-                                    title="Refresh all page data for this address"
-                                >
-                                    <IconWrapper id={IconIds.REFRESH} className={cn('size-3.5', isFetching && 'animate-spin')} />
-                                </button>
-                                {isFetching ? (
-                                    <p>Fetching live onchain data</p>
-                                ) : (
-                                    <>
-                                        <StyledTooltip
-                                            content={
-                                                <div className="text-xs">
-                                                    <div>{DAYJS_FORMATS.dateLong(lastRefreshTime || 0)}</div>
-                                                    <div className="mt-2 text-default/60">
-                                                        LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms • Perps{' '}
-                                                        {timings?.hyperCore?.perpsMs || 0}ms • Spot {timings?.hyperCore?.spotsMs || 0}ms
+                    <div className="mb-4 flex flex-col gap-4 px-2 lg:px-4">
+                        {/* Title */}
+                        <div className="flex w-full flex-wrap items-center gap-1">
+                            <p className="text-wrap text-primary">Example of Delta Neutral LP</p>
+                            <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-primary" />
+                            <p className="text-wrap text-primary">Farm</p>
+                            <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
+                            <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
+                            <p className="text-wrap text-primary">APRs with a dynamic short leg</p>
+                        </div>
+
+                        {/* Summary */}
+                        <div className="flex w-full flex-col gap-6 lg:flex-row lg:justify-between">
+                            {/* Address */}
+                            <div className="flex flex-col">
+                                {/* row */}
+                                <div className="flex items-baseline gap-2 text-sm">
+                                    <p className="hidden text-lg font-medium xl:flex">{accountFromUrl}</p>
+                                    <p className="flex text-lg font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
+                                    {[
+                                        {
+                                            name: 'debank',
+                                            description: 'DeBank profile',
+                                            url: `https://debank.com/profile/${accountFromUrl}`,
+                                        },
+                                        {
+                                            name: 'scan',
+                                            description: 'HyperEVM scan',
+                                            url: `https://hyperevmscan.io/address/${accountFromUrl}`,
+                                        },
+                                        {
+                                            name: 'raw',
+                                            description: 'API snapshot',
+                                            url: `${env.NEXT_PUBLIC_APP_URL}/${AppUrls.API_SNAPSHOT}/${accountFromUrl}`,
+                                        },
+                                    ].map((link) => (
+                                        <div key={link.name}>
+                                            <StyledTooltip key={link.name} content={<p>{link.description}</p>}>
+                                                <LinkWrapper target="_blank" href={link.url}>
+                                                    <p className="cursor-alias text-default/50 hover:text-default hover:underline">{link.name}</p>
+                                                </LinkWrapper>
+                                            </StyledTooltip>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* row */}
+                                <div className="flex items-center gap-1.5 text-sm text-default/50">
+                                    <button
+                                        onClick={() => refetch()}
+                                        disabled={isFetching}
+                                        className="rounded bg-default/5 p-1 hover:bg-default/10 hover:text-default disabled:opacity-50"
+                                        title="Refresh all page data for this address"
+                                    >
+                                        <IconWrapper id={IconIds.REFRESH} className={cn('size-3.5', isFetching && 'animate-spin')} />
+                                    </button>
+                                    {isFetching ? (
+                                        <p>Fetching live onchain data</p>
+                                    ) : (
+                                        <>
+                                            <StyledTooltip
+                                                content={
+                                                    <div className="text-xs">
+                                                        <div>{DAYJS_FORMATS.dateLong(lastRefreshTime || 0)}</div>
+                                                        <div className="mt-2 text-default/60">
+                                                            LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms •
+                                                            Perps {timings?.hyperCore?.perpsMs || 0}ms • Spot {timings?.hyperCore?.spotsMs || 0}ms
+                                                        </div>
                                                     </div>
+                                                }
+                                                placement="bottom"
+                                            >
+                                                <span className="flex items-center gap-1">
+                                                    <p>Last updated</p>
+                                                    <TimeAgo date={lastRefreshTime} />
+                                                </span>
+                                            </StyledTooltip>
+                                            {nextUpdateIn && (
+                                                <>
+                                                    <span className="text-default/30">•</span>
+                                                    <p>Next in {nextUpdateIn}</p>
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Global KPIs */}
+                            <div className="flex items-center gap-6">
+                                <KPIMetric
+                                    label="AUM on HL"
+                                    value={formatUSD(metrics.portfolio?.totalUSD || 0)}
+                                    className="hidden md:flex"
+                                    tooltip={
+                                        <div className="space-y-2 text-xs">
+                                            <p className="font-semibold">Total AUM on Hyperliquid</p>
+                                            <div className="space-y-1 text-default/70">
+                                                <p>= HyperEVM + HyperCore</p>
+                                                <div className="ml-2 space-y-0.5">
+                                                    <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
+                                                    <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
+                                                    <p>• Wallet balances: {formatUSD(metrics.hyperEvm?.values?.balancesUSD || 0)}</p>
+                                                    <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
+                                                    <p>• Spot balances: {formatUSD(metrics.hyperCore?.values?.spotUSD || 0)}</p>
+                                                    <p>• Withdrawable: {formatUSD(metrics.hyperCore?.values?.withdrawableUSDC || 0)}</p>
                                                 </div>
-                                            }
-                                            placement="bottom"
-                                        >
-                                            <span className="flex items-center gap-1">
-                                                <p>Last updated</p>
-                                                <TimeAgo date={lastRefreshTime} />
-                                            </span>
-                                        </StyledTooltip>
-                                        {nextUpdateIn && (
-                                            <>
-                                                <span className="text-default/30">•</span>
-                                                <p>Next in {nextUpdateIn}</p>
-                                            </>
-                                        )}
+                                            </div>
+                                            <div className="border-t border-default/10 pt-1.5">
+                                                <p className="font-medium text-default">Total: {formatUSD(metrics.portfolio?.totalUSD || 0)}</p>
+                                            </div>
+                                        </div>
+                                    }
+                                />
+                                <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
+                                <KPIMetric
+                                    label="Deployed AUM"
+                                    value={formatUSD(metrics.portfolio?.deployedAUM || 0)}
+                                    className="hidden md:flex"
+                                    tooltip={
+                                        <div className="space-y-2 text-xs">
+                                            <p className="font-semibold">Deployed Capital in Strategy</p>
+                                            <div className="space-y-1 text-default/70">
+                                                <p>Capital actively deployed in delta-neutral positions</p>
+                                                <p>= LP value + Perp notional + Unclaimed fees</p>
+                                                <div className="ml-2 space-y-0.5">
+                                                    <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
+                                                    <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
+                                                    <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="border-t border-default/10 pt-1.5">
+                                                <p className="text-xs text-default/50">Excludes idle capital (wallet & spot)</p>
+                                                <p className="font-medium text-default">Deployed: {formatUSD(metrics.portfolio?.deployedAUM || 0)}</p>
+                                            </div>
+                                        </div>
+                                    }
+                                />
+                                <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
+                                <KPIMetric
+                                    label="STRATEGY Δ"
+                                    value={metrics.portfolio?.strategyDelta || 0}
+                                    icon={<HypeIcon size={20} />}
+                                    colorFn={getDeltaColor}
+                                    className="items-end"
+                                    tooltip={
+                                        <div className="space-y-2 text-xs">
+                                            <p className="font-semibold">Strategy Delta (Hedge Effectiveness)</p>
+                                            <div className="space-y-1 text-default/70">
+                                                <p>Net HYPE exposure from active positions</p>
+                                                <p>= LP delta + Perp delta</p>
+                                                <div className="ml-2 space-y-0.5">
+                                                    <p>• LP HYPE exposure: {(metrics.hyperEvm?.deltas?.lpsHYPE || 0).toFixed(2)} HYPE</p>
+                                                    <p>• Perp hedge: {(metrics.hyperCore?.deltas?.perpsHYPE || 0).toFixed(2)} HYPE</p>
+                                                </div>
+                                            </div>
+                                            <div className="border-t border-default/10 pt-1.5">
+                                                <div className="space-y-0.5">
+                                                    <p className={cn('font-medium', getDeltaColor(metrics.portfolio?.strategyDelta || 0))}>
+                                                        Strategy Δ: {(metrics.portfolio?.strategyDelta || 0).toFixed(2)} HYPE
+                                                    </p>
+                                                    <p className="text-default/50">
+                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) < 0.1 && '✓ Perfectly hedged'}
+                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 0.1 &&
+                                                            Math.abs(metrics.portfolio?.strategyDelta || 0) < 10 &&
+                                                            '✓ Well hedged'}
+                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 10 &&
+                                                            Math.abs(metrics.portfolio?.strategyDelta || 0) < 20 &&
+                                                            '⚠ Drift detected'}
+                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 20 && '⚠ Rebalance needed'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                />
+                                {aprRange !== null && (
+                                    <>
+                                        <div className="h-8 w-px border-l border-dashed border-default/20" />
+                                        <div className="flex flex-col items-center lg:items-end">
+                                            <span className="text-xs uppercase tracking-wider text-default/50">Gross Delta-Neutral APR</span>
+                                            <StyledTooltip
+                                                content={
+                                                    <div className="space-y-2">
+                                                        <p className="font-medium">Combined Strategy APR</p>
+
+                                                        <div className="space-y-2">
+                                                            {combinedAPRs?.combined24h !== null && combinedAPRs?.combined24h !== undefined && (
+                                                                <div>
+                                                                    <p className="text-xs font-medium text-default">24h APR</p>
+                                                                    <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                        {lpAPRs?.weightedAvg24h !== null && (
+                                                                            <p>LP: {lpAPRs.weightedAvg24h.toFixed(2)}%</p>
+                                                                        )}
+                                                                        {fundingAPRs?.fundingAPR24h !== null && (
+                                                                            <p>
+                                                                                Funding: {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
+                                                                                {fundingAPRs.fundingAPR24h.toFixed(2)}%
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="font-medium">
+                                                                            Net: {combinedAPRs.combined24h > 0 ? '+' : ''}
+                                                                            {combinedAPRs.combined24h.toFixed(2)}%
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {combinedAPRs?.combined7d !== null && combinedAPRs?.combined7d !== undefined && (
+                                                                <div>
+                                                                    <p className="text-xs font-medium text-default">7d APR</p>
+                                                                    <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                        {lpAPRs?.weightedAvg7d !== null && (
+                                                                            <p>LP: {lpAPRs.weightedAvg7d.toFixed(2)}%</p>
+                                                                        )}
+                                                                        {fundingAPRs?.fundingAPR7d !== null && (
+                                                                            <p>
+                                                                                Funding: {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
+                                                                                {fundingAPRs.fundingAPR7d.toFixed(2)}%
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="font-medium">
+                                                                            Net: {combinedAPRs.combined7d > 0 ? '+' : ''}
+                                                                            {combinedAPRs.combined7d.toFixed(2)}%
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {combinedAPRs?.combined30d !== null && combinedAPRs?.combined30d !== undefined && (
+                                                                <div>
+                                                                    <p className="text-xs font-medium text-default">30d APR</p>
+                                                                    <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                        {lpAPRs?.weightedAvg30d !== null && (
+                                                                            <p>LP: {lpAPRs.weightedAvg30d.toFixed(2)}%</p>
+                                                                        )}
+                                                                        {fundingAPRs?.fundingAPR30d !== null && (
+                                                                            <p>
+                                                                                Funding: {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
+                                                                                {fundingAPRs.fundingAPR30d.toFixed(2)}%
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="font-medium">
+                                                                            Net: {combinedAPRs.combined30d > 0 ? '+' : ''}
+                                                                            {combinedAPRs.combined30d.toFixed(2)}%
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <p className="text-xs italic text-default/50">
+                                                            User-specific, weighted by capital allocation
+                                                        </p>
+                                                    </div>
+                                                }
+                                            >
+                                                <p
+                                                    className={cn(
+                                                        'cursor-help text-lg font-semibold',
+                                                        aprRange.min > 0 && aprRange.max > 0
+                                                            ? 'text-success'
+                                                            : aprRange.min < 0 && aprRange.max < 0
+                                                              ? 'text-error'
+                                                              : 'text-default',
+                                                    )}
+                                                >
+                                                    {Math.abs(aprRange.max - aprRange.min) < 0.01 ? (
+                                                        `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}%`
+                                                    ) : (
+                                                        <span>
+                                                            <span className="px-1 text-xs text-default/50">low</span>
+                                                            <span>
+                                                                {aprRange.min > 0 ? '+' : ''}
+                                                                {aprRange.min.toFixed(2)}%
+                                                            </span>
+
+                                                            <span className="px-1 text-xs text-default/50">high</span>
+                                                            <span>
+                                                                {aprRange.max > 0 ? '+' : ''}
+                                                                {aprRange.max.toFixed(2)}%
+                                                            </span>
+                                                        </span>
+                                                    )}
+                                                </p>
+                                            </StyledTooltip>
+                                        </div>
                                     </>
                                 )}
                             </div>
-                        </div>
-
-                        {/* Global KPIs */}
-                        <div className="flex items-center gap-6">
-                            <KPIMetric
-                                label="AUM on HL"
-                                value={formatUSD(metrics.portfolio?.totalUSD || 0)}
-                                className="hidden md:flex"
-                                tooltip={
-                                    <div className="space-y-2 text-xs">
-                                        <p className="font-semibold">Total AUM on Hyperliquid</p>
-                                        <div className="space-y-1 text-default/70">
-                                            <p>= HyperEVM + HyperCore</p>
-                                            <div className="ml-2 space-y-0.5">
-                                                <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
-                                                <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
-                                                <p>• Wallet balances: {formatUSD(metrics.hyperEvm?.values?.balancesUSD || 0)}</p>
-                                                <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
-                                                <p>• Spot balances: {formatUSD(metrics.hyperCore?.values?.spotUSD || 0)}</p>
-                                                <p>• Withdrawable: {formatUSD(metrics.hyperCore?.values?.withdrawableUSDC || 0)}</p>
-                                            </div>
-                                        </div>
-                                        <div className="border-t border-default/10 pt-1.5">
-                                            <p className="font-medium text-default">Total: {formatUSD(metrics.portfolio?.totalUSD || 0)}</p>
-                                        </div>
-                                    </div>
-                                }
-                            />
-                            <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
-                            <KPIMetric
-                                label="Deployed AUM"
-                                value={formatUSD(metrics.portfolio?.deployedAUM || 0)}
-                                className="hidden md:flex"
-                                tooltip={
-                                    <div className="space-y-2 text-xs">
-                                        <p className="font-semibold">Deployed Capital in Strategy</p>
-                                        <div className="space-y-1 text-default/70">
-                                            <p>Capital actively deployed in delta-neutral positions</p>
-                                            <p>= LP value + Perp notional + Unclaimed fees</p>
-                                            <div className="ml-2 space-y-0.5">
-                                                <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
-                                                <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
-                                                <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
-                                            </div>
-                                        </div>
-                                        <div className="border-t border-default/10 pt-1.5">
-                                            <p className="text-xs text-default/50">Excludes idle capital (wallet & spot)</p>
-                                            <p className="font-medium text-default">Deployed: {formatUSD(metrics.portfolio?.deployedAUM || 0)}</p>
-                                        </div>
-                                    </div>
-                                }
-                            />
-                            <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
-                            <KPIMetric
-                                label="STRATEGY Δ"
-                                value={metrics.portfolio?.strategyDelta || 0}
-                                icon={<HypeIcon size={20} />}
-                                colorFn={getDeltaColor}
-                                className="items-end"
-                                tooltip={
-                                    <div className="space-y-2 text-xs">
-                                        <p className="font-semibold">Strategy Delta (Hedge Effectiveness)</p>
-                                        <div className="space-y-1 text-default/70">
-                                            <p>Net HYPE exposure from active positions</p>
-                                            <p>= LP delta + Perp delta</p>
-                                            <div className="ml-2 space-y-0.5">
-                                                <p>• LP HYPE exposure: {(metrics.hyperEvm?.deltas?.lpsHYPE || 0).toFixed(2)} HYPE</p>
-                                                <p>• Perp hedge: {(metrics.hyperCore?.deltas?.perpsHYPE || 0).toFixed(2)} HYPE</p>
-                                            </div>
-                                        </div>
-                                        <div className="border-t border-default/10 pt-1.5">
-                                            <div className="space-y-0.5">
-                                                <p className={cn('font-medium', getDeltaColor(metrics.portfolio?.strategyDelta || 0))}>
-                                                    Strategy Δ: {(metrics.portfolio?.strategyDelta || 0).toFixed(2)} HYPE
-                                                </p>
-                                                <p className="text-default/50">
-                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) < 0.1 && '✓ Perfectly hedged'}
-                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 0.1 &&
-                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) < 10 &&
-                                                        '✓ Well hedged'}
-                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 10 &&
-                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) < 20 &&
-                                                        '⚠ Drift detected'}
-                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 20 && '⚠ Rebalance needed'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            />
-                            {aprRange !== null && (
-                                <>
-                                    <div className="h-8 w-px border-l border-dashed border-default/20" />
-                                    <div className="flex flex-col items-center lg:items-end">
-                                        <span className="text-xs uppercase tracking-wider text-default/50">Gross Delta-Neutral APR</span>
-                                        <StyledTooltip
-                                            content={
-                                                <div className="space-y-2">
-                                                    <p className="font-medium">Combined Strategy APR</p>
-
-                                                    <div className="space-y-2">
-                                                        {combinedAPRs?.combined24h !== null && combinedAPRs?.combined24h !== undefined && (
-                                                            <div>
-                                                                <p className="text-xs font-medium text-default">24h APR</p>
-                                                                <div className="ml-2 space-y-0.5 text-xs text-default/70">
-                                                                    {lpAPRs?.weightedAvg24h !== null && (
-                                                                        <p>LP: {lpAPRs.weightedAvg24h.toFixed(2)}%</p>
-                                                                    )}
-                                                                    {fundingAPRs?.fundingAPR24h !== null && (
-                                                                        <p>
-                                                                            Funding: {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
-                                                                            {fundingAPRs.fundingAPR24h.toFixed(2)}%
-                                                                        </p>
-                                                                    )}
-                                                                    <p className="font-medium">
-                                                                        Net: {combinedAPRs.combined24h > 0 ? '+' : ''}
-                                                                        {combinedAPRs.combined24h.toFixed(2)}%
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        {combinedAPRs?.combined7d !== null && combinedAPRs?.combined7d !== undefined && (
-                                                            <div>
-                                                                <p className="text-xs font-medium text-default">7d APR</p>
-                                                                <div className="ml-2 space-y-0.5 text-xs text-default/70">
-                                                                    {lpAPRs?.weightedAvg7d !== null && <p>LP: {lpAPRs.weightedAvg7d.toFixed(2)}%</p>}
-                                                                    {fundingAPRs?.fundingAPR7d !== null && (
-                                                                        <p>
-                                                                            Funding: {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
-                                                                            {fundingAPRs.fundingAPR7d.toFixed(2)}%
-                                                                        </p>
-                                                                    )}
-                                                                    <p className="font-medium">
-                                                                        Net: {combinedAPRs.combined7d > 0 ? '+' : ''}
-                                                                        {combinedAPRs.combined7d.toFixed(2)}%
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        {combinedAPRs?.combined30d !== null && combinedAPRs?.combined30d !== undefined && (
-                                                            <div>
-                                                                <p className="text-xs font-medium text-default">30d APR</p>
-                                                                <div className="ml-2 space-y-0.5 text-xs text-default/70">
-                                                                    {lpAPRs?.weightedAvg30d !== null && (
-                                                                        <p>LP: {lpAPRs.weightedAvg30d.toFixed(2)}%</p>
-                                                                    )}
-                                                                    {fundingAPRs?.fundingAPR30d !== null && (
-                                                                        <p>
-                                                                            Funding: {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
-                                                                            {fundingAPRs.fundingAPR30d.toFixed(2)}%
-                                                                        </p>
-                                                                    )}
-                                                                    <p className="font-medium">
-                                                                        Net: {combinedAPRs.combined30d > 0 ? '+' : ''}
-                                                                        {combinedAPRs.combined30d.toFixed(2)}%
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <p className="text-xs italic text-default/50">User-specific, weighted by capital allocation</p>
-                                                </div>
-                                            }
-                                        >
-                                            <p
-                                                className={cn(
-                                                    'cursor-help text-lg font-semibold',
-                                                    aprRange.min > 0 && aprRange.max > 0
-                                                        ? 'text-success'
-                                                        : aprRange.min < 0 && aprRange.max < 0
-                                                          ? 'text-error'
-                                                          : 'text-default',
-                                                )}
-                                            >
-                                                {Math.abs(aprRange.max - aprRange.min) < 0.01 ? (
-                                                    `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}%`
-                                                ) : (
-                                                    <span>
-                                                        <span className="px-1 text-xs text-default/50">low</span>
-                                                        <span>
-                                                            {aprRange.min > 0 ? '+' : ''}
-                                                            {aprRange.min.toFixed(2)}%
-                                                        </span>
-
-                                                        <span className="px-1 text-xs text-default/50">high</span>
-                                                        <span>
-                                                            {aprRange.max > 0 ? '+' : ''}
-                                                            {aprRange.max.toFixed(2)}%
-                                                        </span>
-                                                    </span>
-                                                )}
-                                            </p>
-                                        </StyledTooltip>
-                                    </div>
-                                </>
-                            )}
                         </div>
                     </div>
                 }
@@ -715,11 +727,11 @@ export default function AccountPage() {
                                         </StyledTooltip>
                                     )}
                                     <p>{numeral(metrics.hyperEvm?.values?.lpsUSDWithFees || 0).format('0,0$')}</p>
-                                    <div className="flex w-20 items-center justify-end gap-1">
+                                    {/* <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>
-                                    </div>
+                                    </div> */}
                                 </div>
                             }
                         >
@@ -733,11 +745,11 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     <p>{numeral(positions.hyperEvm?.balances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).format('0,0$')}</p>
-                                    <div className="flex w-20 items-center justify-end gap-1">
+                                    {/* <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>
-                                    </div>
+                                    </div> */}
                                 </div>
                             }
                         >
@@ -794,8 +806,16 @@ export default function AccountPage() {
                                         <StyledTooltip
                                             content={
                                                 <div className="space-y-2">
-                                                    <div className="font-medium text-default">Funding Weighted Average APR (Historic)</div>
+                                                    <div className="font-medium text-default">Funding Rates (8h settlement)</div>
                                                     <div className="space-y-1 text-sm">
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-default/50">Current 8h:</span>
+                                                            <span className="font-medium text-default">
+                                                                {fundingAPRs?.currentFundingAPR !== null
+                                                                    ? `${fundingAPRs.currentFundingAPR > 0 ? '+' : ''}${((fundingAPRs.currentFundingAPR / (365 * 3)) * 100).toFixed(4)}%`
+                                                                    : 'N/A'}
+                                                            </span>
+                                                        </div>
                                                         <div className="flex justify-between gap-4">
                                                             <span className="text-default/50">24h APR:</span>
                                                             <span className="font-medium text-default">
@@ -821,12 +841,14 @@ export default function AccountPage() {
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className="pt-1 text-xs text-default/50">User-specific, weighted by position notional</div>
+                                                    <div className="pt-1 text-xs text-default/50">
+                                                        Weighted by position notional • Settles every 8h
+                                                    </div>
                                                 </div>
                                             }
                                         >
                                             <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
-                                                <p className="text-sm text-default/50">24h APR</p>
+                                                <p className="text-sm text-default/50">Funding APR</p>
                                                 <p
                                                     className={cn(
                                                         'text-sm font-medium',
@@ -840,11 +862,11 @@ export default function AccountPage() {
                                         </StyledTooltip>
                                     )}
                                     <p>{numeral(metrics.hyperCore?.values?.totalUSD || 0).format('0,0$')}</p>
-                                    <div className="flex w-20 items-center justify-end gap-1">
+                                    {/* <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>
-                                    </div>
+                                    </div> */}
                                 </div>
                             }
                         >
@@ -858,11 +880,11 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     <p>{numeral(positions.hyperCore?.spots?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).format('0,0$')}</p>
-                                    <div className="flex w-20 items-center justify-end gap-1">
+                                    {/* <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
                                         <p className="text-default/50">Δ</p>
-                                    </div>
+                                    </div> */}
                                 </div>
                             }
                         >

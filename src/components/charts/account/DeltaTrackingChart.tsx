@@ -16,7 +16,7 @@ const grid = {
     top: 70,
     right: 110,
     bottom: 50,
-    left: 55,
+    left: 50,
     containLabel: true,
 }
 
@@ -479,7 +479,7 @@ export default function DeltaTrackingChart() {
 
                     // Get snapshot for total capital context
                     const snapshot = storedSnapshots.find((s) => s.timestamp === firstParam.value[0])
-                    const totalCapital = snapshot?.metrics.portfolio.totalUSD || 0
+                    const deployedAUM = snapshot?.metrics.portfolio.deployedAUM || 0
                     const hypePrice = snapshot?.prices.HYPE || 0
 
                     const isDark = resolvedTheme === 'dark'
@@ -504,8 +504,28 @@ export default function DeltaTrackingChart() {
                         </div>
                         <div style="height: 1px; background: ${dividerColor}; margin: 8px -6px;"></div>`
 
+                    // Define custom sort order for tooltip items
+                    const seriesOrder = [
+                        ChartSeries.AUM,
+                        ChartSeries.DeployedAUM,
+                        ChartSeries.HyperEvmLps,
+                        ChartSeries.HyperEvmBalances,
+                        ChartSeries.HyperCorePerps,
+                        ChartSeries.HyperCoreSpots,
+                        ChartSeries.StrategyDelta,
+                        ChartSeries.NetDelta,
+                    ]
+
+                    // Sort params based on defined order
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    uniqueParams.forEach((param: any) => {
+                    const sortedParams = uniqueParams.sort((a: any, b: any) => {
+                        const aIndex = seriesOrder.indexOf(a.seriesName)
+                        const bIndex = seriesOrder.indexOf(b.seriesName)
+                        return aIndex - bIndex
+                    })
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    sortedParams.forEach((param: any) => {
                         // Skip formatting for AUM and Deployed AUM series
                         if (param.seriesName === ChartSeries.AUM || param.seriesName === ChartSeries.DeployedAUM) {
                             const value = Array.isArray(param.value) ? param.value[1] : 0
@@ -524,7 +544,7 @@ export default function DeltaTrackingChart() {
                         // With time axis, value is [timestamp, value]
                         const value = Array.isArray(param.value) ? param.value[1] : 0
                         const hypeAmount = hypePrice > 0 ? value / hypePrice : 0
-                        const deltaPercent = totalCapital > 0 ? Math.abs(value / totalCapital) * 100 : 0
+                        const deltaPercent = deployedAUM > 0 ? Math.abs(value / deployedAUM) * 100 : 0
 
                         // Determine status and color for all series based on risk
                         const color = param.color || '#666'
@@ -554,11 +574,13 @@ export default function DeltaTrackingChart() {
                                         <span style="font-size: 12px; font-weight: 500;">${param.seriesName}</span>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 6px;">
-                                        <span style="font-size: 11px; font-weight: 500;">${hypeAmount >= 0 ? '+' : ''}${hypeAmount.toFixed(2)} (${value >= 0 ? '+' : ''}${numeral(value).format('0,0a')}$)</span>
+                                        <span style="font-size: 11px; font-weight: 500;">${numeral(hypeAmount).format('+0,0.00')}</span>
+                                        <img src="/tokens/HYPE.jpg" style="width: 12px; height: 12px; border-radius: 50%;" />
+                                        <span style="font-size: 11px; font-weight: 500;">(${numeral(value).format('+0,0a')}$)</span>
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-left: 16px;">
-                                    <span style="color: ${textColor}; font-size: 11px;">${deltaPercent.toFixed(0)}% of AUM</span>
+                                    <span style="color: ${textColor}; font-size: 11px;">${deltaPercent.toFixed(0)}% of Deployed AUM</span>
                                     ${
                                         riskLabel
                                             ? `
@@ -654,7 +676,7 @@ export default function DeltaTrackingChart() {
             toolbox: {
                 feature: {
                     dataZoom: {
-                        yAxisIndex: 0,
+                        yAxisIndex: false,
                         title: {
                             zoom: 'Zoom',
                             back: 'Reset',
@@ -925,6 +947,41 @@ export default function DeltaTrackingChart() {
                     },
                 },
                 {
+                    name: ChartSeries.HyperCoreSpots,
+                    type: 'line',
+                    data: spotDeltasUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    lineStyle: {
+                        color: colors.hyperCoreSpot,
+                        width: 2,
+                        type: 'solid',
+                    },
+                    itemStyle: {
+                        color: colors.hyperCoreSpot,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            const formattedValue = numeral(value).format('+0,0a$')
+                            return `${ChartSeries.HyperCoreSpots} ${formattedValue}`
+                        },
+                        color: colors.hyperCoreSpot,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: colors.hyperCoreSpot + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
                     name: ChartSeries.NetDelta,
                     type: 'line',
                     data: netDeltasUSD,
@@ -1056,41 +1113,6 @@ export default function DeltaTrackingChart() {
                         borderRadius: 4,
                     },
                 },
-                {
-                    name: ChartSeries.HyperCoreSpots,
-                    type: 'line',
-                    data: spotDeltasUSD,
-                    smooth: false,
-                    symbol: 'circle',
-                    symbolSize: 6,
-                    showSymbol: true,
-                    lineStyle: {
-                        color: colors.hyperCoreSpot,
-                        width: 2,
-                        type: 'solid',
-                    },
-                    itemStyle: {
-                        color: colors.hyperCoreSpot,
-                    },
-                    emphasis: {
-                        focus: 'series',
-                    },
-                    endLabel: {
-                        show: true,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        formatter: (params: any) => {
-                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            const formattedValue = numeral(value).format('+0,0a$')
-                            return `${ChartSeries.HyperCoreSpots} ${formattedValue}`
-                        },
-                        color: colors.hyperCoreSpot,
-                        fontSize: 12,
-                        offset: [5, 0],
-                        backgroundColor: colors.hyperCoreSpot + '15',
-                        padding: [2, 4],
-                        borderRadius: 4,
-                    },
-                },
             ],
             dataZoom: [
                 // X-axis inside zoom
@@ -1153,66 +1175,6 @@ export default function DeltaTrackingChart() {
                         color: colors.charts.text,
                     },
                 },
-                // Y-axis inside zoom
-                {
-                    type: 'inside',
-                    yAxisIndex: 0,
-                    start: zoomRangeRef.current?.y?.start ?? 0,
-                    end: zoomRangeRef.current?.y?.end ?? 100,
-                },
-                // Y-axis slider
-                {
-                    type: 'slider',
-                    yAxisIndex: 0,
-                    start: zoomRangeRef.current?.y?.start ?? 0,
-                    end: zoomRangeRef.current?.y?.end ?? 100,
-                    width: 16,
-                    left: 12,
-                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
-                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
-                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
-                    selectedDataBackground: {
-                        lineStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
-                        },
-                        areaStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
-                        },
-                    },
-                    handleStyle: {
-                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
-                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
-                        borderWidth: 1,
-                    },
-                    moveHandleStyle: {
-                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
-                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-                    },
-                    emphasis: {
-                        handleStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                        },
-                        moveHandleStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
-                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
-                        },
-                        handleLabel: {
-                            show: false,
-                        },
-                    },
-                    dataBackground: {
-                        lineStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
-                        },
-                        areaStyle: {
-                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
-                        },
-                    },
-                    textStyle: {
-                        color: colors.charts.text,
-                    },
-                },
             ],
         }
 
@@ -1223,13 +1185,11 @@ export default function DeltaTrackingChart() {
 
     if (!options) {
         return (
-            <div className="flex h-[400px] w-full items-center justify-center md:h-[500px]">
+            <div className="flex h-[400px] w-full items-center justify-center">
                 <div className="text-default/50">Loading chart...</div>
             </div>
         )
     }
 
-    return (
-        <EchartWrapper options={options} className="size-full h-[400px] md:h-[500px]" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
-    )
+    return <EchartWrapper options={options} className="h-[400px] w-full" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
 }

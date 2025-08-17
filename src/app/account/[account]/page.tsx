@@ -16,7 +16,7 @@ import { cn } from '@/utils'
 import { calculateHypePrice, calculateTokenBreakdown } from '@/utils/token.util'
 import { DAYJS_FORMATS, getDurationBetween } from '@/utils/date.util'
 import { HypeIcon } from '@/components/common/HypeIcon'
-import { DateWrapperAccurate, TimeAgo } from '@/components/common/DateWrapper'
+import { TimeAgo } from '@/components/common/DateWrapper'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { AppUrls, FileIds, IconIds } from '@/enums'
@@ -205,9 +205,6 @@ export default function AccountPage() {
 
     // Calculate total fetch time
     const timings = snapshot?.timings
-    const totalFetchTime = timings
-        ? (timings.hyperEvm?.lpsMs || 0) + (timings.hyperEvm?.balancesMs || 0) + (timings.hyperCore?.perpsMs || 0) + (timings.hyperCore?.spotsMs || 0)
-        : 0
 
     // Show loading state while initial data is being fetched or if we don't have price data
     if ((isLoading && !snapshot) || !hypePrice) {
@@ -266,7 +263,7 @@ export default function AccountPage() {
                         lp: (
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
-                                defaultExpanded={true}
+                                defaultExpanded={false}
                                 headerRight={
                                     <div className="flex items-center gap-6">
                                         <div className="h-5 w-24 animate-pulse rounded bg-default/20" />
@@ -431,7 +428,8 @@ export default function AccountPage() {
                                                 <div className="text-xs">
                                                     <div>{DAYJS_FORMATS.dateLong(lastRefreshTime || 0)}</div>
                                                     <div className="mt-2 text-default/60">
-                                                        LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms • Perps {timings?.hyperCore?.perpsMs || 0}ms • Spot {timings?.hyperCore?.spotsMs || 0}ms
+                                                        LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms • Perps{' '}
+                                                        {timings?.hyperCore?.perpsMs || 0}ms • Spot {timings?.hyperCore?.spotsMs || 0}ms
                                                     </div>
                                                 </div>
                                             }
@@ -468,7 +466,7 @@ export default function AccountPage() {
                                 <>
                                     <div className="h-8 w-px border-l border-dashed border-default/20" />
                                     <div className="flex flex-col items-center lg:items-end">
-                                        <span className="text-xs uppercase tracking-wider text-default/50">Gross APR range</span>
+                                        <span className="text-xs uppercase tracking-wider text-default/50">Gross Delta-Neutral APR</span>
                                         <StyledTooltip
                                             content={
                                                 <div className="space-y-2">
@@ -541,7 +539,7 @@ export default function AccountPage() {
                                                 </div>
                                             }
                                         >
-                                            <span
+                                            <p
                                                 className={cn(
                                                     'cursor-help text-lg font-semibold',
                                                     aprRange.min > 0 && aprRange.max > 0
@@ -551,10 +549,24 @@ export default function AccountPage() {
                                                           : 'text-default',
                                                 )}
                                             >
-                                                {Math.abs(aprRange.max - aprRange.min) < 0.01
-                                                    ? `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}%`
-                                                    : `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}% - ${aprRange.max > 0 ? '+' : ''}${aprRange.max.toFixed(2)}%`}
-                                            </span>
+                                                {Math.abs(aprRange.max - aprRange.min) < 0.01 ? (
+                                                    `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}%`
+                                                ) : (
+                                                    <span>
+                                                        <span className="px-1 text-xs text-default/50">low</span>
+                                                        <span>
+                                                            {aprRange.min > 0 ? '+' : ''}
+                                                            {aprRange.min.toFixed(2)}%
+                                                        </span>
+
+                                                        <span className="px-1 text-xs text-default/50">high</span>
+                                                        <span>
+                                                            {aprRange.max > 0 ? '+' : ''}
+                                                            {aprRange.max.toFixed(2)}%
+                                                        </span>
+                                                    </span>
+                                                )}
+                                            </p>
                                         </StyledTooltip>
                                     </div>
                                 </>
@@ -568,12 +580,12 @@ export default function AccountPage() {
                     lp: (
                         <CollapsibleCard
                             title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
-                            defaultExpanded={true}
+                            defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     <div className="flex items-center gap-1">
                                         <p>
-                                            {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)} over {positions.hyperEvm?.lps?.length || 0} LP
+                                            {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)} on {positions.hyperEvm?.lps?.length || 0} LP
                                             {positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
                                         </p>
                                     </div>

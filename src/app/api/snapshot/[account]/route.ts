@@ -4,7 +4,6 @@ import { poolAPRService } from '@/services/dex/pool-apr.service'
 import { fundingHistoryService } from '@/services/core/funding-history.service'
 import { priceAggregator } from '@/services/price/price-aggregator.service'
 import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
-import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { LPPosition } from '@/interfaces'
 
@@ -41,15 +40,12 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
         }
 
         // Track API user (fire and forget, don't block the API if it fails)
-        prismaMonitoring.apiUser.upsert({
-            where: { address: String(accountAddress) },
-            create: { address: String(accountAddress) },
-            update: {
-                queryCount: { increment: 1 },
-                lastSeen: new Date(),
-            },
-        }).catch((err: Error) => {
-            console.warn('Failed to track API user:', err.message)
+        fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/analytics/track-user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address: accountAddress }),
+        }).catch(() => {
+            // Silently ignore tracking failures
         })
 
         // Fetch positions first to get user's pool addresses

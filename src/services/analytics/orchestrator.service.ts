@@ -49,11 +49,10 @@ export class OrchestratorService {
 
             // Step 2: Fetch and store snapshots for all accounts
             let snapshotsStored = 0
-            const baseUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
             for (const account of accounts) {
                 try {
-                    await analyticsService.fetchAndStoreSnapshot(account, baseUrl)
+                    await analyticsService.fetchAndStoreSnapshot(account)
                     snapshotsStored++
                 } catch (error) {
                     console.error(`[Orchestrator] Failed to process ${account}:`, error)
@@ -61,7 +60,7 @@ export class OrchestratorService {
             }
 
             // Step 3: Clean up old snapshots
-            const deletedCount = await analyticsService.cleanupOldSnapshots(7)
+            const deletedCount = await analyticsService.cleanupOldSnapshots()
 
             // Step 4: Get aggregated metrics
             const aggregated = await analyticsService.getAggregatedMetrics()

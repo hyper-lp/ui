@@ -10,7 +10,7 @@
 import { execSync } from 'child_process'
 import * as readline from 'readline'
 import { prismaReferrals } from '@/lib/prisma-referrals'
-import { prismaMonitoring } from '@/lib/prisma-monitoring'
+// import { prismaMonitoring } from '@/lib/prisma-monitoring' // Disabled for now
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -45,7 +45,7 @@ async function main() {
     try {
         console.log('\n📦 Step 1: Disconnecting from databases...')
         await prismaReferrals.$disconnect()
-        await prismaMonitoring.$disconnect()
+        // await prismaMonitoring.$disconnect() // Disabled for now
 
         console.log('🗑️  Step 2: Resetting databases...')
         console.log('   Resetting Referrals DB...')
@@ -88,7 +88,7 @@ async function main() {
     } finally {
         rl.close()
         await prismaReferrals.$disconnect()
-        await prismaMonitoring.$disconnect()
+        // await prismaMonitoring.$disconnect() // Disabled for now
     }
 }
 

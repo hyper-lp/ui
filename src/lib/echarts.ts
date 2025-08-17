@@ -7,7 +7,7 @@
 import * as echarts from 'echarts/core'
 
 // Charts we actually use
-import { HeatmapChart, BarChart, LineChart, GaugeChart } from 'echarts/charts'
+import { HeatmapChart } from 'echarts/charts'
 
 // Components we need
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent, VisualMapComponent, DataZoomComponent } from 'echarts/components'
@@ -19,9 +19,6 @@ import { CanvasRenderer } from 'echarts/renderers'
 echarts.use([
     // Charts
     HeatmapChart,
-    BarChart,
-    LineChart,
-    GaugeChart,
     // Components
     TitleComponent,
     TooltipComponent,

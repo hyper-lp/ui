@@ -16,7 +16,7 @@ const grid = {
     top: 70,
     right: 100,
     bottom: 50,
-    left: 60,
+    left: 65,
     containLabel: true,
 }
 

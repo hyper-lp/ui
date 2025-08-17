@@ -62,7 +62,7 @@ export function PerpPositionsTableHeader() {
             entry={<p className="text-right font-medium text-default/60">Entry</p>}
             mark={<p className="text-right font-medium text-default/60">Mark</p>}
             pnl={<p className="text-right font-medium text-default/60">PnL</p>}
-            funding={<p className="text-right font-medium text-default/60">Funding</p>}
+            funding={<p className="text-right font-medium text-default/60">8h Funding</p>}
             margin={<p className="text-right font-medium text-default/60">Margin</p>}
             leverage={<p className="text-right font-medium text-default/60">Lev</p>}
             className="h-8 border-b border-default/10"
@@ -77,6 +77,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
     const positions = snapshot?.positions?.hyperCore?.perps || []
     const withdrawableUSDC = snapshot?.metrics?.hyperCore?.values?.withdrawableUSDC || 0
+    const fundingRates = snapshot?.marketData?.fundingRates || {}
 
     if (!positions || positions.length === 0) {
         return (
@@ -116,6 +117,11 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                             const pnlPercentage =
                                 position.entryPrice !== 0 ? (position.unrealizedPnl / (Math.abs(position.size) * position.entryPrice)) * 100 : 0
                             const leverage = position.marginUsed > 0 ? Math.abs(position.notionalValue) / position.marginUsed : 0
+
+                            // Get funding rate for this asset (annualized APR)
+                            const annualizedAPR = fundingRates[position.asset] || 0
+                            // Calculate 8-hour rate from annualized APR (3 periods per day)
+                            const eightHourRate = (annualizedAPR / (365 * 3)) * 100
 
                             return (
                                 <div key={position.id}>
@@ -173,9 +179,26 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
                                             }
                                             funding={
-                                                <span className={`font-medium ${!isLong ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {!isLong ? '+' : '-'}8.5%
-                                                </span>
+                                                <StyledTooltip
+                                                    content={
+                                                        <div className="space-y-1">
+                                                            <p className="text-xs font-medium">Funding Rate</p>
+                                                            <p className="text-xs text-default/70">
+                                                                8h: {!isLong ? '+' : '-'}
+                                                                {Math.abs(eightHourRate).toFixed(4)}%
+                                                            </p>
+                                                            <p className="text-xs text-default/70">
+                                                                APR: {!isLong ? '+' : '-'}
+                                                                {Math.abs(annualizedAPR).toFixed(1)}%
+                                                            </p>
+                                                        </div>
+                                                    }
+                                                >
+                                                    <span className={`font-medium ${!isLong ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {!isLong ? '+' : '-'}
+                                                        {Math.abs(eightHourRate).toFixed(3)}%
+                                                    </span>
+                                                </StyledTooltip>
                                             }
                                             margin={<span>{formatUSD(position.marginUsed)}</span>}
                                             leverage={<span className="font-medium">{leverage.toFixed(1)}x</span>}
@@ -351,17 +374,26 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Current Funding APR</p>
+                                                    <p className="text-xs text-default/50">Current 8h Rate</p>
                                                     <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
-                                                        {!isLong ? '+' : '-'}8.5%
+                                                        {!isLong ? '+' : '-'}
+                                                        {Math.abs(eightHourRate).toFixed(4)}%
                                                     </p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Est. Daily Funding</p>
+                                                    <p className="text-xs text-default/50">Annualized APR</p>
                                                     <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
                                                         {!isLong ? '+' : '-'}
-                                                        {formatUSD((Math.abs(position.notionalValue) * 0.085) / 365)}
+                                                        {Math.abs(annualizedAPR).toFixed(2)}%
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-xs text-default/50">Est. Daily Funding (3×8h)</p>
+                                                    <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
+                                                        {!isLong ? '+' : '-'}
+                                                        {formatUSD(Math.abs(position.notionalValue) * (eightHourRate / 100) * 3)}
                                                     </p>
                                                 </div>
 
@@ -369,7 +401,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                     <p className="text-xs text-default/50">Est. Monthly Funding</p>
                                                     <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
                                                         {!isLong ? '+' : '-'}
-                                                        {formatUSD((Math.abs(position.notionalValue) * 0.085) / 12)}
+                                                        {formatUSD((Math.abs(position.notionalValue) * (annualizedAPR / 100)) / 12)}
                                                     </p>
                                                 </div>
                                             </div>

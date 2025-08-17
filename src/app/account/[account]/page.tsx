@@ -49,9 +49,10 @@ interface KPIMetricProps {
     icon?: React.ReactNode
     colorFn?: (value: number) => string
     className?: string
+    tooltip?: React.ReactNode
 }
 
-const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, className }) => {
+const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, className, tooltip }) => {
     const { resolvedTheme } = useTheme()
     const baseClassName = cn('flex flex-col items-center lg:items-end', className)
     const isNumber = typeof value === 'number'
@@ -60,7 +61,7 @@ const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, clas
     // Use white text in dark mode, black in light mode for AUM
     const aumColor = label === 'AUM' ? (resolvedTheme === 'dark' ? 'text-white' : 'text-black') : undefined
 
-    return (
+    const content = (
         <div className={baseClassName}>
             <span className="text-xs tracking-wider text-default/50">{label}</span>
             {icon ? (
@@ -73,6 +74,16 @@ const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, clas
             )}
         </div>
     )
+
+    if (tooltip) {
+        return (
+            <StyledTooltip content={tooltip} placement="bottom">
+                {content}
+            </StyledTooltip>
+        )
+    }
+
+    return content
 }
 
 export default function AccountPage() {
@@ -147,7 +158,7 @@ export default function AccountPage() {
             apr: { weightedAvg24h: null, weightedAvg7d: null, weightedAvg30d: null },
         },
         hyperCore: {
-            values: { perpsUSD: 0, spotUSD: 0, totalUSD: 0 },
+            values: { perpsUSD: 0, spotUSD: 0, totalUSD: 0, withdrawableUSDC: 0 },
             deltas: { perpsHYPE: 0, spotHYPE: 0, totalHYPE: 0 },
             perpAggregates: { totalMargin: 0, totalNotional: 0, totalPnl: 0, avgLeverage: 0 },
             apr: { currentFundingAPR: null, fundingAPR24h: null, fundingAPR7d: null, fundingAPR30d: null },
@@ -457,9 +468,54 @@ export default function AccountPage() {
 
                         {/* Global KPIs */}
                         <div className="flex items-center gap-6">
-                            <KPIMetric label="AUM on HL" value={formatUSD(metrics.portfolio?.totalUSD || 0)} className="hidden md:flex" />
+                            <KPIMetric
+                                label="AUM on HL"
+                                value={formatUSD(metrics.portfolio?.totalUSD || 0)}
+                                className="hidden md:flex"
+                                tooltip={
+                                    <div className="space-y-2 text-xs">
+                                        <p className="font-semibold">Total AUM on Hyperliquid</p>
+                                        <div className="space-y-1 text-default/70">
+                                            <p>= HyperEVM + HyperCore</p>
+                                            <div className="ml-2 space-y-0.5">
+                                                <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
+                                                <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
+                                                <p>• Wallet balances: {formatUSD(metrics.hyperEvm?.values?.balancesUSD || 0)}</p>
+                                                <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
+                                                <p>• Spot balances: {formatUSD(metrics.hyperCore?.values?.spotUSD || 0)}</p>
+                                                <p>• Withdrawable: {formatUSD(metrics.hyperCore?.values?.withdrawableUSDC || 0)}</p>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-default/10 pt-1.5">
+                                            <p className="font-medium text-default">Total: {formatUSD(metrics.portfolio?.totalUSD || 0)}</p>
+                                        </div>
+                                    </div>
+                                }
+                            />
                             <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
-                            <KPIMetric label="Deployed AUM" value={formatUSD(metrics.portfolio?.deployedAUM || 0)} className="hidden md:flex" />
+                            <KPIMetric
+                                label="Deployed AUM"
+                                value={formatUSD(metrics.portfolio?.deployedAUM || 0)}
+                                className="hidden md:flex"
+                                tooltip={
+                                    <div className="space-y-2 text-xs">
+                                        <p className="font-semibold">Deployed Capital in Strategy</p>
+                                        <div className="space-y-1 text-default/70">
+                                            <p>Capital actively deployed in delta-neutral positions</p>
+                                            <p>= LP value + Perp notional + Unclaimed fees</p>
+                                            <div className="ml-2 space-y-0.5">
+                                                <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
+                                                <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
+                                                <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-default/10 pt-1.5">
+                                            <p className="text-xs text-default/50">Excludes idle capital (wallet & spot)</p>
+                                            <p className="font-medium text-default">Deployed: {formatUSD(metrics.portfolio?.deployedAUM || 0)}</p>
+                                        </div>
+                                    </div>
+                                }
+                            />
                             <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
                             <KPIMetric
                                 label="STRATEGY Δ"
@@ -467,6 +523,36 @@ export default function AccountPage() {
                                 icon={<HypeIcon size={20} />}
                                 colorFn={getDeltaColor}
                                 className="items-end"
+                                tooltip={
+                                    <div className="space-y-2 text-xs">
+                                        <p className="font-semibold">Strategy Delta (Hedge Effectiveness)</p>
+                                        <div className="space-y-1 text-default/70">
+                                            <p>Net HYPE exposure from active positions</p>
+                                            <p>= LP delta + Perp delta</p>
+                                            <div className="ml-2 space-y-0.5">
+                                                <p>• LP HYPE exposure: {(metrics.hyperEvm?.deltas?.lpsHYPE || 0).toFixed(2)} HYPE</p>
+                                                <p>• Perp hedge: {(metrics.hyperCore?.deltas?.perpsHYPE || 0).toFixed(2)} HYPE</p>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-default/10 pt-1.5">
+                                            <div className="space-y-0.5">
+                                                <p className={cn('font-medium', getDeltaColor(metrics.portfolio?.strategyDelta || 0))}>
+                                                    Strategy Δ: {(metrics.portfolio?.strategyDelta || 0).toFixed(2)} HYPE
+                                                </p>
+                                                <p className="text-default/50">
+                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) < 0.1 && '✓ Perfectly hedged'}
+                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 0.1 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) < 10 &&
+                                                        '✓ Well hedged'}
+                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 10 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) < 20 &&
+                                                        '⚠ Drift detected'}
+                                                    {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 20 && '⚠ Rebalance needed'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             />
                             {aprRange !== null && (
                                 <>
@@ -628,9 +714,7 @@ export default function AccountPage() {
                                             </div>
                                         </StyledTooltip>
                                     )}
-                                    <div className="flex items-center gap-1">
-                                        <p>{formatUSD(metrics.hyperEvm?.values?.lpsUSDWithFees || 0)}</p>
-                                    </div>
+                                    <p>{numeral(metrics.hyperEvm?.values?.lpsUSDWithFees || 0).format('0,0$')}</p>
                                     <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
@@ -648,7 +732,7 @@ export default function AccountPage() {
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
-                                    <p>{formatUSD(positions.hyperEvm?.balances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}</p>
+                                    <p>{numeral(positions.hyperEvm?.balances?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).format('0,0$')}</p>
                                     <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.balancesHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
@@ -755,7 +839,7 @@ export default function AccountPage() {
                                             </div>
                                         </StyledTooltip>
                                     )}
-                                    <p>{formatUSD(metrics.hyperCore?.values?.totalUSD || 0)}</p>
+                                    <p>{numeral(metrics.hyperCore?.values?.totalUSD || 0).format('0,0$')}</p>
                                     <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
@@ -773,7 +857,7 @@ export default function AccountPage() {
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
-                                    <p>{formatUSD(positions.hyperCore?.spots?.reduce((sum, b) => sum + b.valueUSD, 0) || 0)}</p>
+                                    <p>{numeral(positions.hyperCore?.spots?.reduce((sum, b) => sum + b.valueUSD, 0) || 0).format('0,0$')}</p>
                                     <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.spotHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />

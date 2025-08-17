@@ -39,7 +39,6 @@ export class HyperEVMScanService {
             const timeoutId = setTimeout(() => controller.abort(), this.timeout)
 
             const url = `${this.baseUrl}?${params}`
-            console.log(`[HyperEVMScan] Fetching from: ${url.replace(/apikey=[^&]+/, 'apikey=***')}`)
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -56,12 +55,6 @@ export class HyperEVMScanService {
             }
 
             const data: HyperEVMScanResponse = await response.json()
-
-            console.log(`[HyperEVMScan] Response:`, {
-                status: data.status,
-                message: data.message,
-                result: typeof data.result === 'string' ? data.result : `${Array.isArray(data.result) ? data.result.length : 0} transactions`,
-            })
 
             // Check for specific error messages
             if (data.status === '0') {

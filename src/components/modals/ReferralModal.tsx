@@ -31,14 +31,9 @@ export default function ReferralModal({ referralCode: propReferralCode }: Referr
 
             // Optional: Try to decode if it's a valid Twitter ID referral
             try {
-                const twitterId = decodeReferralCode(code)
-                if (twitterId) {
-                    console.log('Valid Twitter referral ID:', twitterId)
-                } else {
-                    console.log('Using raw referral code:', code)
-                }
-            } catch (error) {
-                console.log('Using raw referral code:', { error, code })
+                decodeReferralCode(code)
+            } catch {
+                // Using raw referral code
             }
         }
     }, [searchParams, authenticated, propReferralCode])

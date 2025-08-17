@@ -253,7 +253,6 @@ export class PositionFetcher {
 
             // For now, show all positions - we can filter later
             // if (!this.isHypeUsdt0Pair(token0 as string, token1 as string)) {
-            //     console.log('[PositionFetcher] Skipping position - not HYPE/USDT0 pair')
             //     continue
             // }
 

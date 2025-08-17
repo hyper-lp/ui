@@ -52,7 +52,6 @@ export function withApiAuth(handler: (request: NextRequest, context?: unknown) =
 
         // Log the API call
         const url = new URL(request.url)
-        console.log(`[API] ${request.method} ${url.pathname} - Authorized`)
 
         // Call the actual handler
         try {

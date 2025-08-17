@@ -51,7 +51,6 @@ export async function GET(request: Request, context: { params: Promise<{ account
         const cacheKey = `${account}-${limit}-${onlyHypeUsdt}-${dexParam || 'all'}`
         const cached = transactionCache.get(cacheKey)
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-            console.log('Returning cached transactions for', account)
             return NextResponse.json(cached.data)
         }
 
@@ -73,8 +72,6 @@ export async function GET(request: Request, context: { params: Promise<{ account
                 startBlock,
                 endBlock,
             })
-
-            console.log(`[API] Account: ${account}, Transactions fetched: ${transactions.length}`)
 
             // If we got no transactions, try to return some mock data for testing
             if (transactions.length === 0) {
@@ -112,7 +109,6 @@ export async function GET(request: Request, context: { params: Promise<{ account
                     },
                 ]
 
-                console.log('[API] Returning mock transactions for testing')
                 return NextResponse.json({
                     success: true,
                     account,

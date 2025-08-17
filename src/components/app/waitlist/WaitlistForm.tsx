@@ -36,7 +36,6 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                 if (data.isOnWaitlist) {
                     setIsSubmitted(true)
                     // setPosition(data.position)
-                    console.log('[WaitlistForm] User position:', data.position)
                     setReferralCount(data.referralCount)
                     setReferredBy(data.referredBy || null)
                     if (user?.twitter?.subject) {
@@ -62,7 +61,6 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
             // Get referral code from URL if present
             const urlParams = new URLSearchParams(window.location.search)
             const referralCode = urlParams.get('ref')
-            console.log('[WaitlistForm] Auto-joining with referral code:', referralCode)
 
             const response = await fetch('/api/waitlist/join', {
                 method: 'POST',
@@ -86,12 +84,6 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                 if (user?.twitter?.subject) {
                     const url = generateReferralUrl(user.twitter.subject, window.location.origin)
                     setReferralUrl(url)
-                    console.log('Your referral URL:', url)
-                    console.log('Your Twitter ID:', user.twitter.subject)
-                }
-                if (referralCode) {
-                    console.log('You were referred with code:', referralCode)
-                    console.log('Referred by:', data.referredBy || 'NOT SET - CHECK LOGS')
                 }
                 toast.success('Successfully joined the waitlist!')
             }
@@ -107,7 +99,6 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
         if (authenticated && user?.twitter) {
             checkWaitlistStatus().then((alreadyOnWaitlist) => {
                 if (!alreadyOnWaitlist) {
-                    console.log('[WaitlistForm] User authenticated but not on waitlist, auto-joining...')
                     autoJoinWaitlist()
                 }
             })
@@ -146,7 +137,6 @@ function WaitlistFormComponent({ className }: WaitlistFormProps) {
                                 navigator.clipboard.writeText(url)
                                 setCopySuccess(true)
                                 toast.success(`Referral link copied: ${url}`)
-                                console.log('Referral URL copied:', url)
                                 setTimeout(() => setCopySuccess(false), 2000)
                             }}
                             className="group flex items-center gap-1.5 text-xs text-default/60 transition-colors hover:text-default"

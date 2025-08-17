@@ -33,7 +33,6 @@ export async function GET(request: Request, context: { params: Promise<{ account
         const cacheKey = `${account}-${limit}`
         const cached = transactionCache.get(cacheKey)
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-            console.log('Returning cached HyperCore transactions for', account)
             return NextResponse.json(cached.data)
         }
 

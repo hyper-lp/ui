@@ -25,6 +25,7 @@ import { env } from '@/env/t3-env'
 import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
 import { useTheme } from 'next-themes'
 import FileMapper from '@/components/common/FileMapper'
+import numeral from 'numeral'
 
 // Dynamically import chart to avoid SSR issues
 const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
@@ -184,8 +185,8 @@ export default function AccountPage() {
     const combinedAPRs = metrics.portfolio?.apr
 
     // Default to 7d APRs for display (historic data)
-    const weightedAvgAPR = lpAPRs?.weightedAvg7d
-    const perpFundingAPR = fundingAPRs?.fundingAPR7d ?? fundingAPRs?.currentFundingAPR // Use 7d historic if available, otherwise current
+    const weightedAvgAPR = lpAPRs?.weightedAvg24h
+    const perpFundingAPR = fundingAPRs?.fundingAPR24h ?? fundingAPRs?.currentFundingAPR // Use 7d historic if available, otherwise current
     // const combinedAPR = combinedAPRs?.combined7d  // Currently unused, but available for display
 
     // Calculate APR range from all time periods
@@ -215,8 +216,16 @@ export default function AccountPage() {
                 <AccountTemplate
                     header={
                         <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
-                            {/* Address skeleton */}
+                            {/* Address skeleton - mirrors the actual loaded header structure */}
                             <div className="flex flex-col">
+                                <div className="mb-10 flex items-center gap-1">
+                                    <div className="h-5 w-36 animate-pulse rounded bg-default/20" />
+                                    <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                    <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                    <div className="h-5 w-48 animate-pulse rounded bg-default/20" />
+                                </div>
                                 <div className="flex items-baseline gap-2 text-sm">
                                     <div className="h-7 w-96 animate-pulse rounded bg-default/20" />
                                     <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
@@ -229,7 +238,7 @@ export default function AccountPage() {
                                 </div>
                             </div>
 
-                            {/* KPIs skeleton */}
+                            {/* KPIs skeleton - matches the actual KPIs layout */}
                             <div className="flex items-center gap-6">
                                 <div className="flex flex-col items-center lg:items-end">
                                     <div className="h-3 w-8 animate-pulse rounded bg-default/20" />
@@ -237,7 +246,15 @@ export default function AccountPage() {
                                 </div>
                                 <div className="h-8 w-px border-l border-dashed border-default/20" />
                                 <div className="flex flex-col items-end">
-                                    <div className="h-3 w-10 animate-pulse rounded bg-default/20" />
+                                    <div className="h-3 w-12 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 flex items-center gap-1">
+                                        <div className="h-6 w-8 animate-pulse rounded bg-default/20" />
+                                        <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                    </div>
+                                </div>
+                                <div className="h-8 w-px border-l border-dashed border-default/20" />
+                                <div className="flex flex-col items-end">
+                                    <div className="h-3 w-24 animate-pulse rounded bg-default/20" />
                                     <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
                                 </div>
                             </div>
@@ -249,7 +266,18 @@ export default function AccountPage() {
                         lp: (
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
-                                defaultExpanded={false}
+                                defaultExpanded={true}
+                                headerRight={
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-5 w-24 animate-pulse rounded bg-default/20" />
+                                        <div className="h-6 w-16 animate-pulse rounded bg-default/5" />
+                                        <div className="flex items-center gap-1">
+                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
+                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
+                                        </div>
+                                    </div>
+                                }
                                 isLoading
                             />
                         ),
@@ -257,16 +285,45 @@ export default function AccountPage() {
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Wallet</h3>}
                                 defaultExpanded={false}
+                                headerRight={
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
+                                        <div className="flex items-center gap-1">
+                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
+                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
+                                        </div>
+                                    </div>
+                                }
                                 isLoading
                             />
                         ),
                         txs: null,
+                        capital: <div className="h-5 w-32 animate-pulse rounded bg-default/20" />,
+                        delta: (
+                            <div className="flex items-center gap-1">
+                                <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
+                                <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
+                            </div>
+                        ),
                     }}
                     hyperCore={{
                         short: (
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perpetuals leg</h3>}
                                 defaultExpanded={false}
+                                headerRight={
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-5 w-20 animate-pulse rounded bg-default/20" />
+                                        <div className="h-6 w-16 animate-pulse rounded bg-default/5" />
+                                        <div className="flex items-center gap-1">
+                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
+                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
+                                        </div>
+                                    </div>
+                                }
                                 isLoading
                             />
                         ),
@@ -274,10 +331,27 @@ export default function AccountPage() {
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-core-spots">Spot</h3>}
                                 defaultExpanded={false}
+                                headerRight={
+                                    <div className="flex items-center gap-6">
+                                        <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
+                                        <div className="flex items-center gap-1">
+                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
+                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
+                                        </div>
+                                    </div>
+                                }
                                 isLoading
                             />
                         ),
                         txs: null,
+                        capital: <div className="h-5 w-32 animate-pulse rounded bg-default/20" />,
+                        delta: (
+                            <div className="flex items-center gap-1">
+                                <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
+                                <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                            </div>
+                        ),
                     }}
                 />
             </PageWrapper>
@@ -405,7 +479,7 @@ export default function AccountPage() {
                                 <>
                                     <div className="h-8 w-px border-l border-dashed border-default/20" />
                                     <div className="flex flex-col items-center lg:items-end">
-                                        <span className="text-xs uppercase tracking-wider text-default/50">Net APR</span>
+                                        <span className="text-xs uppercase tracking-wider text-default/50">Gross APR range</span>
                                         <StyledTooltip
                                             content={
                                                 <div className="space-y-2">
@@ -546,8 +620,8 @@ export default function AccountPage() {
                                             <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
                                                 <p className="text-sm font-medium text-primary">
                                                     {weightedAvgAPR < 0.01 && weightedAvgAPR > 0
-                                                        ? `${weightedAvgAPR.toFixed(4)}% APR`
-                                                        : `${weightedAvgAPR.toFixed(2)}% APR`}
+                                                        ? `${numeral(weightedAvgAPR).divide(100).format('0,0.[0]%')}`
+                                                        : `${numeral(weightedAvgAPR).divide(100).format('0,0.[0]%')}`}
                                                 </p>
                                             </div>
                                         </StyledTooltip>
@@ -671,7 +745,7 @@ export default function AccountPage() {
                                                     )}
                                                 >
                                                     {perpFundingAPR > 0 ? '+' : ''}
-                                                    {perpFundingAPR.toFixed(2)}% APR
+                                                    {numeral(perpFundingAPR).format('0,0.0%')} APR
                                                 </p>
                                             </div>
                                         </StyledTooltip>

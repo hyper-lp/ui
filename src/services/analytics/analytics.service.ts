@@ -44,7 +44,7 @@ export class AnalyticsService {
             const snapshot: AccountSnapshot = await response.json()
             await this.storeAccountSnapshot(snapshot, address)
         } catch (error) {
-            console.error(`Failed to fetch and store snapshot for ${address}:`, error)
+            console.error(`Failed to store snapshot for ${address}:`, error)
         }
     }
 

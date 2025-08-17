@@ -37,12 +37,9 @@ export class OrchestratorService {
         const startTime = Date.now()
 
         try {
-            console.log('[Orchestrator] Starting full analytics run...')
-
             // Step 1: Get accounts to monitor
             const accounts = this.getMonitoredAccounts()
             if (accounts.length === 0) {
-                console.warn('[Orchestrator] No accounts to monitor')
                 return {
                     success: false,
                     error: 'No accounts configured for monitoring',
@@ -50,10 +47,7 @@ export class OrchestratorService {
                 }
             }
 
-            console.log(`[Orchestrator] Monitoring ${accounts.length} accounts`)
-
             // Step 2: Fetch and store snapshots for all accounts
-            console.log('[Orchestrator] Step 2: Fetching and storing snapshots...')
             let snapshotsStored = 0
             const baseUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
@@ -67,22 +61,12 @@ export class OrchestratorService {
             }
 
             // Step 3: Clean up old snapshots
-            console.log('[Orchestrator] Step 3: Cleaning up old snapshots...')
             const deletedCount = await analyticsService.cleanupOldSnapshots(7)
 
             // Step 4: Get aggregated metrics
-            console.log('[Orchestrator] Step 4: Getting aggregated metrics...')
             const aggregated = await analyticsService.getAggregatedMetrics()
 
             const duration = Date.now() - startTime
-
-            console.log(`[Orchestrator] Completed in ${duration}ms`)
-            console.log(`[Orchestrator] - Accounts Processed: ${accounts.length}`)
-            console.log(`[Orchestrator] - Snapshots Stored: ${snapshotsStored}`)
-            console.log(`[Orchestrator] - Old Snapshots Deleted: ${deletedCount}`)
-            console.log(`[Orchestrator] - Total Value: $${aggregated.totalValue.toFixed(2)}`)
-            console.log(`[Orchestrator] - Net Delta: ${aggregated.totalDelta.toFixed(2)} HYPE`)
-            console.log(`[Orchestrator] - Average APR: ${aggregated.averageAPR.toFixed(2)}%`)
 
             return {
                 success: true,
@@ -120,7 +104,7 @@ export class OrchestratorService {
                     const response = await fetch(`${baseUrl}/api/snapshot/${account}`)
                     if (response.ok) successCount++
                 } catch (error) {
-                    console.error(`[Orchestrator] Failed to check ${account}:`, error)
+                    console.error(`[Orchestrator] Failed to process ${account}:`, error)
                 }
             }
 

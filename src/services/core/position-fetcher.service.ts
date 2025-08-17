@@ -77,7 +77,7 @@ export class PositionFetcher {
             return data
         })
 
-        const [lpData, spotData, perpData, hyperEvmData, fundingRates] = await Promise.all([
+        const [lpData, spotData, perpResult, hyperEvmData, fundingRates] = await Promise.all([
             lpPromise,
             spotPromise,
             perpPromise,
@@ -85,7 +85,15 @@ export class PositionFetcher {
             fundingPromise,
         ])
 
-        return { lpData, spotData, perpData, hyperEvmData, fundingRates, timings }
+        return {
+            lpData,
+            spotData,
+            perpData: perpResult.positions,
+            withdrawableUSDC: perpResult.withdrawableUSDC,
+            hyperEvmData,
+            fundingRates,
+            timings,
+        }
     }
 
     /**
@@ -532,7 +540,7 @@ export class PositionFetcher {
     /**
      * Fetch perpetual positions from HyperCore
      */
-    private async fetchPerpPositions(account: string): Promise<PerpPosition[]> {
+    private async fetchPerpPositions(account: string): Promise<{ positions: PerpPosition[]; withdrawableUSDC: number }> {
         try {
             const response = await fetch('https://api.hyperliquid.xyz/info', {
                 method: 'POST',
@@ -545,6 +553,7 @@ export class PositionFetcher {
 
             const data = await response.json()
             const assetPositions = data.assetPositions || []
+            const withdrawableUSDC = parseFloat(data.withdrawable || '0')
 
             // Also fetch current mark prices for accurate calculations
             const markPricesResponse = await fetch('https://api.hyperliquid.xyz/info', {
@@ -565,7 +574,7 @@ export class PositionFetcher {
                 }
             }
 
-            return assetPositions
+            const positions = assetPositions
                 .filter((pos: { position: { szi: string } }) => {
                     const szi = parseFloat(pos.position?.szi || '0')
                     return Math.abs(szi) > 0.00001
@@ -609,9 +618,11 @@ export class PositionFetcher {
                         }
                     },
                 )
+
+            return { positions, withdrawableUSDC }
         } catch (error) {
             console.error('Error fetching perp positions:', error)
-            return []
+            return { positions: [], withdrawableUSDC: 0 }
         }
     }
 

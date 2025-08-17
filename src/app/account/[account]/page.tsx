@@ -155,6 +155,7 @@ export default function AccountPage() {
         portfolio: {
             totalUSD: 0,
             netDeltaHYPE: 0,
+            strategyDelta: 0,
             apr: { combined24h: null, combined7d: null, combined30d: null },
         },
     }
@@ -373,13 +374,13 @@ export default function AccountPage() {
                     <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
                         {/* Address */}
                         <div className="flex flex-col">
-                            <div className="mb-10 flex items-center gap-1">
-                                <p className="text-primary">Delta Neutral LP strategy</p>
+                            <div className="mb-10 flex flex-wrap items-center gap-1">
+                                <p className="text-wrap text-primary">Example of Delta Neutral LP</p>
                                 <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-primary" />
-                                <p className="text-primary">Farming</p>
+                                <p className="text-wrap text-primary">Farm</p>
                                 <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
                                 <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
-                                <p className="text-primary">APRs with a dynamic short leg</p>
+                                <p className="text-wrap text-primary">APRs with a dynamic short leg</p>
                             </div>
                             <div className="flex items-baseline gap-2 text-sm">
                                 <p className="hidden text-lg font-medium xl:flex">{accountFromUrl}</p>
@@ -453,11 +454,11 @@ export default function AccountPage() {
 
                         {/* Global KPIs */}
                         <div className="flex items-center gap-6">
-                            <KPIMetric label="AUM" value={formatUSD(metrics.portfolio?.totalUSD || 0)} />
-                            <div className="h-8 w-px border-l border-dashed border-default/20" />
+                            <KPIMetric label="AUM" value={formatUSD(metrics.portfolio?.totalUSD || 0)} className="hidden md:flex" />
+                            <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
                             <KPIMetric
-                                label="Net Δ"
-                                value={metrics.portfolio?.netDeltaHYPE}
+                                label="Strategy Δ"
+                                value={metrics.portfolio?.strategyDelta || 0}
                                 icon={<HypeIcon size={20} />}
                                 colorFn={getDeltaColor}
                                 className="items-end"

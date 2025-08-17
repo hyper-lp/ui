@@ -7,7 +7,7 @@ const path = require('path')
 module.exports = {
     root: true,
     extends: ['plugin:@next/next/recommended'],
-    ignorePatterns: ['src/generated/**/*'],
+    ignorePatterns: ['src/generated/**/*', 'src/lib/prisma-monitoring-client/**/*'],
     overrides: [
         {
             extends: [

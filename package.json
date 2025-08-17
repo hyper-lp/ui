@@ -9,7 +9,7 @@
         "build:analyze": "ANALYZE=true export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build -c next.config.analyzer.js",
         "start": "next start",
         "lint": "next lint",
-        "eslint:fix": "eslint ./src --fix --ignore-pattern 'src/generated/**'",
+        "eslint:fix": "eslint ./src --fix --ignore-pattern 'src/generated/**' --ignore-pattern 'src/lib/prisma-monitoring-client/**'",
         "prettier:fix": "prettier --write src",
         "lint:fix": "pnpm eslint:fix && pnpm prettier:fix",
         "prisma:referrals:generate": "prisma generate --schema=./prisma/referrals/schema.prisma",

@@ -40,8 +40,9 @@ export enum ChartSeries {
     HyperEvmLps = 'LPs Δ',
     HyperEvmBalances = 'Wallet Δ',
     HyperCorePerps = 'Perps Δ',
-    NetDelta = 'Net Δ',
     HyperCoreSpots = 'Spots Δ',
+    StrategyDelta = 'Strategy Δ',
+    NetDelta = 'Net Δ',
 }
 
 export default function DeltaTrackingChart() {
@@ -111,6 +112,7 @@ export default function DeltaTrackingChart() {
                     { name: 'Wallet Δ', itemStyle: { color: colors.hyperEvmBalances }, textStyle: { color: textOpacity } },
                     { name: 'Perps Δ', itemStyle: { color: colors.hyperCorePerp }, textStyle: { color: textOpacity } },
                     { name: 'Spots Δ', itemStyle: { color: colors.hyperCoreSpot }, textStyle: { color: textOpacity } },
+                    { name: 'Strategy Δ', itemStyle: { color: netDeltaColor }, textStyle: { color: textOpacity } },
                     { name: 'Net Δ', itemStyle: { color: netDeltaColor }, textStyle: { color: textOpacity } },
                 ],
                 top: 10,
@@ -124,7 +126,8 @@ export default function DeltaTrackingChart() {
                     'Wallet Δ': false,
                     'Perps Δ': true,
                     'Spots Δ': false,
-                    'Net Δ': true,
+                    'Strategy Δ': true,
+                    'Net Δ': false,
                 },
                 inactiveColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
             },
@@ -393,6 +396,7 @@ export default function DeltaTrackingChart() {
         const lpDeltasUSD: Array<[number, number]> = []
         const perpDeltasUSD: Array<[number, number]> = []
         const netDeltasUSD: Array<[number, number]> = []
+        const strategyDeltasUSD: Array<[number, number]> = []
         const spotDeltasUSD: Array<[number, number]> = []
         const balancesDeltasUSD: Array<[number, number]> = []
         const totalCapitalUSD: Array<[number, number]> = []
@@ -409,6 +413,7 @@ export default function DeltaTrackingChart() {
             const spotUSD = snapshot.metrics.hyperCore.deltas.spotHYPE * hypePrice
             const balancesUSD = snapshot.metrics.hyperEvm.deltas.balancesHYPE * hypePrice
             const netUSD = snapshot.metrics.portfolio.netDeltaHYPE * hypePrice
+            const strategyUSD = (snapshot.metrics.portfolio.strategyDelta || 0) * hypePrice
             const totalUSD = snapshot.metrics.portfolio.totalUSD
 
             // For time axis, data must be [timestamp, value] pairs
@@ -417,6 +422,7 @@ export default function DeltaTrackingChart() {
             spotDeltasUSD.push([timestamp, spotUSD])
             balancesDeltasUSD.push([timestamp, balancesUSD])
             netDeltasUSD.push([timestamp, netUSD])
+            strategyDeltasUSD.push([timestamp, strategyUSD])
             totalCapitalUSD.push([timestamp, totalUSD])
         })
 
@@ -601,6 +607,12 @@ export default function DeltaTrackingChart() {
                         },
                     },
                     {
+                        name: ChartSeries.StrategyDelta,
+                        textStyle: {
+                            color: netDeltaColor,
+                        },
+                    },
+                    {
                         name: ChartSeries.NetDelta,
                         textStyle: {
                             color: netDeltaColor,
@@ -614,7 +626,8 @@ export default function DeltaTrackingChart() {
                     [ChartSeries.HyperEvmBalances]: false,
                     [ChartSeries.HyperCorePerps]: true,
                     [ChartSeries.HyperCoreSpots]: false,
-                    [ChartSeries.NetDelta]: true,
+                    [ChartSeries.StrategyDelta]: true,
+                    [ChartSeries.NetDelta]: false,
                 },
                 icon: 'roundRect',
                 itemWidth: 14,
@@ -924,6 +937,64 @@ export default function DeltaTrackingChart() {
                             if (Math.abs(value) < 1) return ''
                             const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
                             return `${ChartSeries.NetDelta} ${formattedValue}`
+                        },
+                        color: netDeltaColor,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: netDeltaColor + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
+                    name: ChartSeries.StrategyDelta,
+                    type: 'line',
+                    data: strategyDeltasUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    lineStyle: {
+                        color: netDeltaColor,
+                        width: 2,
+                        type: 'dashed',
+                    },
+                    itemStyle: {
+                        color: netDeltaColor,
+                    },
+                    areaStyle: {
+                        opacity: 0.15,
+                        color: {
+                            type: 'linear',
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [
+                                {
+                                    offset: 0,
+                                    color: netDeltaColor + '30', // 19% opacity
+                                },
+                                {
+                                    offset: 1,
+                                    color: netDeltaColor + '00', // 0% opacity
+                                },
+                            ],
+                        },
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    z: 9,
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            // Hide label if value is very close to 0
+                            if (Math.abs(value) < 1) return ''
+                            const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
+                            return `${ChartSeries.StrategyDelta} ${formattedValue}`
                         },
                         color: netDeltaColor,
                         fontSize: 12,

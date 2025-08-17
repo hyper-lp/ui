@@ -53,6 +53,7 @@ export interface AccountSnapshot {
                 perpsUSD: number // Perp positions value in USD
                 spotUSD: number // Spot balances value in USD
                 totalUSD: number // Total HyperCore value in USD
+                withdrawableUSDC: number // Withdrawable USDC from HyperCore
             }
             deltas: {
                 perpsHYPE: number // Perp delta in HYPE units (negative for shorts)
@@ -77,6 +78,7 @@ export interface AccountSnapshot {
         portfolio: {
             totalUSD: number // Total portfolio value in USD
             netDeltaHYPE: number // Net delta exposure in HYPE units
+            strategyDelta: number // LP-perp delta difference (hedge effectiveness)
             apr: {
                 combined24h: number | null // Combined 24h APR from LPs and funding
                 combined7d: number | null // Combined 7d APR from LPs and funding

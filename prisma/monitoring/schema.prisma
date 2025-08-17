@@ -22,6 +22,7 @@ model AccountSnapshot {
   // Extract key metrics for indexing/querying
   totalUSD     Decimal  @db.Decimal(38, 18)
   netDeltaHYPE Decimal  @db.Decimal(38, 18)
+  strategyDelta Decimal  @db.Decimal(38, 18)
   
   createdAt    DateTime @default(now())
 

@@ -55,6 +55,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
             lpData: lpPositions,
             spotData: spotBalances,
             perpData: perpPositions,
+            withdrawableUSDC,
             hyperEvmData: hyperEvmBalances,
             fundingRates,
             timings: fetchTimings,
@@ -273,7 +274,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                     values: {
                         perpsUSD: usdValues.perps,
                         spotUSD: usdValues.spots,
-                        totalUSD: usdValues.perps + usdValues.spots,
+                        totalUSD: usdValues.perps + usdValues.spots + (withdrawableUSDC || 0),
+                        withdrawableUSDC: withdrawableUSDC || 0,
                     },
                     deltas: {
                         perpsHYPE: deltaValues.perps,
@@ -289,8 +291,9 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                     },
                 },
                 portfolio: {
-                    totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0),
+                    totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0) + (withdrawableUSDC || 0),
                     netDeltaHYPE: Object.values(deltaValues).reduce((sum, val) => sum + val, 0),
+                    strategyDelta: deltaValues.lps + deltaValues.perps,
                     apr: {
                         combined24h: combinedAPRs.apr24h,
                         combined7d: combinedAPRs.apr7d,

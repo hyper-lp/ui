@@ -100,13 +100,13 @@ export const PerpRowTemplate = (props: {
 /**
  * Spot Balance Row Template
  */
-export const SpotRowTemplate = (props: { asset: ReactNode; balance: ReactNode; value: ReactNode; price: ReactNode; className?: string }) => {
+export const SpotRowTemplate = (props: { asset: ReactNode; balance: ReactNode; value: ReactNode; price?: ReactNode; className?: string }) => {
     return (
         <div className={cn('flex items-center text-sm', props.className)}>
             <div className="w-[140px] px-2">{props.asset}</div>
             <div className="w-[120px] px-2 text-right">{props.balance}</div>
             <div className="w-[100px] px-2 text-right">{props.value}</div>
-            <div className="w-[100px] px-2 text-right">{props.price}</div>
+            {props.price !== undefined && <div className="w-[80px] px-2 text-right">{props.price}</div>}
         </div>
     )
 }

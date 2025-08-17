@@ -6,6 +6,7 @@ export enum AppUrls {
     API_SNAPSHOT = '/api/snapshot',
     API_TRANSACTIONS = '/api/transactions',
     API_TRADES = '/api/trades',
+    API_SNAPSHOTS = '/api/analytics/snapshots',
 
     // API routes - Pools
     API_POOLS_TVL = '/api/pools/tvl',

@@ -37,6 +37,7 @@ interface AppStore {
     // Account actions
     addSnapshot: (snapshot: AccountSnapshot) => void
     getSnapshots: () => AccountSnapshot[]
+    setSnapshots: (snapshots: AccountSnapshot[]) => void
     clearSnapshots: () => void
     setMaxSnapshots: (maxSnapshots: number) => void
     setCurrentAddress: (address: string | null) => void
@@ -102,6 +103,18 @@ export const useAppStore = create<AppStore>()(
                 const address = state.currentAddress?.toLowerCase()
                 if (!address) return []
                 return (state.addressSnapshots[address] || []).sort((a, b) => a.timestamp - b.timestamp)
+            },
+            setSnapshots: (snapshots: AccountSnapshot[]) => {
+                const state = get()
+                const address = state.currentAddress?.toLowerCase()
+                if (!address) return
+                set((s) => ({
+                    addressSnapshots: {
+                        ...s.addressSnapshots,
+                        [address]: snapshots,
+                    },
+                    lastSnapshotAddedAt: Date.now(),
+                }))
             },
             clearSnapshots: () => {
                 const state = get()

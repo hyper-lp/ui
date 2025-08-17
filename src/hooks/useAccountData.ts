@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/stores/app.store'
 import type { AccountSnapshot } from '@/interfaces'
 import { IS_DEV, REFRESH_INTERVALS } from '@/config'
+import { AppUrls } from '@/enums/app.enum'
 
 /**
  * Simplified hook that only handles fetching account data and updating the store.
@@ -12,19 +13,29 @@ import { IS_DEV, REFRESH_INTERVALS } from '@/config'
  */
 export function useAccountData(address: string) {
     const queryClient = useQueryClient()
-    const { addSnapshot, setCurrentAddress, setFetchingAccount, setAccountError, isFetchingAccount, accountError } = useAppStore()
+    const { addSnapshot, setCurrentAddress, setFetchingAccount, setAccountError, isFetchingAccount, accountError, setSnapshots } = useAppStore()
 
-    // Set current address when it changes
+    // Set current address when it changes and fetch historical snapshots
     useEffect(() => {
         if (address) {
             setCurrentAddress(address)
+
+            // Fetch historical snapshots from database
+            fetch(`${AppUrls.API_SNAPSHOTS}/${address}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.snapshots && Array.isArray(data.snapshots)) {
+                        setSnapshots(data.snapshots)
+                    }
+                })
+                .catch((err) => console.error('Failed to fetch historical snapshots:', err))
         }
         return () => {
             // Clear when unmounting
             setCurrentAddress(null)
             setAccountError(null)
         }
-    }, [address, setCurrentAddress, setAccountError])
+    }, [address, setCurrentAddress, setAccountError, setSnapshots])
 
     // Main data query - only for fetching fresh data
     const {
@@ -38,7 +49,7 @@ export function useAccountData(address: string) {
         queryFn: async (): Promise<AccountSnapshot> => {
             // Add cache buster to force fresh fetch
             const cacheBuster = Date.now()
-            const response = await fetch(`/api/snapshot/${address}?t=${cacheBuster}`)
+            const response = await fetch(`${AppUrls.API_SNAPSHOT}/${address}?t=${cacheBuster}`)
             if (!response.ok) {
                 if (response.status === 404) throw new Error('Account not found')
                 throw new Error('Failed to fetch account data')

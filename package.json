@@ -34,11 +34,13 @@
         "db:migrate:prod": "tsx scripts/db-migrate-prod.ts",
         "db:status": "prisma migrate status",
         "vercel-build": "pnpm prisma:generate && pnpm prisma:deploy && export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build",
+        "postinstall": "pnpm prisma:generate",
         "postinstall:ci": "pnpm prisma:generate",
         "inngest": "pnpm dlx inngest-cli@latest dev"
     },
     "dependencies": {
         "@heroui/tooltip": "^2.2.21",
+        "@prisma/adapter-pg": "^6.14.0",
         "@privy-io/react-auth": "^2.21.2",
         "@t3-oss/env-nextjs": "^0.13.8",
         "@tanstack/react-query": "^5.84.1",
@@ -52,6 +54,7 @@
         "next-themes": "^0.4.6",
         "numeral": "^2.0.6",
         "nuqs": "^2.4.3",
+        "pg": "^8.16.3",
         "react": "19.0.0",
         "react-dom": "19.0.0",
         "react-error-boundary": "^4.1.2",

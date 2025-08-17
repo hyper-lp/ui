@@ -72,3 +72,21 @@ export function DateWrapperAccurate(props: DateWrapperProps) {
         </DateWrapper>
     )
 }
+
+export function TimeAgo(props: DateWrapperProps) {
+    const [now, setNow] = useState(new Date())
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setNow(new Date())
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [])
+    if (!props.date) return null
+    return getDurationBetween({
+        startTs: new Date(props.date).getTime(),
+        endTs: now.getTime(),
+        showYears: false,
+        showMonths: false,
+        showWeeks: false,
+    }).oneLiner
+}

@@ -1,7 +1,6 @@
-generator client {
-  provider      = "prisma-client-js"
-  output        = "../../src/generated/prisma-monitoring"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+generator monitoring {
+  provider = "prisma-client-js"
+  output   = "../../src/lib/prisma-monitoring-client"
 }
 
 datasource db {

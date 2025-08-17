@@ -27,18 +27,6 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
         const accountAddress = account.toLowerCase()
         const cacheKey = accountAddress
 
-        // Track API user (fire and forget, don't await)
-        prismaMonitoring.apiUser
-            .upsert({
-                where: { address: accountAddress },
-                create: { address: accountAddress },
-                update: {
-                    queryCount: { increment: 1 },
-                    lastSeen: new Date(),
-                },
-            })
-            .catch((err: Error) => console.error('Failed to track API user:', err))
-
         // Check cache first
         const cached = cache.get(cacheKey)
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -51,6 +39,18 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                 },
             })
         }
+
+        // Track API user (fire and forget, don't block the API if it fails)
+        prismaMonitoring.apiUser.upsert({
+            where: { address: String(accountAddress) },
+            create: { address: String(accountAddress) },
+            update: {
+                queryCount: { increment: 1 },
+                lastSeen: new Date(),
+            },
+        }).catch((err: Error) => {
+            console.warn('Failed to track API user:', err.message)
+        })
 
         // Fetch positions first to get user's pool addresses
         const positionsData = await positionFetcher.fetchAllPositions(accountAddress)

@@ -14,9 +14,9 @@ import { IS_DEV } from '@/config'
 import { formatUSD, shortenValue } from '@/utils'
 import { cn } from '@/utils'
 import { calculateHypePrice, calculateTokenBreakdown } from '@/utils/token.util'
-import { getDurationBetween } from '@/utils/date.util'
+import { DAYJS_FORMATS, getDurationBetween } from '@/utils/date.util'
 import { HypeIcon } from '@/components/common/HypeIcon'
-import { DateWrapperAccurate } from '@/components/common/DateWrapper'
+import { DateWrapperAccurate, TimeAgo } from '@/components/common/DateWrapper'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
 import { AppUrls, FileIds, IconIds } from '@/enums'
@@ -426,38 +426,27 @@ export default function AccountPage() {
                                     <p>Fetching live onchain data</p>
                                 ) : (
                                     <>
-                                        <p>Last updated</p>
-                                        <DateWrapperAccurate date={lastRefreshTime} />
+                                        <StyledTooltip
+                                            content={
+                                                <div className="text-xs">
+                                                    <div>{DAYJS_FORMATS.dateLong(lastRefreshTime || 0)}</div>
+                                                    <div className="mt-2 text-default/60">
+                                                        LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms • Perps {timings?.hyperCore?.perpsMs || 0}ms • Spot {timings?.hyperCore?.spotsMs || 0}ms
+                                                    </div>
+                                                </div>
+                                            }
+                                            placement="bottom"
+                                        >
+                                            <span className="flex items-center gap-1">
+                                                <p>Last updated</p>
+                                                <TimeAgo date={lastRefreshTime} />
+                                            </span>
+                                        </StyledTooltip>
                                         {nextUpdateIn && (
                                             <>
                                                 <span className="text-default/30">•</span>
                                                 <p>Next in {nextUpdateIn}</p>
                                             </>
-                                        )}
-                                        {totalFetchTime > 0 && (
-                                            <StyledTooltip
-                                                content={
-                                                    <div className="space-y-1 text-xs">
-                                                        <p className="font-medium">Fetch Times:</p>
-                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                                                            <span>LPs:</span>
-                                                            <span>{timings?.hyperEvm?.lpsMs || 0}ms</span>
-                                                            <span>Wallet:</span>
-                                                            <span>{timings?.hyperEvm?.balancesMs || 0}ms</span>
-                                                            <span>Perps:</span>
-                                                            <span>{timings?.hyperCore?.perpsMs || 0}ms</span>
-                                                            <span>Spot:</span>
-                                                            <span>{timings?.hyperCore?.spotsMs || 0}ms</span>
-                                                        </div>
-                                                    </div>
-                                                }
-                                                placement="bottom"
-                                            >
-                                                <span className="cursor-help">
-                                                    <span className="text-default/30">•</span>
-                                                    <span className="ml-1">{(totalFetchTime / 1000).toFixed(1)}s</span>
-                                                </span>
-                                            </StyledTooltip>
                                         )}
                                     </>
                                 )}
@@ -618,10 +607,11 @@ export default function AccountPage() {
                                             }
                                         >
                                             <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
+                                                <p className="text-sm text-default/50">24h APR</p>
                                                 <p className="text-sm font-medium text-primary">
                                                     {weightedAvgAPR < 0.01 && weightedAvgAPR > 0
                                                         ? `${numeral(weightedAvgAPR).divide(100).format('0,0.[0]%')}`
-                                                        : `${numeral(weightedAvgAPR).divide(100).format('0,0.[0]%')}`}
+                                                        : `${numeral(weightedAvgAPR).divide(100).format('0,0.[0]%')}`}{' '}
                                                 </p>
                                             </div>
                                         </StyledTooltip>
@@ -738,6 +728,7 @@ export default function AccountPage() {
                                             }
                                         >
                                             <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
+                                                <p className="text-sm text-default/50">24h APR</p>
                                                 <p
                                                     className={cn(
                                                         'text-sm font-medium',
@@ -745,7 +736,7 @@ export default function AccountPage() {
                                                     )}
                                                 >
                                                     {perpFundingAPR > 0 ? '+' : ''}
-                                                    {numeral(perpFundingAPR).format('0,0.0%')} APR
+                                                    {numeral(perpFundingAPR).format('0,0.0%')}
                                                 </p>
                                             </div>
                                         </StyledTooltip>

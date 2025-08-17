@@ -16,7 +16,7 @@ const grid = {
     top: 70,
     right: 100,
     bottom: 50,
-    left: 55,
+    left: 60,
     containLabel: true,
 }
 
@@ -37,6 +37,7 @@ const createSkeletonData = (phaseOffset: number, amplitude: number, baseValue: n
 
 export enum ChartSeries {
     AUM = 'AUM',
+    DeployedAUM = 'Deployed AUM',
     HyperEvmLps = 'LPs Δ',
     HyperEvmBalances = 'Wallet Δ',
     HyperCorePerps = 'Perps Δ',
@@ -108,6 +109,7 @@ export default function DeltaTrackingChart() {
             legend: {
                 data: [
                     { name: 'AUM', itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
+                    { name: 'Deployed AUM', itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
                     { name: 'LPs Δ', itemStyle: { color: colors.hyperEvmLp }, textStyle: { color: textOpacity } },
                     { name: 'Wallet Δ', itemStyle: { color: colors.hyperEvmBalances }, textStyle: { color: textOpacity } },
                     { name: 'Perps Δ', itemStyle: { color: colors.hyperCorePerp }, textStyle: { color: textOpacity } },
@@ -122,6 +124,7 @@ export default function DeltaTrackingChart() {
                 itemGap: 15,
                 selected: {
                     AUM: true,
+                    'Deployed AUM': true,
                     'LPs Δ': true,
                     'Wallet Δ': false,
                     'Perps Δ': true,
@@ -400,6 +403,7 @@ export default function DeltaTrackingChart() {
         const spotDeltasUSD: Array<[number, number]> = []
         const balancesDeltasUSD: Array<[number, number]> = []
         const totalCapitalUSD: Array<[number, number]> = []
+        const deployedAUM: Array<[number, number]> = []
 
         storedSnapshots.forEach((snapshot) => {
             const timestamp = snapshot.timestamp
@@ -416,6 +420,10 @@ export default function DeltaTrackingChart() {
             const strategyUSD = (snapshot.metrics.portfolio.strategyDelta || 0) * hypePrice
             const totalUSD = snapshot.metrics.portfolio.totalUSD
 
+            // Calculate deployed AUM (LPs + Perps value in USD)
+            const deployedUSD =
+                snapshot.metrics.portfolio.deployedAUM || snapshot.metrics.hyperEvm.values.lpsUSD + snapshot.metrics.hyperCore.values.perpsUSD
+
             // For time axis, data must be [timestamp, value] pairs
             lpDeltasUSD.push([timestamp, lpUSD])
             perpDeltasUSD.push([timestamp, perpUSD])
@@ -424,6 +432,7 @@ export default function DeltaTrackingChart() {
             netDeltasUSD.push([timestamp, netUSD])
             strategyDeltasUSD.push([timestamp, strategyUSD])
             totalCapitalUSD.push([timestamp, totalUSD])
+            deployedAUM.push([timestamp, deployedUSD])
         })
 
         // Use theme-aware colors
@@ -497,8 +506,8 @@ export default function DeltaTrackingChart() {
 
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     uniqueParams.forEach((param: any) => {
-                        // Skip formatting for AUM series
-                        if (param.seriesName === ChartSeries.AUM) {
+                        // Skip formatting for AUM and Deployed AUM series
+                        if (param.seriesName === ChartSeries.AUM || param.seriesName === ChartSeries.DeployedAUM) {
                             const value = Array.isArray(param.value) ? param.value[1] : 0
                             html += `
                                 <div style="margin: 8px 0;">
@@ -583,6 +592,12 @@ export default function DeltaTrackingChart() {
                         },
                     },
                     {
+                        name: ChartSeries.DeployedAUM,
+                        textStyle: {
+                            color: aumColor,
+                        },
+                    },
+                    {
                         name: ChartSeries.HyperEvmLps,
                         textStyle: {
                             color: colors.hyperEvmLp,
@@ -621,7 +636,8 @@ export default function DeltaTrackingChart() {
                 ],
                 top: 10,
                 selected: {
-                    [ChartSeries.AUM]: true,
+                    [ChartSeries.AUM]: false,
+                    [ChartSeries.DeployedAUM]: true,
                     [ChartSeries.HyperEvmLps]: true,
                     [ChartSeries.HyperEvmBalances]: false,
                     [ChartSeries.HyperCorePerps]: true,
@@ -757,6 +773,43 @@ export default function DeltaTrackingChart() {
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
                             return `${ChartSeries.AUM} ${formatUSD(value)}`
+                        },
+                        color: aumColor,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: aumColor + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                {
+                    name: ChartSeries.DeployedAUM,
+                    type: 'line',
+                    data: deployedAUM,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    yAxisIndex: 0,
+                    z: 5,
+                    lineStyle: {
+                        color: aumColor,
+                        width: 2,
+                        type: 'dotted',
+                        opacity: 0.8,
+                    },
+                    itemStyle: {
+                        color: aumColor,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            return `Deployed ${formatUSD(value)}`
                         },
                         color: aumColor,
                         fontSize: 12,

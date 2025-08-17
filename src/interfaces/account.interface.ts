@@ -77,6 +77,7 @@ export interface AccountSnapshot {
         }
         portfolio: {
             totalUSD: number // Total portfolio value in USD
+            deployedAUM: number // Deployed AUM (LPs + Perps) in USD
             netDeltaHYPE: number // Net delta exposure in HYPE units
             strategyDelta: number // LP-perp delta difference (hedge effectiveness)
             apr: {

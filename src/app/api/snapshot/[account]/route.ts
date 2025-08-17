@@ -292,6 +292,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                 },
                 portfolio: {
                     totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0) + (withdrawableUSDC || 0),
+                    deployedAUM: usdValues.lps + usdValues.perps,
                     netDeltaHYPE: Object.values(deltaValues).reduce((sum, val) => sum + val, 0),
                     strategyDelta: deltaValues.lps + deltaValues.perps,
                     apr: {

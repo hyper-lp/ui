@@ -62,7 +62,7 @@ const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, clas
 
     return (
         <div className={baseClassName}>
-            <span className="text-xs uppercase tracking-wider text-default/50">{label}</span>
+            <span className="text-xs tracking-wider text-default/50">{label}</span>
             {icon ? (
                 <div className="flex items-center gap-1">
                     <span className={cn('text-base font-semibold', color)}>{isNumber ? `${value >= 0 ? '+' : ''}${value.toFixed(1)}` : value}</span>
@@ -154,6 +154,7 @@ export default function AccountPage() {
         },
         portfolio: {
             totalUSD: 0,
+            deployedAUM: 0,
             netDeltaHYPE: 0,
             strategyDelta: 0,
             apr: { combined24h: null, combined7d: null, combined30d: null },
@@ -454,10 +455,19 @@ export default function AccountPage() {
 
                         {/* Global KPIs */}
                         <div className="flex items-center gap-6">
-                            <KPIMetric label="AUM" value={formatUSD(metrics.portfolio?.totalUSD || 0)} className="hidden md:flex" />
+                            <KPIMetric label="AUM on HL" value={formatUSD(metrics.portfolio?.totalUSD || 0)} className="hidden md:flex" />
                             <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
                             <KPIMetric
-                                label="Strategy Δ"
+                                label="DeployedAUM"
+                                value={formatUSD(
+                                    metrics.portfolio?.deployedAUM ||
+                                        (metrics.hyperEvm?.values?.lpsUSD || 0) + (metrics.hyperCore?.values?.perpsUSD || 0),
+                                )}
+                                className="hidden md:flex"
+                            />
+                            <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
+                            <KPIMetric
+                                label="STRATEGY Δ"
                                 value={metrics.portfolio?.strategyDelta || 0}
                                 icon={<HypeIcon size={20} />}
                                 colorFn={getDeltaColor}
@@ -704,7 +714,7 @@ export default function AccountPage() {
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
-                                    <p>{formatUSD(metrics.hyperCore?.perpAggregates?.totalMargin || 0)} margin</p>
+                                    <p>{formatUSD(metrics.hyperCore?.values?.totalUSD || 0)} margin</p>
                                     {perpFundingAPR != null && (
                                         <StyledTooltip
                                             content={

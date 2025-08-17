@@ -36,7 +36,7 @@ const createSkeletonData = (phaseOffset: number, amplitude: number, baseValue: n
 }
 
 export enum ChartSeries {
-    TotalCapital = 'AUM',
+    AUM = 'AUM',
     HyperEvmLps = 'LPs Δ',
     HyperEvmBalances = 'Wallet Δ',
     HyperCorePerps = 'Perps Δ',
@@ -497,8 +497,8 @@ export default function DeltaTrackingChart() {
 
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     uniqueParams.forEach((param: any) => {
-                        // Skip formatting for Total Capital series
-                        if (param.seriesName === ChartSeries.TotalCapital) {
+                        // Skip formatting for AUM series
+                        if (param.seriesName === ChartSeries.AUM) {
                             const value = Array.isArray(param.value) ? param.value[1] : 0
                             html += `
                                 <div style="margin: 8px 0;">
@@ -577,7 +577,7 @@ export default function DeltaTrackingChart() {
             legend: {
                 data: [
                     {
-                        name: ChartSeries.TotalCapital,
+                        name: ChartSeries.AUM,
                         textStyle: {
                             color: aumColor,
                         },
@@ -621,7 +621,7 @@ export default function DeltaTrackingChart() {
                 ],
                 top: 10,
                 selected: {
-                    [ChartSeries.TotalCapital]: true,
+                    [ChartSeries.AUM]: true,
                     [ChartSeries.HyperEvmLps]: true,
                     [ChartSeries.HyperEvmBalances]: false,
                     [ChartSeries.HyperCorePerps]: true,
@@ -732,7 +732,7 @@ export default function DeltaTrackingChart() {
             ],
             series: [
                 {
-                    name: ChartSeries.TotalCapital,
+                    name: ChartSeries.AUM,
                     type: 'line',
                     data: totalCapitalUSD,
                     smooth: false,
@@ -756,7 +756,7 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            return `${ChartSeries.TotalCapital} ${formatUSD(value)}`
+                            return `${ChartSeries.AUM} ${formatUSD(value)}`
                         },
                         color: aumColor,
                         fontSize: 12,
@@ -995,7 +995,7 @@ export default function DeltaTrackingChart() {
                             return `${ChartSeries.StrategyDelta} ${formattedValue}`
                         },
                         color: netDeltaColor,
-                        fontSize: 12,
+                        fontSize: 14,
                         offset: [5, 0],
                         backgroundColor: netDeltaColor + '15',
                         padding: [2, 4],

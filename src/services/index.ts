@@ -1,12 +1,6 @@
 // Core services - shared utilities
 export * from './core'
 
-// Discovery services - pool and position discovery
-export * from './discovery'
-
-// Monitoring services - account and position monitoring
-export * from './monitoring'
-
 // Analytics services - metrics calculation and orchestration
 export * from './analytics'
 

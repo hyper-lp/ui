@@ -17,7 +17,7 @@ export default function HeaderLogo() {
                     {/* Lightning effect */}
                     {isDark && (
                         <span
-                            className="via-bg-background-opposite pointer-events-none absolute left-1/2 top-2/3 -z-10 block h-[50px] w-[50px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-hl-light-green/70 to-hl-light-green/30 opacity-20 blur-[8px] transition-colors"
+                            className="via-bg-background-opposite pointer-events-none absolute left-1/2 top-2/3 -z-10 block h-[50px] w-[50px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-hl-light-green/10 to-hl-light-green/30 opacity-20 blur-[8px] transition-colors"
                             aria-hidden="true"
                         />
                     )}

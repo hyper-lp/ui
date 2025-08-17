@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { positionFetcher } from '@/services/core/position-fetcher.service'
 import { poolAPRService } from '@/services/dex/pool-apr.service'
+import { fundingHistoryService } from '@/services/core/funding-history.service'
 import { priceAggregator } from '@/services/price/price-aggregator.service'
 import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { LPPosition } from '@/interfaces'
 
@@ -10,21 +12,32 @@ import type { LPPosition } from '@/interfaces'
 const CACHE_TTL = 5000 // 5 seconds
 const cache = new Map<string, { data: AccountSnapshot; timestamp: number }>()
 
-const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
+export async function GET(_request: NextRequest, context: { params: Promise<{ account: string }> }) {
+    const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
+    const sumNotionalValue = (items: Array<{ notionalValue: number }>) => items.reduce((sum, item) => sum + item.notionalValue, 0)
+    const formatLPPositions = (positions: LPPosition[]) =>
+        positions.map((p) => ({
+            ...p,
+            feeTier: p.fee ? `${(p.fee / 10000).toFixed(2)}%` : null,
+        }))
 
-const sumNotionalValue = (items: Array<{ notionalValue: number }>) => items.reduce((sum, item) => sum + item.notionalValue, 0)
-
-const formatLPPositions = (positions: LPPosition[]) =>
-    positions.map((p) => ({
-        ...p,
-        feeTier: p.fee ? `${(p.fee / 10000).toFixed(2)}%` : null,
-    }))
-
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ account: string }> }) {
     try {
-        const { account } = await params
+        const params = await context.params
+        const { account } = params
         const accountAddress = account.toLowerCase()
         const cacheKey = accountAddress
+
+        // Track API user (fire and forget, don't await)
+        prismaMonitoring.apiUser
+            .upsert({
+                where: { address: accountAddress },
+                create: { address: accountAddress },
+                update: {
+                    queryCount: { increment: 1 },
+                    lastSeen: new Date(),
+                },
+            })
+            .catch((err: Error) => console.error('Failed to track API user:', err))
 
         // Check cache first
         const cached = cache.get(cacheKey)
@@ -47,6 +60,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             spotData: spotBalances,
             perpData: perpPositions,
             hyperEvmData: hyperEvmBalances,
+            fundingRates,
             timings: fetchTimings,
         } = positionsData
 
@@ -90,6 +104,139 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             perpAggregates.avgLeverage = perpAggregates.totalNotional / perpAggregates.totalMargin
         }
 
+        // Calculate user-specific weighted average LP APRs for different time periods
+        const lpAPRs = {
+            apr24h: null as number | null,
+            apr7d: null as number | null,
+            apr30d: null as number | null,
+        }
+
+        if (lpPositions.length > 0 && poolAPRData?.pools) {
+            let totalValue = 0
+            const weightedSums = {
+                apr24h: 0,
+                apr7d: 0,
+                apr30d: 0,
+            }
+
+            lpPositions.forEach((position) => {
+                if (!position.pool || position.valueUSD <= 0) return
+
+                const poolSnapshot = poolAPRData.pools.find(
+                    (pool) =>
+                        pool.poolAddress.toLowerCase() === position.pool?.toLowerCase() && pool.dex.toLowerCase() === position.dex.toLowerCase(),
+                )
+
+                if (poolSnapshot) {
+                    totalValue += position.valueUSD
+                    weightedSums.apr24h += poolSnapshot.apr24h * position.valueUSD
+                    weightedSums.apr7d += poolSnapshot.apr7d * position.valueUSD
+                    weightedSums.apr30d += poolSnapshot.apr30d * position.valueUSD
+                } else {
+                }
+            })
+
+            if (totalValue > 0) {
+                lpAPRs.apr24h = weightedSums.apr24h / totalValue
+                lpAPRs.apr7d = weightedSums.apr7d / totalValue
+                lpAPRs.apr30d = weightedSums.apr30d / totalValue
+            } else {
+            }
+        } else {
+        }
+
+        // Calculate user-specific weighted average funding APR for perps
+        // Initialize with current funding rate (live)
+        const fundingAPRs = {
+            current: null as number | null, // Current funding rate
+            apr24h: null as number | null, // 24h historical average
+            apr7d: null as number | null, // 7d historical average
+            apr30d: null as number | null, // 30d historical average
+        }
+
+        if (perpPositions.length > 0) {
+            // Current funding rate calculation (live rate)
+            if (fundingRates && Object.keys(fundingRates).length > 0) {
+                let totalNotional = 0
+                let weightedFundingSum = 0
+
+                perpPositions.forEach((position) => {
+                    const notional = Math.abs(position.notionalValue)
+                    const fundingRate = fundingRates[position.asset]
+
+                    if (notional > 0 && fundingRate !== undefined) {
+                        totalNotional += notional
+                        weightedFundingSum += fundingRate * notional
+                    }
+                })
+
+                if (totalNotional > 0) {
+                    fundingAPRs.current = weightedFundingSum / totalNotional
+                }
+            }
+
+            // Fetch historical funding APRs from Hyperliquid
+            const historicalFunding = await fundingHistoryService.calculateWeightedFundingAPRs(
+                perpPositions.map((p) => ({
+                    asset: p.asset,
+                    notionalValue: p.notionalValue,
+                })),
+            )
+
+            fundingAPRs.apr24h = historicalFunding.apr24h
+            fundingAPRs.apr7d = historicalFunding.apr7d
+            fundingAPRs.apr30d = historicalFunding.apr30d
+        }
+
+        // Calculate combined APRs for different time periods (weighted by USD value)
+        const combinedAPRs = {
+            apr24h: null as number | null,
+            apr7d: null as number | null,
+            apr30d: null as number | null,
+        }
+
+        const lpValue = usdValues.lps
+        const perpValue = perpAggregates.totalMargin // Use margin for perp weight, not notional
+        const totalValue = lpValue + perpValue
+
+        if (totalValue > 0) {
+            // 24h combined APR
+            if (lpAPRs.apr24h !== null || fundingAPRs.apr24h !== null) {
+                let weightedSum = 0
+                if (lpAPRs.apr24h !== null) {
+                    weightedSum += lpAPRs.apr24h * lpValue
+                }
+                if (fundingAPRs.apr24h !== null) {
+                    weightedSum += fundingAPRs.apr24h * perpValue
+                }
+                combinedAPRs.apr24h = weightedSum / totalValue
+            }
+
+            // 7d combined APR
+            if (lpAPRs.apr7d !== null || fundingAPRs.apr7d !== null) {
+                let weightedSum = 0
+                if (lpAPRs.apr7d !== null) {
+                    weightedSum += lpAPRs.apr7d * lpValue
+                }
+                if (fundingAPRs.apr7d !== null) {
+                    weightedSum += fundingAPRs.apr7d * perpValue
+                }
+                combinedAPRs.apr7d = weightedSum / totalValue
+            }
+
+            // 30d combined APR
+            if (lpAPRs.apr30d !== null || fundingAPRs.apr30d !== null) {
+                let weightedSum = 0
+                if (lpAPRs.apr30d !== null) {
+                    weightedSum += lpAPRs.apr30d * lpValue
+                }
+                if (fundingAPRs.apr30d !== null) {
+                    weightedSum += fundingAPRs.apr30d * perpValue
+                }
+                combinedAPRs.apr30d = weightedSum / totalValue
+            }
+        }
+
         // Build the account snapshot
         const accountData: AccountSnapshot = {
             success: true,
@@ -120,6 +267,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
                         balancesHYPE: deltaValues.balances,
                         totalHYPE: deltaValues.lps + deltaValues.balances,
                     },
+                    apr: {
+                        weightedAvg24h: lpAPRs.apr24h,
+                        weightedAvg7d: lpAPRs.apr7d,
+                        weightedAvg30d: lpAPRs.apr30d,
+                    },
                 },
                 hyperCore: {
                     values: {
@@ -133,15 +285,27 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
                         totalHYPE: deltaValues.perps + deltaValues.spots,
                     },
                     perpAggregates,
+                    apr: {
+                        currentFundingAPR: fundingAPRs.current,
+                        fundingAPR24h: fundingAPRs.apr24h,
+                        fundingAPR7d: fundingAPRs.apr7d,
+                        fundingAPR30d: fundingAPRs.apr30d,
+                    },
                 },
                 portfolio: {
                     totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0),
                     netDeltaHYPE: Object.values(deltaValues).reduce((sum, val) => sum + val, 0),
+                    apr: {
+                        combined24h: combinedAPRs.apr24h,
+                        combined7d: combinedAPRs.apr7d,
+                        combined30d: combinedAPRs.apr30d,
+                    },
                 },
             },
 
             marketData: {
                 poolAPR: poolAPRData,
+                fundingRates: fundingRates || {},
             },
 
             prices: {

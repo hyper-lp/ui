@@ -14,19 +14,10 @@ import { useAppStore } from '@/stores/app.store'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
-import { IS_DEV } from '@/config'
+import { getDexConfig, IS_DEV } from '@/config'
 
 interface LPPositionsTableProps {
     className?: string
-}
-
-function getDexLogo(dexName: string): FileIds | null {
-    const dexNameLower = dexName.toLowerCase()
-    if (dexNameLower.includes('hybra')) return FileIds.DEX_HYBRA
-    if (dexNameLower.includes('brick')) return FileIds.DEX_HYPERBRICK
-    if (dexNameLower.includes('hyperswap')) return FileIds.DEX_HYPERSWAP
-    if (dexNameLower.includes('prjtx')) return FileIds.DEX_PROJETX
-    return null
 }
 
 export function LPPositionsTableHeader() {
@@ -118,9 +109,13 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                         className="size-4 text-default/40"
                                                     />
                                                 )}
-                                                {getDexLogo(position.dex) && (
-                                                    <FileMapper id={getDexLogo(position.dex)!} width={16} height={16} className="rounded" />
-                                                )}
+
+                                                <FileMapper
+                                                    id={getDexConfig(position.dex)?.fileId || ''}
+                                                    width={16}
+                                                    height={16}
+                                                    className="rounded"
+                                                />
                                             </div>
                                         }
                                         feeTier={<p className="truncate">{position.feeTier}</p>}
@@ -154,7 +149,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                         }
                                         poolAddress={
                                             <StyledTooltip content={position.pool}>
-                                                <LinkWrapper href={`https://app.hybra.io/pool/${position.pool}`} target="_blank">
+                                                <LinkWrapper href={getDexConfig(position.dex)?.portfolioUrl || ''} target="_blank">
                                                     <p className="truncate">{shortenValue(position.pool || '')}</p>
                                                 </LinkWrapper>
                                             </StyledTooltip>

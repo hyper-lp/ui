@@ -36,8 +36,6 @@ export const pullAndStoreAnalyticsCron = inngest.createFunction(
                     logger.info('✅ Analytics cron job completed successfully', {
                         duration: `${duration}ms`,
                         accountsProcessed: result.accountsProcessed,
-                        positionsFound: result.positionsFound,
-                        metricsCalculated: result.metricsCalculated,
                         snapshotsStored: result.snapshotsStored,
                         oldSnapshotsDeleted: result.oldSnapshotsDeleted,
                         aggregatedMetrics: result.aggregatedMetrics,
@@ -72,12 +70,9 @@ export const pullAndStoreAnalyticsCron = inngest.createFunction(
                 return {
                     success: false,
                     error: error instanceof Error ? error.message : 'Unknown error occurred',
-                    accountsMonitored: 0,
-                    positionsUpdated: 0,
-                    perpPositions: 0,
-                    totalValueUSD: 0,
-                    averageFeeAPR: 0,
-                    oldRunsDeleted: 0,
+                    accountsProcessed: 0,
+                    snapshotsStored: 0,
+                    oldSnapshotsDeleted: 0,
                 }
             }
         })

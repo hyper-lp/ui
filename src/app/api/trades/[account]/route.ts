@@ -16,9 +16,10 @@ interface CachedResponse {
 const transactionCache = new Map<string, { data: CachedResponse; timestamp: number }>()
 const CACHE_TTL = 60000 // 1 minute cache
 
-export async function GET(request: Request, { params }: { params: Promise<{ account: string }> }) {
+export async function GET(request: Request, context: { params: Promise<{ account: string }> }) {
     try {
-        const { account } = await params
+        const params = await context.params
+        const { account } = params
 
         if (!account) {
             return NextResponse.json({ success: false, error: 'Account address is required' }, { status: 400 })

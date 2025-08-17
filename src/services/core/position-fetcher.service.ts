@@ -12,6 +12,7 @@ import { priceAggregator } from '@/services/price/price-aggregator.service'
 export class PositionFetcher {
     private poolStateCache = new Map<string, PoolState>()
     private tokenPriceCache = new Map<string, number>()
+    private fundingRatesCache = new Map<string, number>()
     private cacheTimestamp = 0
     private readonly CACHE_DURATION = 60000 // 60 seconds
 
@@ -39,6 +40,7 @@ export class PositionFetcher {
         if (Date.now() - this.cacheTimestamp > this.CACHE_DURATION) {
             this.poolStateCache.clear()
             this.tokenPriceCache.clear()
+            this.fundingRatesCache.clear()
             this.cacheTimestamp = Date.now()
         }
 
@@ -69,9 +71,21 @@ export class PositionFetcher {
             return data
         })
 
-        const [lpData, spotData, perpData, hyperEvmData] = await Promise.all([lpPromise, spotPromise, perpPromise, evmPromise])
+        const fundingStart = Date.now()
+        const fundingPromise = this.fetchFundingRates().then((data) => {
+            timings.fundingFetch = Date.now() - fundingStart
+            return data
+        })
 
-        return { lpData, spotData, perpData, hyperEvmData, timings }
+        const [lpData, spotData, perpData, hyperEvmData, fundingRates] = await Promise.all([
+            lpPromise,
+            spotPromise,
+            perpPromise,
+            evmPromise,
+            fundingPromise,
+        ])
+
+        return { lpData, spotData, perpData, hyperEvmData, fundingRates, timings }
     }
 
     /**
@@ -599,6 +613,64 @@ export class PositionFetcher {
         } catch (error) {
             console.error('Error fetching perp positions:', error)
             return []
+        }
+    }
+
+    /**
+     * Fetch current funding rates from HyperCore
+     */
+    private async fetchFundingRates(): Promise<Record<string, number>> {
+        try {
+            // Check cache first (use same 60-second TTL)
+            if (this.fundingRatesCache.size > 0 && Date.now() - this.cacheTimestamp < this.CACHE_DURATION) {
+                return Object.fromEntries(this.fundingRatesCache)
+            }
+
+            const response = await fetch('https://api.hyperliquid.xyz/info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'metaAndAssetCtxs',
+                }),
+            })
+
+            const data = await response.json()
+            const fundingRates: Record<string, number> = {}
+
+            // metaAndAssetCtxs returns [meta, assetCtxs] tuple
+            if (Array.isArray(data) && data.length >= 2) {
+                const [meta, assetCtxs] = data
+
+                if (meta?.universe && Array.isArray(assetCtxs)) {
+                    meta.universe.forEach((asset: { name: string }, index: number) => {
+                        if (asset.name && assetCtxs[index]) {
+                            const ctx = assetCtxs[index]
+                            // Use funding rate from context
+                            if (ctx.funding) {
+                                // funding is the 8-hour rate
+                                const eightHourRate = parseFloat(ctx.funding)
+
+                                // Convert to annualized APR
+                                // Hourly rate = eightHourRate / 8
+                                // Annual rate = hourly * 24 * 365
+                                const annualizedRate = (eightHourRate / 8) * 24 * 365
+
+                                // Convert to percentage and invert for shorts
+                                // (positive funding = shorts earn from longs)
+                                const annualizedAPR = -annualizedRate * 100
+
+                                fundingRates[asset.name] = annualizedAPR
+                                this.fundingRatesCache.set(asset.name, annualizedAPR)
+                            }
+                        }
+                    })
+                }
+            }
+
+            return fundingRates
+        } catch (error) {
+            console.error('Error fetching funding rates:', error)
+            return {}
         }
     }
 

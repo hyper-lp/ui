@@ -40,7 +40,7 @@ export default function StyledTooltip({
             content={
                 <div
                     className={cn(
-                        'z-[9999] -mb-2 flex rounded-xl bg-background/80 px-3 py-2 text-sm shadow-lg backdrop-blur-lg will-change-transform',
+                        'z-[9999] -mb-2 flex rounded-xl border border-background-opposite/10 bg-background/80 px-3 py-2 text-sm shadow-lg backdrop-blur-lg will-change-transform',
                         className,
                     )}
                     role="tooltip"

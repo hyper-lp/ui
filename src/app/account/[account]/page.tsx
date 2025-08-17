@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import PageWrapper from '@/components/common/PageWrapper'
 import { useAccountData } from '@/hooks/useAccountData'
 import { useAppStore } from '@/stores/app.store'
@@ -140,13 +140,22 @@ export default function AccountPage() {
     // Extract data with defaults
     const positions = snapshot?.positions || { hyperEvm: { lps: [], balances: [] }, hyperCore: { perps: [], spots: [] } }
     const metrics = snapshot?.metrics || {
-        hyperEvm: { values: { lpsUSD: 0, balancesUSD: 0, totalUSD: 0 }, deltas: { lpsHYPE: 0, balancesHYPE: 0, totalHYPE: 0 } },
+        hyperEvm: {
+            values: { lpsUSD: 0, balancesUSD: 0, totalUSD: 0 },
+            deltas: { lpsHYPE: 0, balancesHYPE: 0, totalHYPE: 0 },
+            apr: { weightedAvg24h: null, weightedAvg7d: null, weightedAvg30d: null },
+        },
         hyperCore: {
             values: { perpsUSD: 0, spotUSD: 0, totalUSD: 0 },
             deltas: { perpsHYPE: 0, spotHYPE: 0, totalHYPE: 0 },
             perpAggregates: { totalMargin: 0, totalNotional: 0, totalPnl: 0, avgLeverage: 0 },
+            apr: { currentFundingAPR: null, fundingAPR24h: null, fundingAPR7d: null, fundingAPR30d: null },
         },
-        portfolio: { totalUSD: 0, netDeltaHYPE: 0 },
+        portfolio: {
+            totalUSD: 0,
+            netDeltaHYPE: 0,
+            apr: { combined24h: null, combined7d: null, combined30d: null },
+        },
     }
     const prices = snapshot?.prices || { HYPE: 0, USDC: 1, USDT: 1 }
 
@@ -168,6 +177,30 @@ export default function AccountPage() {
 
     // Get HYPE price from the latest snapshot data, fallback to calculated price
     const hypePrice = prices?.HYPE || calculateHypePrice({ lp: positions.hyperEvm?.lps, wallet: positions.hyperEvm?.balances })
+
+    // Get pre-calculated APRs from the snapshot
+    const lpAPRs = metrics.hyperEvm?.apr
+    const fundingAPRs = metrics.hyperCore?.apr
+    const combinedAPRs = metrics.portfolio?.apr
+
+    // Default to 7d APRs for display (historic data)
+    const weightedAvgAPR = lpAPRs?.weightedAvg7d
+    const perpFundingAPR = fundingAPRs?.fundingAPR7d ?? fundingAPRs?.currentFundingAPR // Use 7d historic if available, otherwise current
+    // const combinedAPR = combinedAPRs?.combined7d  // Currently unused, but available for display
+
+    // Calculate APR range from all time periods
+    const aprRange = useMemo(() => {
+        const aprs = [combinedAPRs?.combined24h, combinedAPRs?.combined7d, combinedAPRs?.combined30d].filter(
+            (apr) => apr !== null && apr !== undefined,
+        ) as number[]
+
+        if (aprs.length === 0) return null
+
+        const min = Math.min(...aprs)
+        const max = Math.max(...aprs)
+
+        return { min, max }
+    }, [combinedAPRs])
 
     // Calculate total fetch time
     const timings = snapshot?.timings
@@ -368,6 +401,101 @@ export default function AccountPage() {
                                 colorFn={getDeltaColor}
                                 className="items-end"
                             />
+                            {aprRange !== null && (
+                                <>
+                                    <div className="h-8 w-px border-l border-dashed border-default/20" />
+                                    <div className="flex flex-col items-center lg:items-end">
+                                        <span className="text-xs uppercase tracking-wider text-default/50">Net APR</span>
+                                        <StyledTooltip
+                                            content={
+                                                <div className="space-y-2">
+                                                    <p className="font-medium">Combined Strategy APR</p>
+
+                                                    <div className="space-y-2">
+                                                        {combinedAPRs?.combined24h !== null && combinedAPRs?.combined24h !== undefined && (
+                                                            <div>
+                                                                <p className="text-xs font-medium text-default">24h APR</p>
+                                                                <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                    {lpAPRs?.weightedAvg24h !== null && (
+                                                                        <p>LP: {lpAPRs.weightedAvg24h.toFixed(2)}%</p>
+                                                                    )}
+                                                                    {fundingAPRs?.fundingAPR24h !== null && (
+                                                                        <p>
+                                                                            Funding: {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
+                                                                            {fundingAPRs.fundingAPR24h.toFixed(2)}%
+                                                                        </p>
+                                                                    )}
+                                                                    <p className="font-medium">
+                                                                        Net: {combinedAPRs.combined24h > 0 ? '+' : ''}
+                                                                        {combinedAPRs.combined24h.toFixed(2)}%
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {combinedAPRs?.combined7d !== null && combinedAPRs?.combined7d !== undefined && (
+                                                            <div>
+                                                                <p className="text-xs font-medium text-default">7d APR</p>
+                                                                <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                    {lpAPRs?.weightedAvg7d !== null && <p>LP: {lpAPRs.weightedAvg7d.toFixed(2)}%</p>}
+                                                                    {fundingAPRs?.fundingAPR7d !== null && (
+                                                                        <p>
+                                                                            Funding: {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
+                                                                            {fundingAPRs.fundingAPR7d.toFixed(2)}%
+                                                                        </p>
+                                                                    )}
+                                                                    <p className="font-medium">
+                                                                        Net: {combinedAPRs.combined7d > 0 ? '+' : ''}
+                                                                        {combinedAPRs.combined7d.toFixed(2)}%
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {combinedAPRs?.combined30d !== null && combinedAPRs?.combined30d !== undefined && (
+                                                            <div>
+                                                                <p className="text-xs font-medium text-default">30d APR</p>
+                                                                <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                    {lpAPRs?.weightedAvg30d !== null && (
+                                                                        <p>LP: {lpAPRs.weightedAvg30d.toFixed(2)}%</p>
+                                                                    )}
+                                                                    {fundingAPRs?.fundingAPR30d !== null && (
+                                                                        <p>
+                                                                            Funding: {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
+                                                                            {fundingAPRs.fundingAPR30d.toFixed(2)}%
+                                                                        </p>
+                                                                    )}
+                                                                    <p className="font-medium">
+                                                                        Net: {combinedAPRs.combined30d > 0 ? '+' : ''}
+                                                                        {combinedAPRs.combined30d.toFixed(2)}%
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <p className="text-xs italic text-default/50">User-specific, weighted by capital allocation</p>
+                                                </div>
+                                            }
+                                        >
+                                            <span
+                                                className={cn(
+                                                    'cursor-help text-lg font-semibold',
+                                                    aprRange.min > 0 && aprRange.max > 0
+                                                        ? 'text-success'
+                                                        : aprRange.min < 0 && aprRange.max < 0
+                                                          ? 'text-error'
+                                                          : 'text-default',
+                                                )}
+                                            >
+                                                {Math.abs(aprRange.max - aprRange.min) < 0.01
+                                                    ? `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}%`
+                                                    : `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}% - ${aprRange.max > 0 ? '+' : ''}${aprRange.max.toFixed(2)}%`}
+                                            </span>
+                                        </StyledTooltip>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 }
@@ -386,6 +514,44 @@ export default function AccountPage() {
                                             {positions.hyperEvm?.lps?.length !== 1 ? 's' : ''}
                                         </p>
                                     </div>
+                                    {weightedAvgAPR !== null && (
+                                        <StyledTooltip
+                                            content={
+                                                <div className="space-y-2">
+                                                    <div className="font-medium text-default">LP Weighted Average APR (Historic)</div>
+                                                    <div className="space-y-1 text-sm">
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-default/50">24h APR:</span>
+                                                            <span className="font-medium text-default">
+                                                                {lpAPRs?.weightedAvg24h !== null ? `${lpAPRs.weightedAvg24h.toFixed(2)}%` : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-default/50">7d APR:</span>
+                                                            <span className="font-medium text-default">
+                                                                {lpAPRs?.weightedAvg7d !== null ? `${lpAPRs.weightedAvg7d.toFixed(2)}%` : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-default/50">30d APR:</span>
+                                                            <span className="font-medium text-default">
+                                                                {lpAPRs?.weightedAvg30d !== null ? `${lpAPRs.weightedAvg30d.toFixed(2)}%` : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="pt-1 text-xs text-default/50">User-specific, weighted by position value</div>
+                                                </div>
+                                            }
+                                        >
+                                            <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
+                                                <p className="text-sm font-medium text-primary">
+                                                    {weightedAvgAPR < 0.01 && weightedAvgAPR > 0
+                                                        ? `${weightedAvgAPR.toFixed(4)}% APR`
+                                                        : `${weightedAvgAPR.toFixed(2)}% APR`}
+                                                </p>
+                                            </div>
+                                        </StyledTooltip>
+                                    )}
                                     <div className="flex items-center gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperEvm?.deltas?.lpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />
@@ -462,6 +628,54 @@ export default function AccountPage() {
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     <p>{formatUSD(metrics.hyperCore?.perpAggregates?.totalMargin || 0)} margin</p>
+                                    {perpFundingAPR != null && (
+                                        <StyledTooltip
+                                            content={
+                                                <div className="space-y-2">
+                                                    <div className="font-medium text-default">Funding Weighted Average APR (Historic)</div>
+                                                    <div className="space-y-1 text-sm">
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-default/50">24h APR:</span>
+                                                            <span className="font-medium text-default">
+                                                                {fundingAPRs?.fundingAPR24h !== null
+                                                                    ? `${fundingAPRs.fundingAPR24h > 0 ? '+' : ''}${fundingAPRs.fundingAPR24h.toFixed(2)}%`
+                                                                    : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-default/50">7d APR:</span>
+                                                            <span className="font-medium text-default">
+                                                                {fundingAPRs?.fundingAPR7d !== null
+                                                                    ? `${fundingAPRs.fundingAPR7d > 0 ? '+' : ''}${fundingAPRs.fundingAPR7d.toFixed(2)}%`
+                                                                    : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between gap-4">
+                                                            <span className="text-default/50">30d APR:</span>
+                                                            <span className="font-medium text-default">
+                                                                {fundingAPRs?.fundingAPR30d !== null
+                                                                    ? `${fundingAPRs.fundingAPR30d > 0 ? '+' : ''}${fundingAPRs.fundingAPR30d.toFixed(2)}%`
+                                                                    : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="pt-1 text-xs text-default/50">User-specific, weighted by position notional</div>
+                                                </div>
+                                            }
+                                        >
+                                            <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
+                                                <p
+                                                    className={cn(
+                                                        'text-sm font-medium',
+                                                        perpFundingAPR > 0 ? 'text-success' : perpFundingAPR < 0 ? 'text-error' : 'text-default',
+                                                    )}
+                                                >
+                                                    {perpFundingAPR > 0 ? '+' : ''}
+                                                    {perpFundingAPR.toFixed(2)}% APR
+                                                </p>
+                                            </div>
+                                        </StyledTooltip>
+                                    )}
                                     <div className="flex items-center gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />

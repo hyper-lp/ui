@@ -145,6 +145,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         protocol: DexProtocol.HYPERSWAP,
         name: 'Hyperswap V3',
         logoUrl: 'https://app.hyperbeat.org/hyperfolio/hyperswap.jpg',
+        fileId: FileIds.DEX_HYPERSWAP,
         factoryAddress: HYPERSWAP_V3_CONTRACTS.factory,
         positionManagerAddress: HYPERSWAP_V3_CONTRACTS.positionManager,
         routerAddress: HYPERSWAP_V3_CONTRACTS.swapRouter02 || HYPERSWAP_V3_CONTRACTS.swapRouter,
@@ -159,6 +160,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         protocol: DexProtocol.PRJTX,
         name: 'Project X',
         logoUrl: 'https://app.hyperbeat.org/hyperfolio/project-x.jpg',
+        fileId: FileIds.DEX_PROJETX,
         factoryAddress: PRJTX_V3_CONTRACTS.factory,
         positionManagerAddress: PRJTX_V3_CONTRACTS.positionManager,
         routerAddress: PRJTX_V3_CONTRACTS.swapRouter,
@@ -174,6 +176,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         protocol: DexProtocol.HYBRA,
         name: 'Hybra Finance',
         logoUrl: 'https://app.hyperbeat.org/hyperfolio/hybra.jpg',
+        fileId: FileIds.DEX_HYBRA,
         factoryAddress: HYBRA_V3_CONTRACTS.factory,
         positionManagerAddress: HYBRA_V3_CONTRACTS.positionManager,
         routerAddress: HYBRA_V3_CONTRACTS.swapRouter,
@@ -189,6 +192,7 @@ export const HYPEREVM_DEXS: Record<DexProtocol, DexConfig> = {
         protocol: DexProtocol.HYPERBRICK,
         name: 'HyperBrick',
         logoUrl: 'https://icons.llamao.fi/icons/protocols/hyperbrick?w=48&h=48',
+        fileId: FileIds.DEX_HYPERBRICK,
         factoryAddress: HYPERBRICK_LB_CONTRACTS.factory,
         routerAddress: HYPERBRICK_LB_CONTRACTS.router,
         isUniswapV3Fork: false, // It's a Liquidity Book (Trader Joe v2) fork
@@ -250,4 +254,13 @@ export function getDexByPositionManager(positionManagerAddress: string): string 
     }
 
     return undefined
+}
+
+export function getDexConfig(dexName: string): DexConfig | null {
+    const dexNameLower = dexName.toLowerCase()
+    if (dexNameLower.includes('hybra')) return HYPEREVM_DEXS[DexProtocol.HYBRA]
+    if (dexNameLower.includes('brick')) return HYPEREVM_DEXS[DexProtocol.HYPERBRICK]
+    if (dexNameLower.includes('hyperswap')) return HYPEREVM_DEXS[DexProtocol.HYPERSWAP]
+    if (dexNameLower.includes('prjtx')) return HYPEREVM_DEXS[DexProtocol.PRJTX]
+    return null
 }

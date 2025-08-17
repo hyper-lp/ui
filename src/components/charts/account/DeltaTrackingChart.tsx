@@ -86,8 +86,8 @@ export default function DeltaTrackingChart() {
             yAxis: {
                 type: 'value',
                 position: 'left',
-                min: -5000,
-                max: 15000,
+                min: -1000,
+                max: 2000,
                 axisLine: { show: false },
                 axisLabel: {
                     show: true,
@@ -133,7 +133,7 @@ export default function DeltaTrackingChart() {
                 {
                     name: 'AUM',
                     type: 'line',
-                    data: createSkeletonData(0, 1000, 10000),
+                    data: createSkeletonData(0, 100, 1000),
                     smooth: false,
                     symbol: 'none',
                     lineStyle: {
@@ -159,7 +159,7 @@ export default function DeltaTrackingChart() {
                 {
                     name: 'LPs Δ',
                     type: 'line',
-                    data: createSkeletonData(1, 800, 3000),
+                    data: createSkeletonData(1, 80, 300),
                     smooth: false,
                     symbol: 'none',
                     lineStyle: {
@@ -185,7 +185,7 @@ export default function DeltaTrackingChart() {
                 {
                     name: 'Wallet Δ',
                     type: 'line',
-                    data: createSkeletonData(2, 600, 1000),
+                    data: createSkeletonData(2, 60, 100),
                     smooth: false,
                     symbol: 'none',
                     lineStyle: {
@@ -211,7 +211,7 @@ export default function DeltaTrackingChart() {
                 {
                     name: 'Perps Δ',
                     type: 'line',
-                    data: createSkeletonData(3, 700, -2000),
+                    data: createSkeletonData(3, 70, -200),
                     smooth: false,
                     symbol: 'none',
                     lineStyle: {
@@ -237,7 +237,7 @@ export default function DeltaTrackingChart() {
                 {
                     name: 'Net Δ',
                     type: 'line',
-                    data: createSkeletonData(4, 500, 500),
+                    data: createSkeletonData(4, 50, 50),
                     smooth: false,
                     symbol: 'none',
                     lineStyle: {
@@ -302,7 +302,7 @@ export default function DeltaTrackingChart() {
                 {
                     name: 'Spots Δ',
                     type: 'line',
-                    data: createSkeletonData(5, 400, -500),
+                    data: createSkeletonData(5, 40, -50),
                     smooth: false,
                     symbol: 'none',
                     lineStyle: {
@@ -429,7 +429,6 @@ export default function DeltaTrackingChart() {
             animation: true,
             animationDuration: 300,
             animationEasing: 'cubicInOut',
-            appendToBody: true,
             tooltip: {
                 trigger: 'axis',
                 triggerOn: 'mousemove',
@@ -438,12 +437,14 @@ export default function DeltaTrackingChart() {
                 borderWidth: 1,
                 borderRadius: 12,
                 padding: [8, 12],
-                extraCssText: `backdrop-filter: blur(12px) saturate(120%); -webkit-backdrop-filter: blur(12px) saturate(120%); box-shadow: 0 8px 32px rgba(0, 0, 0, ${resolvedTheme === 'dark' ? '0.2' : '0.1'});`,
+                extraCssText: `z-index: 99999; backdrop-filter: blur(12px) saturate(120%); -webkit-backdrop-filter: blur(12px) saturate(120%); box-shadow: 0 8px 32px rgba(0, 0, 0, ${resolvedTheme === 'dark' ? '0.2' : '0.1'});`,
                 appendToBody: true,
                 hideDelay: 0,
                 transitionDuration: 0,
                 enterable: false,
-                confine: true,
+                confine: false,
+                alwaysShowContent: false,
+                show: true,
                 textStyle: {
                     color: resolvedTheme === 'dark' ? '#ffffff' : '#000000',
                     fontSize: 11,
@@ -698,6 +699,8 @@ export default function DeltaTrackingChart() {
                     axisLine: {
                         show: false,
                     },
+                    min: 'dataMin',
+                    max: 'dataMax',
                     axisLabel: {
                         opacity: 0.5,
                         color: colors.charts.text,

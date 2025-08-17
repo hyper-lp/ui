@@ -41,6 +41,11 @@ export interface AccountSnapshot {
                 balancesHYPE: number // Wallet delta in HYPE units
                 totalHYPE: number // Total HyperEVM delta in HYPE units
             }
+            apr: {
+                weightedAvg24h: number | null // Weighted average 24h APR for LP positions
+                weightedAvg7d: number | null // Weighted average 7d APR for LP positions
+                weightedAvg30d: number | null // Weighted average 30d APR for LP positions
+            }
             // add other risk assets deltas here
         }
         hyperCore: {
@@ -60,18 +65,30 @@ export interface AccountSnapshot {
                 totalPnl: number // Total unrealized PnL across all perp positions
                 avgLeverage: number // Average leverage across all perp positions
             }
+            apr: {
+                currentFundingAPR: number | null // Current (live) weighted funding APR for perp positions
+                fundingAPR24h: number | null // 24h historical average funding APR
+                fundingAPR7d: number | null // 7d historical average funding APR
+                fundingAPR30d: number | null // 30d historical average funding APR
+            }
             leverageRatio?: number // Leverage ratio (e.g., 2.5 for 2.5x)
             healthFactorPercent?: number // Health factor as percentage
         }
         portfolio: {
             totalUSD: number // Total portfolio value in USD
             netDeltaHYPE: number // Net delta exposure in HYPE units
+            apr: {
+                combined24h: number | null // Combined 24h APR from LPs and funding
+                combined7d: number | null // Combined 7d APR from LPs and funding
+                combined30d: number | null // Combined 30d APR from LPs and funding
+            }
         }
     }
 
     // 3. Market data (not user-specific)
     marketData: {
         poolAPR?: AggregatedPoolAPR // HYPE/USDT0 pool APR data across all DEXs
+        fundingRates?: Record<string, number> // coin -> annualized APR for shorts
     }
 
     // 4. prices

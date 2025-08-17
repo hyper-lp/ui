@@ -35,15 +35,10 @@
         "db:status": "prisma migrate status",
         "vercel-build": "pnpm prisma:generate && pnpm prisma:deploy && export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build",
         "postinstall:ci": "pnpm prisma:generate",
-        "inngest": "pnpm dlx inngest-cli@latest dev",
-        "monitor": "tsx scripts/monitor.ts",
-        "monitor:quick": "tsx scripts/monitor.ts quick",
-        "monitor:status": "tsx scripts/monitor.ts status",
-        "monitor:pools": "tsx scripts/monitor.ts pools"
+        "inngest": "pnpm dlx inngest-cli@latest dev"
     },
     "dependencies": {
         "@heroui/tooltip": "^2.2.21",
-        "@prisma/client": "^6.13.0",
         "@privy-io/react-auth": "^2.21.2",
         "@t3-oss/env-nextjs": "^0.13.8",
         "@tanstack/react-query": "^5.84.1",
@@ -71,6 +66,7 @@
         "@iconify/react": "^5.2.1",
         "@next/bundle-analyzer": "^15.4.6",
         "@next/eslint-plugin-next": "15.2.1",
+        "@prisma/client": "^6.14.0",
         "@types/echarts": "^5.0.0",
         "@types/node": "^20.19.9",
         "@types/numeral": "^2.0.5",
@@ -90,7 +86,7 @@
         "prettier": "^3.6.2",
         "prettier-eslint": "^16.4.2",
         "prettier-plugin-tailwindcss": "^0.6.14",
-        "prisma": "^6.13.0",
+        "prisma": "^6.14.0",
         "tailwindcss": "^3.4.17",
         "ts-prune": "^0.10.3",
         "tsx": "^4.20.3",

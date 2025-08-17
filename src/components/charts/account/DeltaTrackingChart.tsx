@@ -991,8 +991,6 @@ export default function DeltaTrackingChart() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formatter: (params: any) => {
                             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            // Hide label if value is very close to 0
-                            if (Math.abs(value) < 1) return ''
                             const formattedValue = Math.round(value) !== 0 ? numeral(value).format('+0,0a$') : numeral(value).format('0,0a$')
                             return `${ChartSeries.StrategyDelta} ${formattedValue}`
                         },

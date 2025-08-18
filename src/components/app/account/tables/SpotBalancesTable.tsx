@@ -15,6 +15,7 @@ import { useAppStore } from '@/stores/app.store'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
+import { IS_DEV } from '@/config/app.config'
 
 interface SpotBalancesTableProps {
     className?: string
@@ -74,10 +75,12 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                     <SpotRowTemplate
                                         asset={
                                             <div className="flex items-center gap-1.5">
-                                                <IconWrapper
-                                                    id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                                                    className="size-3 text-default/40"
-                                                />
+                                                {IS_DEV && (
+                                                    <IconWrapper
+                                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                                                        className="size-3 text-default/40"
+                                                    />
+                                                )}
                                                 {getHyperCoreAssetBySymbol(balance.asset)?.fileId && (
                                                     <FileMapper
                                                         id={getHyperCoreAssetBySymbol(balance.asset)!.fileId}

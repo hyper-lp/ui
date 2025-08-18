@@ -73,6 +73,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                     {
                         id: FileIds.TEAM_MERSO,
                         taikaiUrl: 'https://taikai.network/Merso',
+                        xUrl: 'https://x.com/0xMerso',
                         name: 'Merso',
                         description: 'Rust / Solidity',
                         width: 30,
@@ -82,6 +83,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                     {
                         id: FileIds.TEAM_KATALYSTER,
                         taikaiUrl: 'https://taikai.network/Katalyster',
+                        xUrl: 'https://x.com/Katalyster',
                         name: 'Katalyster',
                         description: 'BD / Ops',
                         width: 30,
@@ -91,6 +93,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                     {
                         id: FileIds.TEAM_ZARBOQ,
                         taikaiUrl: 'https://taikai.network/zarboq',
+                        xUrl: 'https://x.com/zarboq',
                         name: 'Zarboq',
                         description: 'Rust / Solidity',
                         width: 30,
@@ -100,6 +103,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                     {
                         id: FileIds.TEAM_FBERGER,
                         taikaiUrl: 'https://taikai.network/fberger-xyz',
+                        xUrl: 'https://x.com/fberger_xyz',
                         name: 'fberger',
                         description: 'Fullstack dev',
                         width: 30,

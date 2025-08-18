@@ -21,7 +21,8 @@ export enum AppUrls {
     GITHUB = 'https://github.com/hyperlp',
     PRIVY = 'https://www.privy.io/',
     DOCS = 'https://en.wikipedia.org/wiki/PnL_explained',
-    CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
+    // CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
+    CONTACT_US = 'https://x.com/HyperLPxyz',
     STATUS = 'https://merso.betteruptime.com/',
 
     // Authors

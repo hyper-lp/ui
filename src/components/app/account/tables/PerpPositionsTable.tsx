@@ -13,6 +13,7 @@ import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
+import { IS_DEV } from '@/config'
 
 interface PerpPositionsTableProps {
     className?: string
@@ -130,10 +131,12 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                         <PerpRowTemplate
                                             asset={
                                                 <div className="flex items-center gap-1.5">
-                                                    <IconWrapper
-                                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                                                        className="size-3 text-default/40"
-                                                    />
+                                                    {IS_DEV && (
+                                                        <IconWrapper
+                                                            id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                                                            className="size-3 text-default/40"
+                                                        />
+                                                    )}
                                                     {getHyperCoreAssetBySymbol(position.asset)?.fileId && (
                                                         <FileMapper
                                                             id={getHyperCoreAssetBySymbol(position.asset)!.fileId}

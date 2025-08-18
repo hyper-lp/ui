@@ -57,7 +57,7 @@ export default function AccountTemplate(props: {
                 <SectionCard className="h-[400px] flex-1 !p-1 md:h-[500px] md:!p-2">{props.charts}</SectionCard>
 
                 {/* 2. last snapshot */}
-                <div className="flex h-min w-[500px] flex-col gap-4 xl:w-[600px]">
+                <div className="3xl:w-[800px] flex h-min w-full flex-col gap-4 lg:w-[500px] xl:w-[600px] 2xl:w-[700px]">
                     {/* HyperEvm */}
                     <div>
                         <FileMapper

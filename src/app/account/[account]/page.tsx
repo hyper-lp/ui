@@ -415,11 +415,11 @@ export default function AccountPage() {
                                             description: 'HyperLiquid explorer',
                                             url: `https://app.hyperliquid.xyz/explorer/address/${accountFromUrl}`,
                                         },
-                                        // {
-                                        //     name: 'debank',
-                                        //     description: 'DeBank profile',
-                                        //     url: `https://debank.com/profile/${accountFromUrl}`,
-                                        // },
+                                        {
+                                            name: 'debank',
+                                            description: 'DeBank profile',
+                                            url: `https://debank.com/profile/${accountFromUrl}`,
+                                        },
                                         // {
                                         //     name: 'raw',
                                         //     description: 'API snapshot',

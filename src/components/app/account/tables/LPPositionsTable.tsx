@@ -184,6 +184,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     <div className="flex flex-col gap-1">
                                                         <p className="text-default/50">Pool Address</p>
                                                         <p className="">{position.pool}</p>
+                                                        <p className="text-default/50">Click to view pool</p>
                                                     </div>
                                                 }
                                             >
@@ -198,7 +199,10 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     content={
                                                         <div className="flex flex-col gap-1">
                                                             <p className="text-xs text-default/50">Amount</p>
-                                                            <p>{formatNumber(hypeAmount, 2)}</p>
+                                                            <div className="flex items-center gap-1">
+                                                                <FileMapper id={FileIds.TOKEN_HYPE} width={16} height={16} className="rounded-full" />
+                                                                <p>{formatNumber(hypeAmount, 2)}</p>
+                                                            </div>
                                                             <p className="text-xs text-default/50">Price (USD)</p>
                                                             <p>{formatUSD((position.token0ValueUSD || 0) / hypeAmount)}</p>
                                                             <p className="text-xs text-default/50">Value (USD)</p>
@@ -218,7 +222,15 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     content={
                                                         <div className="flex flex-col gap-1">
                                                             <p className="text-xs text-default/50">Amount</p>
-                                                            <p>{formatNumber(usdtAmount, 0)}</p>
+                                                            <div className="flex items-center gap-1">
+                                                                <FileMapper
+                                                                    id={FileIds.TOKEN_USDT0}
+                                                                    width={16}
+                                                                    height={16}
+                                                                    className="rounded-full"
+                                                                />
+                                                                <p>{formatNumber(usdtAmount, 0)}</p>
+                                                            </div>
                                                             <p className="text-xs text-default/50">Price (USD)</p>
                                                             <p>{formatUSD((position.token1ValueUSD || 0) / usdtAmount)}</p>
                                                             <p className="text-xs text-default/50">Value (USD)</p>
@@ -288,13 +300,32 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                         split={
                                             <StyledTooltip
                                                 content={
-                                                    <div className="flex flex-col gap-1">
-                                                        <p className="text-xs text-default/50">
-                                                            {position.token0Symbol} {formatUSD(position.token0ValueUSD || 0)}
-                                                        </p>
-                                                        <p className="text-xs text-default/50">
-                                                            {position.token1Symbol} {formatUSD(position.token1ValueUSD || 0)}
-                                                        </p>
+                                                    <div className="flex items-center gap-1.5 text-sm">
+                                                        <FileMapper
+                                                            id={
+                                                                position.token0Symbol === 'HYPE' || position.token0Symbol === 'WHYPE'
+                                                                    ? FileIds.TOKEN_HYPE
+                                                                    : FileIds.TOKEN_USDT0
+                                                            }
+                                                            width={16}
+                                                            height={16}
+                                                            className="rounded-full"
+                                                        />
+                                                        <span>{position.token0Symbol}</span>
+                                                        <span className="text-default/50">{formatUSD(position.token0ValueUSD || 0)}</span>
+                                                        <span className="text-default/50">+</span>
+                                                        <FileMapper
+                                                            id={
+                                                                position.token1Symbol === 'HYPE' || position.token1Symbol === 'WHYPE'
+                                                                    ? FileIds.TOKEN_HYPE
+                                                                    : FileIds.TOKEN_USDT0
+                                                            }
+                                                            width={16}
+                                                            height={16}
+                                                            className="rounded-full"
+                                                        />
+                                                        <span>{position.token1Symbol}</span>
+                                                        <span className="text-default/50">{formatUSD(position.token1ValueUSD || 0)}</span>
                                                     </div>
                                                 }
                                             >
@@ -307,7 +338,18 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                 </div>
                                             </StyledTooltip>
                                         }
-                                        tvl={<span className="font-medium">{formatUSD(poolSnapshot?.tvlUSD || 0)}</span>}
+                                        tvl={
+                                            <StyledTooltip
+                                                content={
+                                                    <div className="flex flex-col gap-1">
+                                                        <p className="text-default/50">Total Value Locked in pool</p>
+                                                        <p>{numeral(poolSnapshot?.tvlUSD || 0).format('0,0.[00000]$')}</p>
+                                                    </div>
+                                                }
+                                            >
+                                                <span className="font-medium">{formatUSD(poolSnapshot?.tvlUSD || 0)}</span>
+                                            </StyledTooltip>
+                                        }
                                         apr24h={(() => {
                                             return poolSnapshot ? (
                                                 <StyledTooltip

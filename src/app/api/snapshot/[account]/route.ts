@@ -306,6 +306,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                     deployedAUM: usdValues.lps + unclaimedFeesTotal + usdValues.perps,
                     netDeltaHYPE: Object.values(deltaValues).reduce((sum, val) => sum + val, 0),
                     strategyDelta: deltaValues.lps + deltaValues.perps,
+                    // strategyDelta: deltaValues.lps - usdValues.perps,
                     apr: {
                         combined24h: combinedAPRs.apr24h,
                         combined7d: combinedAPRs.apr7d,

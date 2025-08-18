@@ -502,7 +502,7 @@ export default function DeltaTrackingChart() {
             const spotUSD = snapshot.metrics.hyperCore.deltas.spotHYPE * hypePrice
             const balancesUSD = snapshot.metrics.hyperEvm.deltas.balancesHYPE * hypePrice
             const netUSD = snapshot.metrics.portfolio.netDeltaHYPE * hypePrice
-            const strategyUSD = (snapshot.metrics.portfolio.strategyDelta || 0) * hypePrice
+            // const strategyUSD = ((snapshot.metrics.portfolio.strategyDelta || 0) * hypePrice)
             const totalUSD = snapshot.metrics.portfolio.totalUSD
 
             // Calculate deployed AUM (LPs + Perps value in USD)
@@ -515,7 +515,8 @@ export default function DeltaTrackingChart() {
             spotDeltasUSD.push([timestamp, spotUSD])
             balancesDeltasUSD.push([timestamp, balancesUSD])
             netDeltasUSD.push([timestamp, netUSD])
-            strategyDeltasUSD.push([timestamp, strategyUSD])
+            // strategyDeltasUSD.push([timestamp, strategyUSD])
+            strategyDeltasUSD.push([timestamp, lpUSD + perpUSD])
             totalCapitalUSD.push([timestamp, totalUSD])
             deployedAUM.push([timestamp, deployedUSD])
         })

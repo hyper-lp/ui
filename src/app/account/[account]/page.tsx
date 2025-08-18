@@ -662,7 +662,6 @@ export default function AccountPage() {
                                                         <div className="space-y-1 pb-2">
                                                             <div className="flex items-center gap-1 text-sm font-medium">
                                                                 <span>Gross Delta-Neutral APR on Deployed AUM</span>
-                                                                <span className="underline">before IL</span>
                                                             </div>
                                                             <div className="text-sm">= (2/3 × LP APR) + (1/3 × Funding APR)</div>
                                                         </div>
@@ -674,14 +673,14 @@ export default function AccountPage() {
                                                                     <span className="font-medium">24h</span>
                                                                     <span className="font-medium">
                                                                         {combinedAPRs.combined24h > 0 ? '+' : ''}
-                                                                        {combinedAPRs.combined24h.toFixed(2)}%
+                                                                        {combinedAPRs.combined24h.toFixed(0)}% before IL
                                                                     </span>
                                                                 </div>
                                                                 <div className="ml-3">
                                                                     {lpAPRs?.weightedAvg24h !== null && (
                                                                         <div className="flex justify-between gap-6">
                                                                             <span className="opacity-60">2/3 LP APR</span>
-                                                                            <span className="opacity-60">{lpAPRs.weightedAvg24h.toFixed(2)}%</span>
+                                                                            <span className="opacity-60">{lpAPRs.weightedAvg24h.toFixed(1)}% </span>
                                                                         </div>
                                                                     )}
                                                                     {fundingAPRs?.fundingAPR24h !== null && (
@@ -689,7 +688,7 @@ export default function AccountPage() {
                                                                             <span className="opacity-60">1/3 Funding APR</span>
                                                                             <span className="opacity-60">
                                                                                 {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
-                                                                                {fundingAPRs.fundingAPR24h.toFixed(2)}%
+                                                                                {fundingAPRs.fundingAPR24h.toFixed(1)}%
                                                                             </span>
                                                                         </div>
                                                                     )}
@@ -704,14 +703,14 @@ export default function AccountPage() {
                                                                     <span className="font-medium">7d</span>
                                                                     <span className="font-medium">
                                                                         {combinedAPRs.combined7d > 0 ? '+' : ''}
-                                                                        {combinedAPRs.combined7d.toFixed(2)}%
+                                                                        {combinedAPRs.combined7d.toFixed(0)}% before IL
                                                                     </span>
                                                                 </div>
                                                                 <div className="ml-3 space-y-0.5">
                                                                     {lpAPRs?.weightedAvg7d !== null && (
                                                                         <div className="flex justify-between gap-6">
                                                                             <span className="opacity-60">2/3 LP APR</span>
-                                                                            <span className="opacity-60">{lpAPRs.weightedAvg7d.toFixed(2)}%</span>
+                                                                            <span className="opacity-60">{lpAPRs.weightedAvg7d.toFixed(1)}%</span>
                                                                         </div>
                                                                     )}
                                                                     {fundingAPRs?.fundingAPR7d !== null && (
@@ -719,7 +718,7 @@ export default function AccountPage() {
                                                                             <span className="opacity-60">1/3 Funding APR</span>
                                                                             <span className="opacity-60">
                                                                                 {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
-                                                                                {fundingAPRs.fundingAPR7d.toFixed(2)}%
+                                                                                {fundingAPRs.fundingAPR7d.toFixed(1)}%
                                                                             </span>
                                                                         </div>
                                                                     )}
@@ -734,14 +733,14 @@ export default function AccountPage() {
                                                                     <span className="font-medium">30d</span>
                                                                     <span className="font-medium">
                                                                         {combinedAPRs.combined30d > 0 ? '+' : ''}
-                                                                        {combinedAPRs.combined30d.toFixed(2)}%
+                                                                        {combinedAPRs.combined30d.toFixed(0)}% before IL
                                                                     </span>
                                                                 </div>
                                                                 <div className="ml-3 space-y-0.5">
                                                                     {lpAPRs?.weightedAvg30d !== null && (
                                                                         <div className="flex justify-between gap-6">
                                                                             <span className="opacity-60">2/3 LP APR</span>
-                                                                            <span className="opacity-60">{lpAPRs.weightedAvg30d.toFixed(2)}%</span>
+                                                                            <span className="opacity-60">{lpAPRs.weightedAvg30d.toFixed(1)}%</span>
                                                                         </div>
                                                                     )}
                                                                     {fundingAPRs?.fundingAPR30d !== null && (
@@ -749,7 +748,7 @@ export default function AccountPage() {
                                                                             <span className="opacity-60">1/3 Funding APR</span>
                                                                             <span className="opacity-60">
                                                                                 {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
-                                                                                {fundingAPRs.fundingAPR30d.toFixed(2)}%
+                                                                                {fundingAPRs.fundingAPR30d.toFixed(1)}%
                                                                             </span>
                                                                         </div>
                                                                     )}
@@ -935,7 +934,7 @@ export default function AccountPage() {
                                                     <div className="font-semibold">Funding Rates (8h settlement)</div>
 
                                                     <div className="space-y-2">
-                                                        <div className="flex justify-between gap-6">
+                                                        <div className="flex justify-between gap-3">
                                                             <span className="text-sm font-medium opacity-60">Current 8h</span>
                                                             <span className="text-sm font-medium">
                                                                 {fundingAPRs?.currentFundingAPR !== null
@@ -943,7 +942,7 @@ export default function AccountPage() {
                                                                     : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-6">
+                                                        <div className="flex justify-between gap-3">
                                                             <span className="text-sm font-medium opacity-60">24h APR</span>
                                                             <span className="text-sm font-medium">
                                                                 {fundingAPRs?.fundingAPR24h !== null
@@ -951,7 +950,7 @@ export default function AccountPage() {
                                                                     : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-6">
+                                                        <div className="flex justify-between gap-3">
                                                             <span className="text-sm font-medium opacity-60">7d APR</span>
                                                             <span className="text-sm font-medium">
                                                                 {fundingAPRs?.fundingAPR7d !== null
@@ -959,7 +958,7 @@ export default function AccountPage() {
                                                                     : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-6">
+                                                        <div className="flex justify-between gap-3">
                                                             <span className="text-sm font-medium opacity-60">30d APR</span>
                                                             <span className="text-sm font-medium">
                                                                 {fundingAPRs?.fundingAPR30d !== null
@@ -970,7 +969,7 @@ export default function AccountPage() {
                                                     </div>
 
                                                     <div className="border-t border-default/10 pt-2">
-                                                        <div className="text-sm opacity-60">Weighted by position notional • Settles every 8h</div>
+                                                        <div className="text-sm opacity-60">Weighted by position notional</div>
                                                     </div>
                                                 </div>
                                             }

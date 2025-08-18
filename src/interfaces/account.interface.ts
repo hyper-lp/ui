@@ -115,4 +115,9 @@ export interface AccountSnapshot {
             spotsMs: number // Spot fetch time in milliseconds
         }
     }
+
+    // 6. Wallet metadata
+    wallet?: {
+        hyperEvmNonce: number // Current nonce on HyperEVM chain
+    }
 }

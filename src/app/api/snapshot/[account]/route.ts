@@ -3,6 +3,7 @@ import { positionFetcher } from '@/services/core/position-fetcher.service'
 import { poolAPRService } from '@/services/dex/pool-apr.service'
 import { fundingHistoryService } from '@/services/core/funding-history.service'
 import { priceAggregator } from '@/services/price/price-aggregator.service'
+import { hyperEvmRpcService } from '@/services/evm/hyperevm-rpc.service'
 import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { LPPosition } from '@/interfaces'
@@ -61,6 +62,9 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
             fundingRates,
             timings: fetchTimings,
         } = positionsData
+
+        // Fetch HyperEVM nonce
+        const hyperEvmNonce = await hyperEvmRpcService.getNonce(accountAddress)
 
         // Extract unique pool addresses from user's LP positions
         const userPoolAddresses = [...new Set(lpPositions.map((lp) => lp.pool).filter(Boolean))] as string[]
@@ -334,6 +338,10 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                     perpsMs: fetchTimings.perpFetch,
                     spotsMs: fetchTimings.spotFetch,
                 },
+            },
+
+            wallet: {
+                hyperEvmNonce,
             },
         }
 

@@ -114,7 +114,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                         <LPRowTemplate
                                             dex={
                                                 <div className="flex items-center gap-1.5">
-                                                    {!IS_DEV && (
+                                                    {IS_DEV && (
                                                         <IconWrapper
                                                             id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
                                                             className="size-4 text-default/40"

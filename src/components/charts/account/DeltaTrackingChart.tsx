@@ -66,6 +66,45 @@ export default function DeltaTrackingChart() {
             animationLoop: true,
             grid,
             tooltip: { show: false },
+            graphic: [
+                {
+                    type: 'text',
+                    left: 'center',
+                    top: 'center',
+                    z: 0,
+                    style: {
+                        text: 'hyperlp.xyz',
+                        fontSize: 48,
+                        fontWeight: 'bold',
+                        fill: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    },
+                },
+            ],
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: false,
+                        title: {
+                            zoom: 'Zoom',
+                            back: 'Reset',
+                        },
+                        iconStyle: {
+                            borderColor: colors.charts.text,
+                            opacity: 0.2,
+                        },
+                        emphasis: {
+                            iconStyle: {
+                                borderColor: colors.charts.text,
+                                opacity: 0.3,
+                            },
+                        },
+                    },
+                },
+                itemSize: 10,
+                top: 15,
+                right: 0,
+            },
             xAxis: {
                 type: 'time',
                 axisLine: { show: false },
@@ -108,14 +147,12 @@ export default function DeltaTrackingChart() {
             },
             legend: {
                 data: [
-                    { name: 'AUM', itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
                     { name: 'Deployed AUM', itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
                     { name: 'LPs Δ', itemStyle: { color: colors.hyperEvmLp }, textStyle: { color: textOpacity } },
                     { name: 'Wallet Δ', itemStyle: { color: colors.hyperEvmBalances }, textStyle: { color: textOpacity } },
                     { name: 'Perps Δ', itemStyle: { color: colors.hyperCorePerp }, textStyle: { color: textOpacity } },
                     { name: 'Spots Δ', itemStyle: { color: colors.hyperCoreSpot }, textStyle: { color: textOpacity } },
                     { name: 'Strategy Δ', itemStyle: { color: netDeltaColor }, textStyle: { color: textOpacity } },
-                    { name: 'Net Δ', itemStyle: { color: netDeltaColor }, textStyle: { color: textOpacity } },
                 ],
                 top: 10,
                 icon: 'roundRect',
@@ -123,21 +160,19 @@ export default function DeltaTrackingChart() {
                 itemHeight: 8,
                 itemGap: 15,
                 selected: {
-                    AUM: true,
                     'Deployed AUM': true,
                     'LPs Δ': true,
                     'Wallet Δ': false,
                     'Perps Δ': true,
                     'Spots Δ': false,
                     'Strategy Δ': true,
-                    'Net Δ': false,
                 },
                 inactiveColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
             },
             series: [
-                // AUM skeleton
+                // Deployed AUM skeleton
                 {
-                    name: 'AUM',
+                    name: 'Deployed AUM',
                     type: 'line',
                     data: createSkeletonData(0, 100, 1000),
                     smooth: false,
@@ -146,13 +181,14 @@ export default function DeltaTrackingChart() {
                         color: aumColor,
                         width: 2,
                         opacity: 0.3,
+                        type: 'dotted',
                     },
                     animation: true,
                     animationDuration: 3000,
                     animationDelay: 0,
                     endLabel: {
                         show: true,
-                        formatter: 'AUM $••,•••',
+                        formatter: 'Deployed $••,•••',
                         color: textOpacity,
                         fontSize: 12,
                         offset: [5, 0],
@@ -239,9 +275,9 @@ export default function DeltaTrackingChart() {
                         borderRadius: 4,
                     },
                 },
-                // Net Delta skeleton with dashed line
+                // Strategy Delta skeleton with dashed line
                 {
-                    name: 'Net Δ',
+                    name: 'Strategy Δ',
                     type: 'line',
                     data: createSkeletonData(4, 50, 50),
                     smooth: false,
@@ -295,7 +331,7 @@ export default function DeltaTrackingChart() {
                     },
                     endLabel: {
                         show: true,
-                        formatter: 'Net Δ +•k$',
+                        formatter: 'Strategy Δ +•k$',
                         color: textOpacity,
                         fontSize: 12,
                         offset: [5, 0],
@@ -304,31 +340,80 @@ export default function DeltaTrackingChart() {
                         borderRadius: 4,
                     },
                 },
-                // Spots skeleton
+            ],
+            dataZoom: [
+                // X-axis inside zoom
                 {
-                    name: 'Spots Δ',
-                    type: 'line',
-                    data: createSkeletonData(5, 40, -50),
-                    smooth: false,
-                    symbol: 'none',
-                    lineStyle: {
-                        color: colors.hyperCoreSpot,
-                        width: 2,
-                        opacity: 0.3,
+                    type: 'inside',
+                    xAxisIndex: 0,
+                    start: 50,
+                    end: 100,
+                },
+                // X-axis slider
+                {
+                    type: 'slider',
+                    xAxisIndex: 0,
+                    start: 50,
+                    end: 100,
+                    height: 18,
+                    bottom: 15,
+                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
+                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                    handleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                        borderWidth: 1,
                     },
-                    animation: true,
-                    animationDuration: 3000,
-                    animationDelay: 1000,
-                    endLabel: {
-                        show: true,
-                        formatter: 'Spots Δ -•k$',
+                    moveHandleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                    },
+                    dataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.015)' : 'rgba(0, 0, 0, 0.015)',
+                        },
+                    },
+                    textStyle: {
                         color: textOpacity,
-                        fontSize: 12,
-                        offset: [5, 0],
-                        backgroundColor: colors.hyperCoreSpot + '08',
-                        padding: [2, 4],
-                        borderRadius: 4,
                     },
+                    show: true,
+                },
+                // Y-axis slider
+                {
+                    type: 'slider',
+                    yAxisIndex: 0,
+                    start: 0,
+                    end: 100,
+                    width: 16,
+                    left: 12,
+                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
+                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                    handleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                        borderWidth: 1,
+                    },
+                    moveHandleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                    },
+                    dataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.015)' : 'rgba(0, 0, 0, 0.015)',
+                        },
+                    },
+                    textStyle: {
+                        color: textOpacity,
+                    },
+                    show: true,
                 },
             ],
         }

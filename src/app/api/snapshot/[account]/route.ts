@@ -6,7 +6,7 @@ import { priceAggregator } from '@/services/price/price-aggregator.service'
 import { hyperEvmRpcService } from '@/services/evm/hyperevm-rpc.service'
 import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
-import type { LPPosition } from '@/interfaces'
+import type { LPPosition, PerpPosition } from '@/interfaces'
 import { SCHEMA_VERSION } from '@/constants/schema.constants'
 
 // Simple in-memory cache with 5-second TTL
@@ -15,7 +15,7 @@ const cache = new Map<string, { data: AccountSnapshot; timestamp: number }>()
 
 export async function GET(_request: NextRequest, context: { params: Promise<{ account: string }> }) {
     const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
-    const sumNotionalValue = (items: Array<{ notionalValue: number }>) => items.reduce((sum, item) => sum + item.notionalValue, 0)
+    const sumPerpValue = (items: PerpPosition[]) => items.reduce((sum, item) => sum + item.notionalValue + item.unrealizedPnl, 0)
     const formatLPPositions = (positions: LPPosition[]) =>
         positions.map((p) => ({
             ...p,
@@ -82,7 +82,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
         const usdValues = {
             lps: sumUSDValue(lpPositions),
             spots: sumUSDValue(spotBalances),
-            perps: sumNotionalValue(perpPositions),
+            perps: sumPerpValue(perpPositions) + (withdrawableUSDC || 0),
             balances: sumUSDValue(hyperEvmBalances || []),
         }
 
@@ -285,7 +285,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                     values: {
                         perpsUSD: usdValues.perps,
                         spotUSD: usdValues.spots,
-                        totalUSD: usdValues.perps + usdValues.spots + (withdrawableUSDC || 0),
+                        totalUSD: usdValues.perps + usdValues.spots,
                         withdrawableUSDC: withdrawableUSDC || 0,
                     },
                     deltas: {
@@ -302,7 +302,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                     },
                 },
                 portfolio: {
-                    totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0) + (withdrawableUSDC || 0) + unclaimedFeesTotal,
+                    totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0) + unclaimedFeesTotal,
                     deployedAUM: usdValues.lps + unclaimedFeesTotal + usdValues.perps,
                     netDeltaHYPE: Object.values(deltaValues).reduce((sum, val) => sum + val, 0),
                     strategyDelta: deltaValues.lps + deltaValues.perps,

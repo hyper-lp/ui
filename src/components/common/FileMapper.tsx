@@ -34,6 +34,7 @@ export default function FileMapper({
                 className={className}
                 priority={priority}
                 scaleByHeight={scaleByHeight}
+                {...props}
             />
         )
 

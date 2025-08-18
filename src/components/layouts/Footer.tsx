@@ -41,7 +41,7 @@ export default function Footer(props: { className?: string }) {
 
             {/* right */}
             <div className="mx-auto flex flex-row items-center justify-center gap-8 md:mx-0 md:justify-end">
-                <StyledTooltip
+                {/* <StyledTooltip
                     closeDelay={500}
                     content={
                         <div className="space-y-1.5">
@@ -54,7 +54,7 @@ export default function Footer(props: { className?: string }) {
                     }
                 >
                     <p className="truncate">Sponsors</p>
-                </StyledTooltip>
+                </StyledTooltip> */}
                 <LinkWrapper href={AppUrls.STATUS} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Status 🤖</p>
                 </LinkWrapper>

@@ -15,6 +15,7 @@ import { useAppStore } from '@/stores/app.store'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
+import { IS_DEV } from '@/config'
 
 interface WalletBalancesTableProps {
     className?: string
@@ -74,13 +75,15 @@ export function WalletBalancesTable({ className }: WalletBalancesTableProps) {
                                     <WalletRowTemplate
                                         token={
                                             <div className="flex items-center gap-1.5">
-                                                <IconWrapper
-                                                    id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                                                    className="size-3 text-default/40"
-                                                />
+                                                {IS_DEV && (
+                                                    <IconWrapper
+                                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
+                                                        className="size-3 text-default/40"
+                                                    />
+                                                )}
                                                 <FileMapper
                                                     id={
-                                                        balance.symbol === 'HYPE'
+                                                        balance.symbol === 'HYPE' || balance.symbol === 'WHYPE'
                                                             ? FileIds.TOKEN_HYPE
                                                             : balance.symbol === 'USDT0'
                                                               ? FileIds.TOKEN_USDT0
@@ -93,7 +96,7 @@ export function WalletBalancesTable({ className }: WalletBalancesTableProps) {
                                                     className="rounded-full"
                                                 />
                                                 <span className="text-default">{balance.symbol}</span>
-                                                {balance.symbol === 'HYPE' && (
+                                                {(balance.symbol === 'HYPE' || balance.symbol === 'WHYPE') && (
                                                     <SideBadge side="long" className="text-sm">
                                                         LONG
                                                     </SideBadge>

@@ -34,13 +34,13 @@ const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/Del
 })
 
 // Helper function for delta color
-const getDeltaColor = (value: number): string => {
-    const absValue = Math.abs(value)
-    if (absValue < 0.1) return 'text-default'
-    if (absValue < 10) return 'text-success'
-    if (absValue < 20) return 'text-warning'
-    return 'text-error'
-}
+// const getDeltaColor = (value: number): string => {
+//     const absValue = Math.abs(value)
+//     if (absValue < 0.1) return 'text-default'
+//     if (absValue < 10) return 'text-success'
+//     if (absValue < 20) return 'text-warning'
+//     return 'text-error'
+// }
 
 // KPI Metric Component
 interface KPIMetricProps {
@@ -63,14 +63,14 @@ const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, clas
 
     const content = (
         <div className={baseClassName}>
-            <span className="text-sm tracking-wider text-default/50">{label}</span>
+            <span className="text-base tracking-wider text-default/50">{label}</span>
             {icon ? (
                 <div className="flex items-center gap-1">
                     <span className={cn('text-base font-semibold', color)}>{isNumber ? `${value >= 0 ? '+' : ''}${value.toFixed(1)}` : value}</span>
                     {icon}
                 </div>
             ) : (
-                <span className={cn('text-lg font-semibold', aumColor)}>{value}</span>
+                <span className={cn('text-xl font-semibold', aumColor)}>{value}</span>
             )}
         </div>
     )
@@ -485,7 +485,7 @@ export default function AccountPage() {
 
                             {/* Global KPIs */}
                             <div className="flex items-center gap-6">
-                                <KPIMetric
+                                {/* <KPIMetric
                                     label="AUM"
                                     value={formatUSD(metrics.portfolio?.totalUSD || 0)}
                                     className="hidden md:flex"
@@ -493,8 +493,7 @@ export default function AccountPage() {
                                         <div className="space-y-3">
                                             <div className="font-semibold">Total AUM on Hyperliquid</div>
 
-                                            {/* HyperEVM Block */}
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-1">
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-medium opacity-60">HyperEVM</span>
                                                     <span className="font-medium">
@@ -521,8 +520,7 @@ export default function AccountPage() {
                                                 </div>
                                             </div>
 
-                                            {/* HyperCore Block */}
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-1">
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-medium opacity-60">HyperCore</span>
                                                     <span className="font-medium">
@@ -533,7 +531,7 @@ export default function AccountPage() {
                                                         )}
                                                     </span>
                                                 </div>
-                                                <div className="ml-3 space-y-0.5">
+                                                <div className="ml-3">
                                                     <div className="flex justify-between gap-6">
                                                         <span className="opacity-60">Perp positions</span>
                                                         <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
@@ -558,19 +556,19 @@ export default function AccountPage() {
                                         </div>
                                     }
                                 />
-                                <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
+                                <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" /> */}
                                 <KPIMetric
                                     label="Deployed AUM"
                                     value={formatUSD(metrics.portfolio?.deployedAUM || 0)}
                                     className="hidden md:flex"
                                     tooltip={
                                         <div className="space-y-3">
-                                            <div className="font-semibold">Deployed Capital in Strategy</div>
+                                            <div className="font-semibold">Deployed AUM on this strategy</div>
 
-                                            <div className="space-y-1.5">
-                                                <div className="opacity-75">Capital actively deployed in delta-neutral positions</div>
+                                            <div className="space-y-0">
+                                                <div className="opacity-75">Capital actively deployed</div>
 
-                                                <div className="ml-3 space-y-0.5">
+                                                <div className="ml-3">
                                                     <div className="flex justify-between gap-6">
                                                         <span className="opacity-60">LP positions</span>
                                                         <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</span>
@@ -580,23 +578,22 @@ export default function AccountPage() {
                                                         <span>{formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</span>
                                                     </div>
                                                     <div className="flex justify-between gap-6">
-                                                        <span className="opacity-60">Perp positions</span>
+                                                        <span className="opacity-60">Perpetual positions</span>
                                                         <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="border-t border-default/10 pt-2">
-                                                <div className="mb-1 opacity-60">Excludes idle capital (wallet & spot)</div>
-                                                <div className="flex justify-between font-medium">
-                                                    <span>Total Deployed</span>
-                                                    <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
-                                                </div>
+                                            <div className="flex justify-between font-medium">
+                                                <span>= Total deployed AUM</span>
+                                                <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
                                             </div>
+
+                                            <div className="mb-1 opacity-60">Excludes idle/dust capital (wallet & spot)</div>
                                         </div>
                                     }
                                 />
-                                <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
+                                {/* <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
                                 <KPIMetric
                                     label="Strategy Δ"
                                     value={metrics.portfolio?.strategyDelta || 0}
@@ -610,7 +607,7 @@ export default function AccountPage() {
                                             <div className="space-y-1.5">
                                                 <div className="opacity-75">Net HYPE exposure from active positions</div>
 
-                                                <div className="ml-3 space-y-0.5">
+                                                <div className="ml-3">
                                                     <div className="flex justify-between gap-6">
                                                         <span className="opacity-60">LP HYPE exposure</span>
                                                         <span>{(metrics.hyperEvm?.deltas?.lpsHYPE || 0).toFixed(2)} HYPE</span>
@@ -649,38 +646,46 @@ export default function AccountPage() {
                                             </div>
                                         </div>
                                     }
-                                />
+                                /> */}
                                 {aprRange !== null && (
                                     <>
                                         <div className="h-8 w-px border-l border-dashed border-default/20" />
                                         <div className="flex flex-col items-center lg:items-end">
-                                            <span className="text-sm tracking-wider text-default/50">Gross Delta-Neutral APR</span>
+                                            <span className="text-base tracking-wider text-default/50">Gross Delta-Neutral APR on AUM</span>
                                             <StyledTooltip
                                                 content={
                                                     <div className="space-y-3">
-                                                        <div className="font-semibold">Combined Strategy APR</div>
+                                                        {/* <div className="font-semibold">Strategy APR</div> */}
+
+                                                        <div className="space-y-1 pb-2">
+                                                            <div className="flex items-center gap-1 text-sm font-medium">
+                                                                <span>Gross Delta-Neutral APR on AUM</span>
+                                                                <span className="underline">before IL</span>
+                                                            </div>
+                                                            <div className="text-sm">= (2/3 × LP APR) + (1/3 × Funding APR)</div>
+                                                        </div>
 
                                                         {/* 24h APR */}
                                                         {combinedAPRs?.combined24h !== null && combinedAPRs?.combined24h !== undefined && (
-                                                            <div className="space-y-1.5">
+                                                            <div className="space-y-0">
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="font-medium opacity-60">24h APR</span>
+                                                                    <span className="font-medium">24h</span>
                                                                     <span className="font-medium">
                                                                         {combinedAPRs.combined24h > 0 ? '+' : ''}
                                                                         {combinedAPRs.combined24h.toFixed(2)}%
                                                                     </span>
                                                                 </div>
-                                                                <div className="ml-3 space-y-0.5">
+                                                                <div className="ml-3">
                                                                     {lpAPRs?.weightedAvg24h !== null && (
                                                                         <div className="flex justify-between gap-6">
-                                                                            <span className="opacity-60">LP fees</span>
-                                                                            <span>{lpAPRs.weightedAvg24h.toFixed(2)}%</span>
+                                                                            <span className="opacity-60">2/3 LP APR</span>
+                                                                            <span className="opacity-60">{lpAPRs.weightedAvg24h.toFixed(2)}%</span>
                                                                         </div>
                                                                     )}
                                                                     {fundingAPRs?.fundingAPR24h !== null && (
                                                                         <div className="flex justify-between gap-6">
-                                                                            <span className="opacity-60">Funding</span>
-                                                                            <span>
+                                                                            <span className="opacity-60">1/3 Funding APR</span>
+                                                                            <span className="opacity-60">
                                                                                 {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
                                                                                 {fundingAPRs.fundingAPR24h.toFixed(2)}%
                                                                             </span>
@@ -692,9 +697,9 @@ export default function AccountPage() {
 
                                                         {/* 7d APR */}
                                                         {combinedAPRs?.combined7d !== null && combinedAPRs?.combined7d !== undefined && (
-                                                            <div className="space-y-1.5">
+                                                            <div className="space-y-0">
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="font-medium opacity-60">7d APR</span>
+                                                                    <span className="font-medium">7d</span>
                                                                     <span className="font-medium">
                                                                         {combinedAPRs.combined7d > 0 ? '+' : ''}
                                                                         {combinedAPRs.combined7d.toFixed(2)}%
@@ -703,14 +708,14 @@ export default function AccountPage() {
                                                                 <div className="ml-3 space-y-0.5">
                                                                     {lpAPRs?.weightedAvg7d !== null && (
                                                                         <div className="flex justify-between gap-6">
-                                                                            <span className="opacity-60">LP fees</span>
-                                                                            <span>{lpAPRs.weightedAvg7d.toFixed(2)}%</span>
+                                                                            <span className="opacity-60">2/3 LP APR</span>
+                                                                            <span className="opacity-60">{lpAPRs.weightedAvg7d.toFixed(2)}%</span>
                                                                         </div>
                                                                     )}
                                                                     {fundingAPRs?.fundingAPR7d !== null && (
                                                                         <div className="flex justify-between gap-6">
-                                                                            <span className="opacity-60">Funding</span>
-                                                                            <span>
+                                                                            <span className="opacity-60">1/3 Funding APR</span>
+                                                                            <span className="opacity-60">
                                                                                 {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
                                                                                 {fundingAPRs.fundingAPR7d.toFixed(2)}%
                                                                             </span>
@@ -722,9 +727,9 @@ export default function AccountPage() {
 
                                                         {/* 30d APR */}
                                                         {combinedAPRs?.combined30d !== null && combinedAPRs?.combined30d !== undefined && (
-                                                            <div className="space-y-1.5">
+                                                            <div className="space-y-1">
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="font-medium opacity-60">30d APR</span>
+                                                                    <span className="font-medium">30d</span>
                                                                     <span className="font-medium">
                                                                         {combinedAPRs.combined30d > 0 ? '+' : ''}
                                                                         {combinedAPRs.combined30d.toFixed(2)}%
@@ -733,14 +738,14 @@ export default function AccountPage() {
                                                                 <div className="ml-3 space-y-0.5">
                                                                     {lpAPRs?.weightedAvg30d !== null && (
                                                                         <div className="flex justify-between gap-6">
-                                                                            <span className="opacity-60">LP fees</span>
-                                                                            <span>{lpAPRs.weightedAvg30d.toFixed(2)}%</span>
+                                                                            <span className="opacity-60">2/3 LP APR</span>
+                                                                            <span className="opacity-60">{lpAPRs.weightedAvg30d.toFixed(2)}%</span>
                                                                         </div>
                                                                     )}
                                                                     {fundingAPRs?.fundingAPR30d !== null && (
                                                                         <div className="flex justify-between gap-6">
-                                                                            <span className="opacity-60">Funding</span>
-                                                                            <span>
+                                                                            <span className="opacity-60">1/3 Funding APR</span>
+                                                                            <span className="opacity-60">
                                                                                 {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
                                                                                 {fundingAPRs.fundingAPR30d.toFixed(2)}%
                                                                             </span>
@@ -749,16 +754,12 @@ export default function AccountPage() {
                                                                 </div>
                                                             </div>
                                                         )}
-
-                                                        <div className="border-t border-default/10 pt-2">
-                                                            <div className="opacity-60">User-specific, weighted by capital allocation</div>
-                                                        </div>
                                                     </div>
                                                 }
                                             >
                                                 <p
                                                     className={cn(
-                                                        'cursor-help text-lg font-semibold',
+                                                        'cursor-help text-xl font-semibold',
                                                         aprRange.min > 0 && aprRange.max > 0
                                                             ? 'text-success'
                                                             : aprRange.min < 0 && aprRange.max < 0
@@ -770,16 +771,16 @@ export default function AccountPage() {
                                                         `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}%`
                                                     ) : (
                                                         <span>
-                                                            <span className="px-1 text-xs text-default/50">low</span>
+                                                            <span className="pr-1 text-sm text-default/50">low</span>
                                                             <span>
                                                                 {aprRange.min > 0 ? '+' : ''}
-                                                                {aprRange.min.toFixed(2)}%
+                                                                {aprRange.min.toFixed(0)}%
                                                             </span>
 
-                                                            <span className="px-1 text-xs text-default/50">high</span>
+                                                            <span className="pl-4 pr-1 text-sm text-default/50">high</span>
                                                             <span>
                                                                 {aprRange.max > 0 ? '+' : ''}
-                                                                {aprRange.max.toFixed(2)}%
+                                                                {aprRange.max.toFixed(0)}%
                                                             </span>
                                                         </span>
                                                     )}
@@ -989,7 +990,12 @@ export default function AccountPage() {
                     ),
                     spot: (
                         <CollapsibleCard
-                            title={<h3 className="text-lg font-semibold text-hyper-core-spots">Spot</h3>}
+                            title={
+                                <h3 className="text-lg font-semibold text-hyper-core-spots">
+                                    Spot
+                                    <span className="pl-1 text-default/30">= dust</span>
+                                </h3>
+                            }
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">

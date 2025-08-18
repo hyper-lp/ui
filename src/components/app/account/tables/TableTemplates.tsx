@@ -38,7 +38,7 @@ export const LPRowTemplate = (props: {
             <div className="w-[60px] text-center">{props.apr7d}</div>
             <div className="w-[65px] text-center">{props.apr30d}</div>
             <div className="w-[80px] text-center">{props.positionId}</div>
-            <div className="w-[80px] text-right">{props.nftId}</div>
+            {/* <div className="w-[80px] text-right">{props.nftId}</div> */}
         </div>
     )
 }

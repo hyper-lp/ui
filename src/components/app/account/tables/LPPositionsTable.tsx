@@ -15,6 +15,7 @@ import { useAppStore } from '@/stores/app.store'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import { getDexConfig, IS_DEV } from '@/config'
+import IframeWrapper from '@/components/common/IframeWrapper'
 
 interface LPPositionsTableProps {
     className?: string
@@ -104,7 +105,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                         const poolSnapshot = findPoolSnapshot(position)
                         return (
                             <div key={position.id}>
-                                <div onClick={() => toggleRow(position.id)} className="cursor-pointer">
+                                <div onClick={() => IS_DEV && toggleRow(position.id)} className={cn('cursor-default', IS_DEV && 'cursor-pointer')}>
                                     <LPRowTemplate
                                         dex={
                                             <div className="flex items-center gap-1.5">
@@ -115,16 +116,41 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     />
                                                 )}
 
-                                                <FileMapper
-                                                    id={getDexConfig(position.dex)?.fileId || ''}
-                                                    width={18}
-                                                    height={18}
-                                                    className="rounded"
-                                                />
+                                                <StyledTooltip
+                                                    content={
+                                                        <IframeWrapper
+                                                            src={getDexConfig(position.dex)?.portfolioUrl || ''}
+                                                            width="w-[300px] md:w-[450px] lg:w-[600px]"
+                                                            height="h-[250px]"
+                                                        />
+                                                    }
+                                                >
+                                                    <div className="grow">
+                                                        <FileMapper
+                                                            id={getDexConfig(position.dex)?.fileId || ''}
+                                                            width={18}
+                                                            height={18}
+                                                            className="rounded"
+                                                        />
+                                                    </div>
+                                                </StyledTooltip>
                                             </div>
                                         }
                                         feeTier={<p className="truncate">{position.feeTier}</p>}
-                                        positionId={<p className="truncate">{shortenValue(position.id)}</p>}
+                                        positionId={
+                                            <StyledTooltip
+                                                content={
+                                                    <div className="flex flex-col gap-1">
+                                                        <p className="text-default/50">Position ID</p>
+                                                        <p className="">{position.id}</p>
+                                                    </div>
+                                                }
+                                            >
+                                                <LinkWrapper href={getDexConfig(position.dex)?.portfolioUrl || ''} target="_blank">
+                                                    <p className="truncate">{position.id}</p>
+                                                </LinkWrapper>
+                                            </StyledTooltip>
+                                        }
                                         nftId={<p className="truncate">#{position.tokenId}</p>}
                                         status={
                                             <p className="truncate">
@@ -153,7 +179,14 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             </p>
                                         }
                                         poolAddress={
-                                            <StyledTooltip content={position.pool}>
+                                            <StyledTooltip
+                                                content={
+                                                    <div className="flex flex-col gap-1">
+                                                        <p className="text-default/50">Pool Address</p>
+                                                        <p className="">{position.pool}</p>
+                                                    </div>
+                                                }
+                                            >
                                                 <LinkWrapper href={getDexConfig(position.dex)?.portfolioUrl || ''} target="_blank">
                                                     <p className="truncate">{shortenValue(position.pool || '')}</p>
                                                 </LinkWrapper>

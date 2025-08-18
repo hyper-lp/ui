@@ -151,7 +151,11 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                     {formatNumber(Math.abs(position.size), 4)}
                                                 </span>
                                             }
-                                            notional={<span className="font-medium">{formatUSD(Math.abs(position.notionalValue))}</span>}
+                                            notional={
+                                                <RoundedAmount className="font-medium" amount={Math.abs(position.notionalValue)}>
+                                                    {formatUSD(Math.abs(position.notionalValue))}
+                                                </RoundedAmount>
+                                            }
                                             entry={<span>{formatUSD(position.entryPrice)}</span>}
                                             mark={<span>{formatUSD(position.markPrice)}</span>}
                                             pnl={

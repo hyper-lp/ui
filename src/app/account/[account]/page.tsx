@@ -457,7 +457,7 @@ export default function AccountPage() {
                                         <>
                                             <StyledTooltip
                                                 content={
-                                                    <div className="text-xs">
+                                                    <div className="text-sm">
                                                         <div>{DAYJS_FORMATS.dateLong(lastRefreshTime || 0)}</div>
                                                         <div className="mt-2 text-default/60">
                                                             LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms •
@@ -490,21 +490,70 @@ export default function AccountPage() {
                                     value={formatUSD(metrics.portfolio?.totalUSD || 0)}
                                     className="hidden md:flex"
                                     tooltip={
-                                        <div className="space-y-2 text-xs">
-                                            <p className="font-semibold">Total AUM on Hyperliquid</p>
-                                            <div className="space-y-1 text-default/70">
-                                                <p>= HyperEVM + HyperCore</p>
-                                                <div className="ml-2 space-y-0.5">
-                                                    <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
-                                                    <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
-                                                    <p>• Wallet balances: {formatUSD(metrics.hyperEvm?.values?.balancesUSD || 0)}</p>
-                                                    <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
-                                                    <p>• Spot balances: {formatUSD(metrics.hyperCore?.values?.spotUSD || 0)}</p>
-                                                    <p>• Withdrawable: {formatUSD(metrics.hyperCore?.values?.withdrawableUSDC || 0)}</p>
+                                        <div className="space-y-3">
+                                            <div className="font-semibold">Total AUM on Hyperliquid</div>
+
+                                            {/* HyperEVM Block */}
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-medium opacity-60">HyperEVM</span>
+                                                    <span className="font-medium">
+                                                        {formatUSD(
+                                                            (metrics.hyperEvm?.values?.lpsUSD || 0) +
+                                                                (metrics.hyperEvm?.values?.unclaimedFeesUSD || 0) +
+                                                                (metrics.hyperEvm?.values?.balancesUSD || 0),
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <div className="ml-3 space-y-0.5">
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">LP positions</span>
+                                                        <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Unclaimed fees</span>
+                                                        <span>{formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Wallet balances</span>
+                                                        <span>{formatUSD(metrics.hyperEvm?.values?.balancesUSD || 0)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="border-t border-default/10 pt-1.5">
-                                                <p className="font-medium text-default">Total: {formatUSD(metrics.portfolio?.totalUSD || 0)}</p>
+
+                                            {/* HyperCore Block */}
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-medium opacity-60">HyperCore</span>
+                                                    <span className="font-medium">
+                                                        {formatUSD(
+                                                            (metrics.hyperCore?.values?.perpsUSD || 0) +
+                                                                (metrics.hyperCore?.values?.spotUSD || 0) +
+                                                                (metrics.hyperCore?.values?.withdrawableUSDC || 0),
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <div className="ml-3 space-y-0.5">
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Perp positions</span>
+                                                        <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Spot balances</span>
+                                                        <span>{formatUSD(metrics.hyperCore?.values?.spotUSD || 0)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Withdrawable</span>
+                                                        <span>{formatUSD(metrics.hyperCore?.values?.withdrawableUSDC || 0)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="border-t border-default/10 pt-2">
+                                                <div className="flex justify-between font-medium">
+                                                    <span>Total AUM</span>
+                                                    <span>{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     }
@@ -515,20 +564,34 @@ export default function AccountPage() {
                                     value={formatUSD(metrics.portfolio?.deployedAUM || 0)}
                                     className="hidden md:flex"
                                     tooltip={
-                                        <div className="space-y-2">
-                                            <p className="font-semibold">Deployed Capital in Strategy</p>
-                                            <div className="space-y-1 text-default/70">
-                                                <p>Capital actively deployed in delta-neutral positions</p>
-                                                <p>= LP value + Perp notional + Unclaimed fees</p>
-                                                <div className="ml-2 space-y-0.5">
-                                                    <p>• LP positions: {formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</p>
-                                                    <p>• Unclaimed fees: {formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</p>
-                                                    <p>• Perp positions: {formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</p>
+                                        <div className="space-y-3">
+                                            <div className="font-semibold">Deployed Capital in Strategy</div>
+
+                                            <div className="space-y-1.5">
+                                                <div className="opacity-75">Capital actively deployed in delta-neutral positions</div>
+
+                                                <div className="ml-3 space-y-0.5">
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">LP positions</span>
+                                                        <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Unclaimed fees</span>
+                                                        <span>{formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Perp positions</span>
+                                                        <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="border-t border-default/10 pt-1.5">
-                                                <p className="text-default/50">Excludes idle capital (wallet & spot)</p>
-                                                <p className="font-medium text-default">Deployed: {formatUSD(metrics.portfolio?.deployedAUM || 0)}</p>
+
+                                            <div className="border-t border-default/10 pt-2">
+                                                <div className="mb-1 opacity-60">Excludes idle capital (wallet & spot)</div>
+                                                <div className="flex justify-between font-medium">
+                                                    <span>Total Deployed</span>
+                                                    <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     }
@@ -541,31 +604,47 @@ export default function AccountPage() {
                                     colorFn={getDeltaColor}
                                     className="items-end"
                                     tooltip={
-                                        <div className="space-y-2">
-                                            <p className="font-semibold">Strategy Delta (Hedge Effectiveness)</p>
-                                            <div className="space-y-1 text-default/70">
-                                                <p>Net HYPE exposure from active positions</p>
-                                                <p>= LP delta + Perp delta</p>
-                                                <div className="ml-2 space-y-0.5">
-                                                    <p>• LP HYPE exposure: {(metrics.hyperEvm?.deltas?.lpsHYPE || 0).toFixed(2)} HYPE</p>
-                                                    <p>• Perp hedge: {(metrics.hyperCore?.deltas?.perpsHYPE || 0).toFixed(2)} HYPE</p>
+                                        <div className="space-y-3">
+                                            <div className="font-semibold">Strategy Delta (Hedge Effectiveness)</div>
+
+                                            <div className="space-y-1.5">
+                                                <div className="opacity-75">Net HYPE exposure from active positions</div>
+
+                                                <div className="ml-3 space-y-0.5">
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">LP HYPE exposure</span>
+                                                        <span>{(metrics.hyperEvm?.deltas?.lpsHYPE || 0).toFixed(2)} HYPE</span>
+                                                    </div>
+                                                    <div className="flex justify-between gap-6">
+                                                        <span className="opacity-60">Perp hedge</span>
+                                                        <span>{(metrics.hyperCore?.deltas?.perpsHYPE || 0).toFixed(2)} HYPE</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="border-t border-default/10 pt-1.5">
-                                                <div className="space-y-0.5">
-                                                    <p className={cn('font-medium', getDeltaColor(metrics.portfolio?.strategyDelta || 0))}>
-                                                        Strategy Δ: {(metrics.portfolio?.strategyDelta || 0).toFixed(2)} HYPE
-                                                    </p>
-                                                    <p className="text-default/50">
-                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) < 0.1 && '✓ Perfectly hedged'}
-                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 0.1 &&
-                                                            Math.abs(metrics.portfolio?.strategyDelta || 0) < 10 &&
-                                                            '✓ Well hedged'}
-                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 10 &&
-                                                            Math.abs(metrics.portfolio?.strategyDelta || 0) < 20 &&
-                                                            '⚠ Drift detected'}
-                                                        {Math.abs(metrics.portfolio?.strategyDelta || 0) >= 20 && '⚠ Rebalance needed'}
-                                                    </p>
+
+                                            <div className="border-t border-default/10 pt-2">
+                                                <div className="mb-1 flex justify-between font-medium">
+                                                    <span>Strategy Δ</span>
+                                                    <span className={getDeltaColor(metrics.portfolio?.strategyDelta || 0)}>
+                                                        {(metrics.portfolio?.strategyDelta || 0).toFixed(2)} HYPE
+                                                    </span>
+                                                </div>
+                                                <div className="opacity-60">
+                                                    {Math.abs(metrics.hyperCore?.deltas?.perpsHYPE || 0) < 0.01 && '❌ Not hedged'}
+                                                    {Math.abs(metrics.hyperCore?.deltas?.perpsHYPE || 0) >= 0.01 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) < 0.1 &&
+                                                        '✓ Perfectly hedged'}
+                                                    {Math.abs(metrics.hyperCore?.deltas?.perpsHYPE || 0) >= 0.01 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) >= 0.1 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) < 2 &&
+                                                        '✓ Well hedged'}
+                                                    {Math.abs(metrics.hyperCore?.deltas?.perpsHYPE || 0) >= 0.01 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) >= 2 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) < 10 &&
+                                                        '⚠ Drift detected'}
+                                                    {Math.abs(metrics.hyperCore?.deltas?.perpsHYPE || 0) >= 0.01 &&
+                                                        Math.abs(metrics.portfolio?.strategyDelta || 0) >= 10 &&
+                                                        '⚠ Rebalance needed'}
                                                 </div>
                                             </div>
                                         </div>
@@ -578,75 +657,102 @@ export default function AccountPage() {
                                             <span className="text-sm tracking-wider text-default/50">Gross Delta-Neutral APR</span>
                                             <StyledTooltip
                                                 content={
-                                                    <div className="space-y-2">
-                                                        <p className="font-medium">Combined Strategy APR</p>
+                                                    <div className="space-y-3">
+                                                        <div className="font-semibold">Combined Strategy APR</div>
 
-                                                        <div className="space-y-2">
-                                                            {combinedAPRs?.combined24h !== null && combinedAPRs?.combined24h !== undefined && (
-                                                                <div>
-                                                                    <p className="font-medium text-default">24h APR</p>
-                                                                    <div className="ml-2 space-y-0.5 text-default/70">
-                                                                        {lpAPRs?.weightedAvg24h !== null && (
-                                                                            <p>LP: {lpAPRs.weightedAvg24h.toFixed(2)}%</p>
-                                                                        )}
-                                                                        {fundingAPRs?.fundingAPR24h !== null && (
-                                                                            <p>
-                                                                                Funding: {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
+                                                        {/* 24h APR */}
+                                                        {combinedAPRs?.combined24h !== null && combinedAPRs?.combined24h !== undefined && (
+                                                            <div className="space-y-1.5">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="font-medium opacity-60">24h APR</span>
+                                                                    <span className="font-medium">
+                                                                        {combinedAPRs.combined24h > 0 ? '+' : ''}
+                                                                        {combinedAPRs.combined24h.toFixed(2)}%
+                                                                    </span>
+                                                                </div>
+                                                                <div className="ml-3 space-y-0.5">
+                                                                    {lpAPRs?.weightedAvg24h !== null && (
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">LP fees</span>
+                                                                            <span>{lpAPRs.weightedAvg24h.toFixed(2)}%</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {fundingAPRs?.fundingAPR24h !== null && (
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">Funding</span>
+                                                                            <span>
+                                                                                {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
                                                                                 {fundingAPRs.fundingAPR24h.toFixed(2)}%
-                                                                            </p>
-                                                                        )}
-                                                                        <p className="font-medium">
-                                                                            Net: {combinedAPRs.combined24h > 0 ? '+' : ''}
-                                                                            {combinedAPRs.combined24h.toFixed(2)}%
-                                                                        </p>
-                                                                    </div>
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
+                                                            </div>
+                                                        )}
 
-                                                            {combinedAPRs?.combined7d !== null && combinedAPRs?.combined7d !== undefined && (
-                                                                <div>
-                                                                    <p className="font-medium text-default">7d APR</p>
-                                                                    <div className="ml-2 space-y-0.5 text-default/70">
-                                                                        {lpAPRs?.weightedAvg7d !== null && (
-                                                                            <p>LP: {lpAPRs.weightedAvg7d.toFixed(2)}%</p>
-                                                                        )}
-                                                                        {fundingAPRs?.fundingAPR7d !== null && (
-                                                                            <p>
-                                                                                Funding: {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
+                                                        {/* 7d APR */}
+                                                        {combinedAPRs?.combined7d !== null && combinedAPRs?.combined7d !== undefined && (
+                                                            <div className="space-y-1.5">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="font-medium opacity-60">7d APR</span>
+                                                                    <span className="font-medium">
+                                                                        {combinedAPRs.combined7d > 0 ? '+' : ''}
+                                                                        {combinedAPRs.combined7d.toFixed(2)}%
+                                                                    </span>
+                                                                </div>
+                                                                <div className="ml-3 space-y-0.5">
+                                                                    {lpAPRs?.weightedAvg7d !== null && (
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">LP fees</span>
+                                                                            <span>{lpAPRs.weightedAvg7d.toFixed(2)}%</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {fundingAPRs?.fundingAPR7d !== null && (
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">Funding</span>
+                                                                            <span>
+                                                                                {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
                                                                                 {fundingAPRs.fundingAPR7d.toFixed(2)}%
-                                                                            </p>
-                                                                        )}
-                                                                        <p className="font-medium">
-                                                                            Net: {combinedAPRs.combined7d > 0 ? '+' : ''}
-                                                                            {combinedAPRs.combined7d.toFixed(2)}%
-                                                                        </p>
-                                                                    </div>
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
+                                                            </div>
+                                                        )}
 
-                                                            {combinedAPRs?.combined30d !== null && combinedAPRs?.combined30d !== undefined && (
-                                                                <div>
-                                                                    <p className="font-medium text-default">30d APR</p>
-                                                                    <div className="ml-2 space-y-0.5 text-default/70">
-                                                                        {lpAPRs?.weightedAvg30d !== null && (
-                                                                            <p>LP: {lpAPRs.weightedAvg30d.toFixed(2)}%</p>
-                                                                        )}
-                                                                        {fundingAPRs?.fundingAPR30d !== null && (
-                                                                            <p>
-                                                                                Funding: {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
+                                                        {/* 30d APR */}
+                                                        {combinedAPRs?.combined30d !== null && combinedAPRs?.combined30d !== undefined && (
+                                                            <div className="space-y-1.5">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="font-medium opacity-60">30d APR</span>
+                                                                    <span className="font-medium">
+                                                                        {combinedAPRs.combined30d > 0 ? '+' : ''}
+                                                                        {combinedAPRs.combined30d.toFixed(2)}%
+                                                                    </span>
+                                                                </div>
+                                                                <div className="ml-3 space-y-0.5">
+                                                                    {lpAPRs?.weightedAvg30d !== null && (
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">LP fees</span>
+                                                                            <span>{lpAPRs.weightedAvg30d.toFixed(2)}%</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {fundingAPRs?.fundingAPR30d !== null && (
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">Funding</span>
+                                                                            <span>
+                                                                                {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
                                                                                 {fundingAPRs.fundingAPR30d.toFixed(2)}%
-                                                                            </p>
-                                                                        )}
-                                                                        <p className="font-medium">
-                                                                            Net: {combinedAPRs.combined30d > 0 ? '+' : ''}
-                                                                            {combinedAPRs.combined30d.toFixed(2)}%
-                                                                        </p>
-                                                                    </div>
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
-                                                        </div>
+                                                            </div>
+                                                        )}
 
-                                                        <p className="italic text-default/50">User-specific, weighted by capital allocation</p>
+                                                        <div className="border-t border-default/10 pt-2">
+                                                            <div className="opacity-60">User-specific, weighted by capital allocation</div>
+                                                        </div>
                                                     </div>
                                                 }
                                             >
@@ -869,7 +975,7 @@ export default function AccountPage() {
                                             </div>
                                         </StyledTooltip>
                                     )}
-                                    <p>{numeral(metrics.hyperCore?.values?.totalUSD || 0).format('0,0$')}</p>
+                                    <p>{numeral(metrics.hyperCore?.values?.perpsUSD || 0).format('0,0$')}</p>
                                     {/* <div className="flex w-20 items-center justify-end gap-1">
                                         <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
                                         <HypeIcon size={20} />

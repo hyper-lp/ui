@@ -29,7 +29,7 @@ export default function Footer(props: { className?: string }) {
             {/* left */}
             <div className="hidden flex-row gap-8 md:flex">
                 <div>
-                    <StyledTooltip closeDelay={500} content={<p>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</p>}>
+                    <StyledTooltip closeDelay={500} content={<span>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</span>}>
                         <p className="truncate">August 2025</p>
                     </StyledTooltip>
                 </div>
@@ -44,14 +44,12 @@ export default function Footer(props: { className?: string }) {
                 <StyledTooltip
                     closeDelay={500}
                     content={
-                        <div className="flex flex-col">
-                            <p className="text-lg font-bold">Altitude</p>
-                            <p>Lightning-fast RPC nodes for investors & developers</p>
-                            <p>
-                                <LinkWrapper href="https://rpc.reachaltitude.xyz/" target="_blank">
-                                    <p className="cursor-alias truncate underline hover:text-primary">https://rpc.reachaltitude.xyz/</p>
-                                </LinkWrapper>
-                            </p>
+                        <div className="space-y-1.5">
+                            <div className="font-semibold">Altitude</div>
+                            <div className="text-xs opacity-90">Lightning-fast RPC nodes for investors & developers</div>
+                            <LinkWrapper href="https://rpc.reachaltitude.xyz/" target="_blank">
+                                <span className="cursor-alias text-xs underline hover:text-primary">https://rpc.reachaltitude.xyz/</span>
+                            </LinkWrapper>
                         </div>
                     }
                 >

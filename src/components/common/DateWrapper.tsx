@@ -25,9 +25,9 @@ export function DateWrapper(props: DateWrapperProps) {
             disableAnimation={true}
             content={
                 <div className="space-y-1">
-                    <p>{DAYJS_FORMATS.dateLong(props.date)} UTC</p>
+                    <div>{DAYJS_FORMATS.dateLong(props.date)} UTC</div>
                     {props.showAgo && (
-                        <p>
+                        <div className="text-xs opacity-90">
                             {
                                 getDurationBetween({
                                     startTs: new Date(props.date).getTime(),
@@ -37,7 +37,7 @@ export function DateWrapper(props: DateWrapperProps) {
                                     showWeeks: false,
                                 }).oneLiner
                             }
-                        </p>
+                        </div>
                     )}
                 </div>
             }

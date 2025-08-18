@@ -38,4 +38,10 @@ export enum FileIds {
     TOKEN_HYPE = '/tokens/HYPE.jpg',
     TOKEN_USDT0 = '/tokens/USDT0.png',
     TOKEN_USDC = '/tokens/USDC.png',
+
+    // team
+    TEAM_FBERGER = '/team/fberger_hypio.png',
+    TEAM_MERSO = '/team/merso_hypio.png',
+    TEAM_KATALYSTER = '/team/katalyster.jpg',
+    TEAM_ZARBOQ = '/team/zarboq.jpg',
 }

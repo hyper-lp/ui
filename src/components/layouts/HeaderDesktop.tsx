@@ -3,13 +3,15 @@
 import { cn } from '@/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import LinkWrapper from '../common/LinkWrapper'
-import { AppUrls } from '@/enums'
+import { AppUrls, FileIds } from '@/enums'
 import { WaitlistButton } from '../app/waitlist/WaitlistButton'
 import { WaitlistForm } from '../app/waitlist/WaitlistForm'
 import { usePrivy } from '@privy-io/react-auth'
 import ThemeSwitcher from '../common/ThemeSwitcher'
 import { SHOW_WAITLIST } from '@/config/app.config'
 import HeaderLogo from './HeaderLogo'
+import FileMapper from '../common/FileMapper'
+import StyledTooltip from '../common/StyledTooltip'
 
 export default function HeaderDesktop(props: { className?: string }) {
     const { authenticated, ready } = usePrivy()
@@ -66,6 +68,58 @@ export default function HeaderDesktop(props: { className?: string }) {
                     </AnimatePresence>
                 </motion.div>
             )}
+            <div className="flex items-center gap-2">
+                {[
+                    {
+                        id: FileIds.TEAM_MERSO,
+                        taikaiUrl: 'https://taikai.network/Merso',
+                        name: 'Merso',
+                        description: 'Rust / Solidity',
+                        width: 30,
+                        height: 30,
+                        className: 'rounded-full border border-primary/50 shadow',
+                    },
+                    {
+                        id: FileIds.TEAM_KATALYSTER,
+                        taikaiUrl: 'https://taikai.network/Katalyster',
+                        name: 'Katalyster',
+                        description: 'BD / Ops',
+                        width: 30,
+                        height: 30,
+                        className: '-ml-2 rounded-full border border-primary/50 shadow',
+                    },
+                    {
+                        id: FileIds.TEAM_ZARBOQ,
+                        taikaiUrl: 'https://taikai.network/zarboq',
+                        name: 'Zarboq',
+                        description: 'Rust / Solidity',
+                        width: 30,
+                        height: 30,
+                        className: '-ml-2 rounded-full border border-primary/50 shadow',
+                    },
+                    {
+                        id: FileIds.TEAM_FBERGER,
+                        taikaiUrl: 'https://taikai.network/fberger-xyz',
+                        name: 'fberger',
+                        description: 'Fullstack dev',
+                        width: 30,
+                        height: 30,
+                        className: '-ml-2 rounded-full border border-primary/50 shadow',
+                    },
+                ].map((item, index) => (
+                    <div key={`${item.id}-${index}`} className="flex items-center gap-2">
+                        <StyledTooltip content={item.taikaiUrl}>
+                            <LinkWrapper
+                                href={item.taikaiUrl}
+                                target="_blank"
+                                className="flex cursor-alias items-center gap-2 transition-all duration-300 hover:scale-110"
+                            >
+                                <FileMapper {...item} />
+                            </LinkWrapper>
+                        </StyledTooltip>
+                    </div>
+                ))}
+            </div>
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}>
                 <ThemeSwitcher />
             </motion.div>

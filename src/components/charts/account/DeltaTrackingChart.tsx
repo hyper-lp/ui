@@ -1340,11 +1340,11 @@ export default function DeltaTrackingChart() {
 
     if (!options) {
         return (
-            <div className="flex h-[400px] w-full items-center justify-center md:h-[500px]">
+            <div className="flex h-[400px] w-full items-center justify-center md:h-[480px]">
                 <div className="text-default/50">Loading chart...</div>
             </div>
         )
     }
 
-    return <EchartWrapper options={options} className="h-[400px] w-full md:h-[500px]" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
+    return <EchartWrapper options={options} className="h-[400px] w-full md:h-[480px]" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
 }

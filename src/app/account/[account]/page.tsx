@@ -227,74 +227,47 @@ export default function AccountPage() {
                     header={
                         <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
                             {/* Address skeleton - mirrors the actual loaded header structure */}
-                            <div className="flex flex-col">
+                            <div className="mb-1 flex flex-col">
                                 <div className="mb-10 flex items-center gap-1">
-                                    <div className="h-5 w-36 animate-pulse rounded bg-default/20" />
-                                    <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
-                                    <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
-                                    <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
-                                    <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
+                                    <div className="h-5 w-60 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-10 animate-pulse rounded bg-default/20" />
                                     <div className="h-5 w-48 animate-pulse rounded bg-default/20" />
                                 </div>
                                 <div className="flex items-baseline gap-2 text-sm">
-                                    <div className="h-7 w-96 animate-pulse rounded bg-default/20" />
-                                    <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
-                                    <div className="h-5 w-12 animate-pulse rounded bg-default/20" />
-                                    <div className="h-5 w-10 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-96 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-14 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-14 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-14 animate-pulse rounded bg-default/20" />
                                 </div>
                                 <div className="mt-1 flex items-center gap-1.5 text-sm">
-                                    <div className="h-6 w-6 animate-pulse rounded bg-default/20" />
                                     <div className="h-5 w-48 animate-pulse rounded bg-default/20" />
                                 </div>
                             </div>
 
                             {/* KPIs skeleton - matches the actual KPIs layout */}
                             <div className="flex items-center gap-6">
-                                <div className="flex flex-col items-center lg:items-end">
-                                    <div className="h-3 w-8 animate-pulse rounded bg-default/20" />
-                                    <div className="mt-1 h-7 w-20 animate-pulse rounded bg-default/20" />
-                                </div>
-                                <div className="h-8 w-px border-l border-dashed border-default/20" />
                                 <div className="flex flex-col items-end">
-                                    <div className="h-3 w-12 animate-pulse rounded bg-default/20" />
-                                    <div className="mt-1 flex items-center gap-1">
-                                        <div className="h-6 w-8 animate-pulse rounded bg-default/20" />
-                                        <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
-                                    </div>
-                                </div>
-                                <div className="h-8 w-px border-l border-dashed border-default/20" />
-                                <div className="flex flex-col items-end">
-                                    <div className="h-3 w-24 animate-pulse rounded bg-default/20" />
+                                    <div className="h-5 w-24 animate-pulse rounded bg-default/20" />
                                     <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
+                                </div>
+                                <div className="h-8 w-px border-l border-dashed border-default/20" />
+                                <div className="flex flex-col items-end">
+                                    <div className="h-5 w-40 animate-pulse rounded bg-default/20" />
+                                    <div className="mt-1 h-6 w-32 animate-pulse rounded bg-default/20" />
                                 </div>
                             </div>
                         </div>
                     }
                     charts={
-                        <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[500px]">Loading chart...</div>
+                        <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[400px]">Loading chart...</div>
                     }
                     summary={null}
                     hyperEvm={{
                         lp: (
                             <CollapsibleCard
-                                title={
-                                    <h3 className="text-lg font-semibold text-hyper-evm-lps">
-                                        LPs
-                                        <span className="text-sm text-default/50">Long leg</span>
-                                    </h3>
-                                }
+                                title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs</h3>}
                                 defaultExpanded={false}
-                                headerRight={
-                                    <div className="flex items-center gap-6">
-                                        <div className="h-5 w-24 animate-pulse rounded bg-default/20" />
-                                        <div className="h-6 w-16 animate-pulse rounded bg-default/5" />
-                                        <div className="flex items-center gap-1">
-                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
-                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
-                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
-                                        </div>
-                                    </div>
-                                }
+                                headerRight={null}
                                 isLoading
                             />
                         ),
@@ -302,16 +275,7 @@ export default function AccountPage() {
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Wallet</h3>}
                                 defaultExpanded={false}
-                                headerRight={
-                                    <div className="flex items-center gap-6">
-                                        <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
-                                        <div className="flex items-center gap-1">
-                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
-                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
-                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
-                                        </div>
-                                    </div>
-                                }
+                                headerRight={null}
                                 isLoading
                             />
                         ),
@@ -330,17 +294,7 @@ export default function AccountPage() {
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perpetuals leg</h3>}
                                 defaultExpanded={false}
-                                headerRight={
-                                    <div className="flex items-center gap-6">
-                                        <div className="h-5 w-20 animate-pulse rounded bg-default/20" />
-                                        <div className="h-6 w-16 animate-pulse rounded bg-default/5" />
-                                        <div className="flex items-center gap-1">
-                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
-                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
-                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
-                                        </div>
-                                    </div>
-                                }
+                                headerRight={null}
                                 isLoading
                             />
                         ),
@@ -348,16 +302,7 @@ export default function AccountPage() {
                             <CollapsibleCard
                                 title={<h3 className="text-lg font-semibold text-hyper-core-spots">Spot</h3>}
                                 defaultExpanded={false}
-                                headerRight={
-                                    <div className="flex items-center gap-6">
-                                        <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
-                                        <div className="flex items-center gap-1">
-                                            <div className="h-5 w-8 animate-pulse rounded bg-default/20" />
-                                            <div className="h-5 w-5 animate-pulse rounded-full bg-default/20" />
-                                            <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
-                                        </div>
-                                    </div>
-                                }
+                                headerRight={null}
                                 isLoading
                             />
                         ),
@@ -390,7 +335,7 @@ export default function AccountPage() {
         <PageWrapper className="px-4">
             <AccountTemplate
                 header={
-                    <div className="mb-4 flex flex-col gap-4 px-2 lg:px-4">
+                    <div className="mb-4 flex flex-col gap-2 px-2 lg:px-4">
                         {/* Title */}
                         <div className="flex w-full flex-wrap items-center gap-1">
                             <p className="text-wrap text-primary">Example of Delta Neutral LP</p>
@@ -490,7 +435,7 @@ export default function AccountPage() {
                             </div>
 
                             {/* Global KPIs */}
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-3 md:gap-6">
                                 {/* <KPIMetric
                                     label="AUM"
                                     value={formatUSD(metrics.portfolio?.totalUSD || 0)}
@@ -566,7 +511,6 @@ export default function AccountPage() {
                                 <KPIMetric
                                     label="Deployed AUM"
                                     value={formatUSD(metrics.portfolio?.deployedAUM || 0)}
-                                    className="hidden md:flex"
                                     tooltip={
                                         <div className="space-y-3">
                                             <div className="font-semibold">Deployed AUM on this strategy</div>

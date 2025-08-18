@@ -11,6 +11,7 @@ export function ImageWrapper({
     height = 20,
     className = 'rounded-full',
     priority = false,
+    scaleByHeight = false,
 }: {
     src?: string
     alt?: string
@@ -18,9 +19,15 @@ export function ImageWrapper({
     height?: number
     priority?: boolean
     className?: string
+    scaleByHeight?: boolean
 }) {
     const [imgError, setImgError] = useState(false)
     if (!src || imgError) return <div className={cn('skeleton-loading', className)} style={{ width, height }} />
+    
+    const imageStyle = scaleByHeight 
+        ? { height: height, width: 'auto' }
+        : { width: 'auto', height: 'auto', maxWidth: width, maxHeight: height }
+    
     return (
         <Image
             src={src}
@@ -28,7 +35,7 @@ export function ImageWrapper({
             width={width}
             height={height}
             className={cn('object-cover', className)}
-            style={{ width: 'auto', height: 'auto', maxWidth: width, maxHeight: height }}
+            style={imageStyle}
             onError={() => setImgError(true)}
             priority={priority}
         />

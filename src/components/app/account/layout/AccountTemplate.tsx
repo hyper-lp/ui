@@ -57,13 +57,14 @@ export default function AccountTemplate(props: {
                 <SectionCard className="h-[400px] flex-1 !p-1 md:h-[500px] md:!p-2">{props.charts}</SectionCard>
 
                 {/* 2. last snapshot */}
-                <div className="3xl:w-[800px] flex h-min w-full flex-col gap-4 lg:w-[500px] xl:w-[600px] 2xl:w-[700px]">
+                <div className="3xl:w-[800px] flex h-min w-full flex-col gap-8 lg:w-[500px] xl:w-[600px] 2xl:w-[700px]">
                     {/* HyperEvm */}
                     <div>
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_WHITE : FileIds.HYPER_EVM_DARK}
-                            width={170}
-                            height={30}
+                            width={200}
+                            height={32}
+                            scaleByHeight
                             className="ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
@@ -81,8 +82,9 @@ export default function AccountTemplate(props: {
                     <div>
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_WHITE : FileIds.HYPER_CORE_DARK}
-                            width={170}
-                            height={30}
+                            width={200}
+                            height={32}
+                            scaleByHeight
                             className="ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">

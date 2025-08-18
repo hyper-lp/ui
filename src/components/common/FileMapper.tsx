@@ -13,6 +13,7 @@ export default function FileMapper({
     width = 20,
     height = 20,
     priority = false,
+    scaleByHeight = false,
     ...props
 }: {
     id?: FileIds | IconIds | string
@@ -20,6 +21,7 @@ export default function FileMapper({
     height?: number
     priority?: boolean
     className?: string
+    scaleByHeight?: boolean
 }) {
     // all files
     if (props.id && Object.values(FileIds).includes(props.id as FileIds))
@@ -31,6 +33,7 @@ export default function FileMapper({
                 height={height}
                 className={className}
                 priority={priority}
+                scaleByHeight={scaleByHeight}
             />
         )
 

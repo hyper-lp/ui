@@ -444,6 +444,21 @@ export default function DeltaTrackingChart() {
             animation: true,
             animationDuration: 300,
             animationEasing: 'cubicInOut',
+            graphic: [
+                {
+                    type: 'text',
+                    left: 'center',
+                    top: 'center',
+                    z: 0,
+                    style: {
+                        text: 'hyperlp.xyz',
+                        fontSize: 48,
+                        fontWeight: 'bold',
+                        fill: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    },
+                },
+            ],
             tooltip: {
                 trigger: 'axis',
                 triggerOn: 'mousemove',

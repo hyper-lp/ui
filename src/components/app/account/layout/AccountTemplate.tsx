@@ -62,8 +62,8 @@ export default function AccountTemplate(props: {
                     <div>
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_WHITE : FileIds.HYPER_EVM_DARK}
-                            width={140}
-                            height={24}
+                            width={170}
+                            height={30}
                             className="ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
@@ -81,8 +81,8 @@ export default function AccountTemplate(props: {
                     <div>
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_WHITE : FileIds.HYPER_CORE_DARK}
-                            width={140}
-                            height={24}
+                            width={170}
+                            height={30}
                             className="ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
@@ -99,7 +99,7 @@ export default function AccountTemplate(props: {
                     </div>
 
                     {/* Activity */}
-                    {IS_DEV && (
+                    {'todolater'.length === 0 && IS_DEV && (
                         <div>
                             <p className="ml-4 rounded-none text-lg font-semibold">Activity</p>
                             <div className="flex h-min flex-col gap-2 p-2">

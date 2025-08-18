@@ -203,7 +203,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     <StyledTooltip
                                                         content={
                                                             <div className="flex flex-col gap-1">
-                                                                <p className="text-xs text-default/50">Amount</p>
+                                                                <p className="text-default/50">Amount</p>
                                                                 <div className="flex items-center gap-1">
                                                                     <FileMapper
                                                                         id={FileIds.TOKEN_HYPE}
@@ -213,9 +213,9 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                                     />
                                                                     <p>{formatNumber(hypeAmount, 2)}</p>
                                                                 </div>
-                                                                <p className="text-xs text-default/50">Price (USD)</p>
+                                                                <p className="text-default/50">Price (USD)</p>
                                                                 <p>{formatUSD((position.token0ValueUSD || 0) / hypeAmount)}</p>
-                                                                <p className="text-xs text-default/50">Value (USD)</p>
+                                                                <p className="text-default/50">Value (USD)</p>
                                                                 <p>{formatUSD(position.token0ValueUSD || 0)}</p>
                                                             </div>
                                                         }
@@ -231,7 +231,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     <StyledTooltip
                                                         content={
                                                             <div className="flex flex-col gap-1">
-                                                                <p className="text-xs text-default/50">Amount</p>
+                                                                <p className="text-default/50">Amount</p>
                                                                 <div className="flex items-center gap-1">
                                                                     <FileMapper
                                                                         id={FileIds.TOKEN_USDT0}
@@ -241,9 +241,9 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                                     />
                                                                     <p>{formatNumber(usdtAmount, 0)}</p>
                                                                 </div>
-                                                                <p className="text-xs text-default/50">Price (USD)</p>
+                                                                <p className="text-default/50">Price (USD)</p>
                                                                 <p>{formatUSD((position.token1ValueUSD || 0) / usdtAmount)}</p>
-                                                                <p className="text-xs text-default/50">Value (USD)</p>
+                                                                <p className="text-default/50">Value (USD)</p>
                                                                 <p>{formatUSD(position.token1ValueUSD || 0)}</p>
                                                             </div>
                                                         }
@@ -260,28 +260,28 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                         content={
                                                             <div className="space-y-2">
                                                                 <div className="flex items-center justify-between gap-4">
-                                                                    <span className="text-default/70">Position Value:</span>
+                                                                    <span className="text-default/70">Position Value</span>
                                                                     <span className="font-medium">
                                                                         {numeral(position.valueUSD).format('0,0.00$')}
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex items-center justify-between gap-4">
-                                                                    <span className="text-default/70">Unclaimed Fees:</span>
+                                                                    <span className="text-default/70">Unclaimed Fees</span>
                                                                     <span className="font-medium text-success">
                                                                         {numeral(position.unclaimedFeesUSD).format('0,0.00$')}
                                                                     </span>
                                                                 </div>
                                                                 {(position.unclaimedFees0 || position.unclaimedFees1) && (
-                                                                    <div className="space-y-1 border-t border-default/10 pt-2 text-xs">
+                                                                    <div className="space-y-1 border-t border-default/10 pt-2">
                                                                         {position.unclaimedFees0 && position.unclaimedFees0 > 0 && (
                                                                             <div className="flex items-center justify-between gap-2">
-                                                                                <span className="text-default/50">{position.token0Symbol}:</span>
+                                                                                <span className="">{position.token0Symbol}</span>
                                                                                 <span>{formatNumber(position.unclaimedFees0, 4)}</span>
                                                                             </div>
                                                                         )}
                                                                         {position.unclaimedFees1 && position.unclaimedFees1 > 0 && (
                                                                             <div className="flex items-center justify-between gap-2">
-                                                                                <span className="text-default/50">{position.token1Symbol}:</span>
+                                                                                <span className="">{position.token1Symbol}</span>
                                                                                 <span>{formatNumber(position.unclaimedFees1, 4)}</span>
                                                                             </div>
                                                                         )}
@@ -289,7 +289,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                                 )}
                                                                 <div className="border-t border-default/10 pt-2">
                                                                     <div className="flex items-center justify-between gap-4">
-                                                                        <span className="font-medium text-default">Total:</span>
+                                                                        <span className="font-medium text-default">Total</span>
                                                                         <span className="font-semibold">
                                                                             {numeral(position.valueUSD + position.unclaimedFeesUSD).format('0,0.00$')}
                                                                         </span>

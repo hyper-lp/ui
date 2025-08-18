@@ -277,7 +277,12 @@ export default function AccountPage() {
                     hyperEvm={{
                         lp: (
                             <CollapsibleCard
-                                title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
+                                title={
+                                    <h3 className="text-lg font-semibold text-hyper-evm-lps">
+                                        LPs
+                                        <span className="text-sm text-default/50">Long leg</span>
+                                    </h3>
+                                }
                                 defaultExpanded={false}
                                 headerRight={
                                     <div className="flex items-center gap-6">
@@ -402,8 +407,8 @@ export default function AccountPage() {
                             <div className="flex flex-col">
                                 {/* row */}
                                 <div className="flex items-baseline gap-2 text-sm">
-                                    <p className="hidden text-lg font-medium xl:flex">{accountFromUrl}</p>
-                                    <p className="flex text-lg font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
+                                    <p className="hidden text-xl font-medium xl:flex">{accountFromUrl}</p>
+                                    <p className="flex text-xl font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
                                     {[
                                         {
                                             name: 'evm',
@@ -459,7 +464,8 @@ export default function AccountPage() {
                                                 content={
                                                     <div className="text-sm">
                                                         <div>{DAYJS_FORMATS.dateLong(lastRefreshTime || 0)}</div>
-                                                        <div className="mt-2 text-default/60">
+                                                        <p className="mt-2">API calls timing (we use RPCs)</p>
+                                                        <div className="text-default/60">
                                                             LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms •
                                                             Perps {timings?.hyperCore?.perpsMs || 0}ms • Spot {timings?.hyperCore?.spotsMs || 0}ms
                                                         </div>
@@ -468,14 +474,14 @@ export default function AccountPage() {
                                                 placement="bottom"
                                             >
                                                 <span className="flex items-center gap-1">
-                                                    <p>Last updated</p>
+                                                    <p>Last update</p>
                                                     <TimeAgo date={lastRefreshTime} />
                                                 </span>
                                             </StyledTooltip>
                                             {nextUpdateIn && (
                                                 <>
                                                     <span className="text-default/30">•</span>
-                                                    <p>Next in {nextUpdateIn}</p>
+                                                    <p>next in {nextUpdateIn}</p>
                                                 </>
                                             )}
                                         </>
@@ -651,7 +657,7 @@ export default function AccountPage() {
                                     <>
                                         <div className="h-8 w-px border-l border-dashed border-default/20" />
                                         <div className="flex flex-col items-center lg:items-end">
-                                            <span className="text-base tracking-wider text-default/50">Gross Delta-Neutral APR on AUM</span>
+                                            <span className="text-base tracking-wider text-default/50">Gross Delta-Neutral APR</span>
                                             <StyledTooltip
                                                 content={
                                                     <div className="space-y-3">
@@ -659,7 +665,7 @@ export default function AccountPage() {
 
                                                         <div className="space-y-1 pb-2">
                                                             <div className="flex items-center gap-1 text-sm font-medium">
-                                                                <span>Gross Delta-Neutral APR on AUM</span>
+                                                                <span>Gross Delta-Neutral APR on Deployed AUM</span>
                                                                 <span className="underline">before IL</span>
                                                             </div>
                                                             <div className="text-sm">= (2/3 × LP APR) + (1/3 × Funding APR)</div>
@@ -798,36 +804,40 @@ export default function AccountPage() {
                 hyperEvm={{
                     lp: (
                         <CollapsibleCard
-                            title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs leg</h3>}
+                            title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     {weightedAvgAPR !== null && (
                                         <StyledTooltip
                                             content={
-                                                <div className="space-y-2">
-                                                    <div className="font-medium text-default">LP Weighted Average APR (Historic)</div>
-                                                    <div className="space-y-1 text-sm">
-                                                        <div className="flex justify-between gap-4">
-                                                            <span className="text-default/50">24h APR:</span>
-                                                            <span className="font-medium text-default">
+                                                <div className="space-y-3">
+                                                    <div className="font-semibold">LP average APR (historic)</div>
+
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between gap-6">
+                                                            <span className="text-sm font-medium opacity-60">24h APR</span>
+                                                            <span className="text-sm font-medium">
                                                                 {lpAPRs?.weightedAvg24h !== null ? `${lpAPRs.weightedAvg24h.toFixed(2)}%` : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-4">
-                                                            <span className="text-default/50">7d APR:</span>
-                                                            <span className="font-medium text-default">
+                                                        <div className="flex justify-between gap-6">
+                                                            <span className="text-sm font-medium opacity-60">7d APR</span>
+                                                            <span className="text-sm font-medium">
                                                                 {lpAPRs?.weightedAvg7d !== null ? `${lpAPRs.weightedAvg7d.toFixed(2)}%` : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-4">
-                                                            <span className="text-default/50">30d APR:</span>
-                                                            <span className="font-medium text-default">
+                                                        <div className="flex justify-between gap-6">
+                                                            <span className="text-sm font-medium opacity-60">30d APR</span>
+                                                            <span className="text-sm font-medium">
                                                                 {lpAPRs?.weightedAvg30d !== null ? `${lpAPRs.weightedAvg30d.toFixed(2)}%` : 'N/A'}
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className="pt-1 text-xs text-default/50">User-specific, weighted by position value</div>
+
+                                                    <div className="border-t border-default/10 pt-2">
+                                                        <div className="text-sm opacity-60">Weighted by position value</div>
+                                                    </div>
                                                 </div>
                                             }
                                         >
@@ -855,7 +865,12 @@ export default function AccountPage() {
                     ),
                     balances: (
                         <CollapsibleCard
-                            title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Wallet</h3>}
+                            title={
+                                <h3 className="text-lg font-semibold text-hyper-evm-balances">
+                                    Wallet
+                                    {/* <span className="pl-2 text-default/30">pays gas</span> */}
+                                </h3>
+                            }
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
@@ -913,51 +928,53 @@ export default function AccountPage() {
                 hyperCore={{
                     short: (
                         <CollapsibleCard
-                            title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perps leg</h3>}
+                            title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perps</h3>}
                             defaultExpanded={false}
                             headerRight={
                                 <div className="flex items-center gap-6">
                                     {perpFundingAPR != null && (
                                         <StyledTooltip
                                             content={
-                                                <div className="space-y-2">
-                                                    <div className="font-medium text-default">Funding Rates (8h settlement)</div>
-                                                    <div className="space-y-1 text-sm">
-                                                        <div className="flex justify-between gap-4">
-                                                            <span className="text-default/50">Current 8h:</span>
-                                                            <span className="font-medium text-default">
+                                                <div className="space-y-3">
+                                                    <div className="font-semibold">Funding Rates (8h settlement)</div>
+
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between gap-6">
+                                                            <span className="text-sm font-medium opacity-60">Current 8h</span>
+                                                            <span className="text-sm font-medium">
                                                                 {fundingAPRs?.currentFundingAPR !== null
-                                                                    ? `${fundingAPRs.currentFundingAPR > 0 ? '+' : ''}${((fundingAPRs.currentFundingAPR / (365 * 3)) * 100).toFixed(4)}%`
+                                                                    ? `${fundingAPRs.currentFundingAPR > 0 ? '+' : ''}${(fundingAPRs.currentFundingAPR / (365 * 3)).toFixed(4)}%`
                                                                     : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-4">
-                                                            <span className="text-default/50">24h APR:</span>
-                                                            <span className="font-medium text-default">
+                                                        <div className="flex justify-between gap-6">
+                                                            <span className="text-sm font-medium opacity-60">24h APR</span>
+                                                            <span className="text-sm font-medium">
                                                                 {fundingAPRs?.fundingAPR24h !== null
                                                                     ? `${fundingAPRs.fundingAPR24h > 0 ? '+' : ''}${fundingAPRs.fundingAPR24h.toFixed(2)}%`
                                                                     : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-4">
-                                                            <span className="text-default/50">7d APR:</span>
-                                                            <span className="font-medium text-default">
+                                                        <div className="flex justify-between gap-6">
+                                                            <span className="text-sm font-medium opacity-60">7d APR</span>
+                                                            <span className="text-sm font-medium">
                                                                 {fundingAPRs?.fundingAPR7d !== null
                                                                     ? `${fundingAPRs.fundingAPR7d > 0 ? '+' : ''}${fundingAPRs.fundingAPR7d.toFixed(2)}%`
                                                                     : 'N/A'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between gap-4">
-                                                            <span className="text-default/50">30d APR:</span>
-                                                            <span className="font-medium text-default">
+                                                        <div className="flex justify-between gap-6">
+                                                            <span className="text-sm font-medium opacity-60">30d APR</span>
+                                                            <span className="text-sm font-medium">
                                                                 {fundingAPRs?.fundingAPR30d !== null
                                                                     ? `${fundingAPRs.fundingAPR30d > 0 ? '+' : ''}${fundingAPRs.fundingAPR30d.toFixed(2)}%`
                                                                     : 'N/A'}
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className="pt-1 text-xs text-default/50">
-                                                        Weighted by position notional • Settles every 8h
+
+                                                    <div className="border-t border-default/10 pt-2">
+                                                        <div className="text-sm opacity-60">Weighted by position notional • Settles every 8h</div>
                                                     </div>
                                                 </div>
                                             }

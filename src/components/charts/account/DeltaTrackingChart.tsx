@@ -36,7 +36,7 @@ const createSkeletonData = (phaseOffset: number, amplitude: number, baseValue: n
 }
 
 export enum ChartSeries {
-    AUM = 'AUM',
+    AUM = 'Total AUM',
     DeployedAUM = 'Deployed AUM',
     HyperEvmLps = 'LPs Δ',
     HyperEvmBalances = 'Wallet Δ',
@@ -607,12 +607,12 @@ export default function DeltaTrackingChart() {
             },
             legend: {
                 data: [
-                    {
-                        name: ChartSeries.AUM,
-                        textStyle: {
-                            color: aumColor,
-                        },
-                    },
+                    // {
+                    //     name: ChartSeries.AUM,
+                    //     textStyle: {
+                    //         color: aumColor,
+                    //     },
+                    // },
                     {
                         name: ChartSeries.DeployedAUM,
                         textStyle: {
@@ -649,23 +649,23 @@ export default function DeltaTrackingChart() {
                             color: netDeltaColor,
                         },
                     },
-                    {
-                        name: ChartSeries.NetDelta,
-                        textStyle: {
-                            color: netDeltaColor,
-                        },
-                    },
+                    // {
+                    //     name: ChartSeries.NetDelta,
+                    //     textStyle: {
+                    //         color: netDeltaColor,
+                    //     },
+                    // },
                 ],
                 top: 10,
                 selected: {
-                    [ChartSeries.AUM]: false,
+                    // [ChartSeries.AUM]: false,
                     [ChartSeries.DeployedAUM]: true,
                     [ChartSeries.HyperEvmLps]: true,
                     [ChartSeries.HyperEvmBalances]: false,
                     [ChartSeries.HyperCorePerps]: true,
                     [ChartSeries.HyperCoreSpots]: false,
                     [ChartSeries.StrategyDelta]: true,
-                    [ChartSeries.NetDelta]: false,
+                    // [ChartSeries.NetDelta]: false,
                 },
                 icon: 'roundRect',
                 itemWidth: 14,
@@ -769,41 +769,41 @@ export default function DeltaTrackingChart() {
                 },
             ],
             series: [
-                {
-                    name: ChartSeries.AUM,
-                    type: 'line',
-                    data: totalCapitalUSD,
-                    smooth: false,
-                    symbol: 'circle',
-                    symbolSize: 6,
-                    showSymbol: true,
-                    yAxisIndex: 0,
-                    lineStyle: {
-                        color: aumColor,
-                        width: 2,
-                        type: 'solid',
-                    },
-                    itemStyle: {
-                        color: aumColor,
-                    },
-                    emphasis: {
-                        focus: 'series',
-                    },
-                    endLabel: {
-                        show: true,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        formatter: (params: any) => {
-                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            return `${ChartSeries.AUM} ${formatUSD(value)}`
-                        },
-                        color: aumColor,
-                        fontSize: 12,
-                        offset: [5, 0],
-                        backgroundColor: aumColor + '15',
-                        padding: [2, 4],
-                        borderRadius: 4,
-                    },
-                },
+                // {
+                //     name: ChartSeries.AUM,
+                //     type: 'line',
+                //     data: totalCapitalUSD,
+                //     smooth: false,
+                //     symbol: 'circle',
+                //     symbolSize: 6,
+                //     showSymbol: true,
+                //     yAxisIndex: 0,
+                //     lineStyle: {
+                //         color: aumColor,
+                //         width: 2,
+                //         type: 'solid',
+                //     },
+                //     itemStyle: {
+                //         color: aumColor,
+                //     },
+                //     emphasis: {
+                //         focus: 'series',
+                //     },
+                //     endLabel: {
+                //         show: true,
+                //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                //         formatter: (params: any) => {
+                //             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                //             return `${ChartSeries.AUM} ${formatUSD(value)}`
+                //         },
+                //         color: aumColor,
+                //         fontSize: 12,
+                //         offset: [5, 0],
+                //         backgroundColor: aumColor + '15',
+                //         padding: [2, 4],
+                //         borderRadius: 4,
+                //     },
+                // },
                 {
                     name: ChartSeries.DeployedAUM,
                     type: 'line',
@@ -981,81 +981,81 @@ export default function DeltaTrackingChart() {
                         borderRadius: 4,
                     },
                 },
-                {
-                    name: ChartSeries.NetDelta,
-                    type: 'line',
-                    data: netDeltasUSD,
-                    smooth: false,
-                    symbol: 'circle',
-                    symbolSize: 6,
-                    showSymbol: true,
-                    lineStyle: {
-                        color: netDeltaColor,
-                        width: 2,
-                        type: 'dashed',
-                    },
-                    itemStyle: {
-                        color: netDeltaColor,
-                    },
-                    areaStyle: {
-                        opacity: 0.2,
-                        color: {
-                            type: 'linear',
-                            x: 0,
-                            y: 0,
-                            x2: 0,
-                            y2: 1,
-                            colorStops: [
-                                {
-                                    offset: 0,
-                                    color: netDeltaColor + '40', // 25% opacity
-                                },
-                                {
-                                    offset: 1,
-                                    color: netDeltaColor + '00', // 0% opacity
-                                },
-                            ],
-                        },
-                    },
-                    emphasis: {
-                        focus: 'series',
-                    },
-                    z: 10,
-                    markLine: {
-                        silent: true,
-                        symbol: 'none',
-                        data: [
-                            {
-                                yAxis: 0,
-                                label: {
-                                    show: false,
-                                },
-                                lineStyle: {
-                                    color: colors.charts.axis,
-                                    type: 'dashed',
-                                    width: 1,
-                                },
-                            },
-                        ],
-                    },
-                    endLabel: {
-                        show: true,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        formatter: (params: any) => {
-                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                            // Hide label if value is very close to 0
-                            if (Math.abs(value) < 1) return ''
-                            const formattedValue = numeral(value).format('+0,0a$')
-                            return `${ChartSeries.NetDelta} ${formattedValue}`
-                        },
-                        color: netDeltaColor,
-                        fontSize: 12,
-                        offset: [5, 0],
-                        backgroundColor: netDeltaColor + '15',
-                        padding: [2, 4],
-                        borderRadius: 4,
-                    },
-                },
+                // {
+                //     name: ChartSeries.NetDelta,
+                //     type: 'line',
+                //     data: netDeltasUSD,
+                //     smooth: false,
+                //     symbol: 'circle',
+                //     symbolSize: 6,
+                //     showSymbol: true,
+                //     lineStyle: {
+                //         color: netDeltaColor,
+                //         width: 2,
+                //         type: 'dashed',
+                //     },
+                //     itemStyle: {
+                //         color: netDeltaColor,
+                //     },
+                //     areaStyle: {
+                //         opacity: 0.2,
+                //         color: {
+                //             type: 'linear',
+                //             x: 0,
+                //             y: 0,
+                //             x2: 0,
+                //             y2: 1,
+                //             colorStops: [
+                //                 {
+                //                     offset: 0,
+                //                     color: netDeltaColor + '40', // 25% opacity
+                //                 },
+                //                 {
+                //                     offset: 1,
+                //                     color: netDeltaColor + '00', // 0% opacity
+                //                 },
+                //             ],
+                //         },
+                //     },
+                //     emphasis: {
+                //         focus: 'series',
+                //     },
+                //     z: 10,
+                //     markLine: {
+                //         silent: true,
+                //         symbol: 'none',
+                //         data: [
+                //             {
+                //                 yAxis: 0,
+                //                 label: {
+                //                     show: false,
+                //                 },
+                //                 lineStyle: {
+                //                     color: colors.charts.axis,
+                //                     type: 'dashed',
+                //                     width: 1,
+                //                 },
+                //             },
+                //         ],
+                //     },
+                //     endLabel: {
+                //         show: true,
+                //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                //         formatter: (params: any) => {
+                //             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                //             // Hide label if value is very close to 0
+                //             if (Math.abs(value) < 1) return ''
+                //             const formattedValue = numeral(value).format('+0,0a$')
+                //             return `${ChartSeries.NetDelta} ${formattedValue}`
+                //         },
+                //         color: netDeltaColor,
+                //         fontSize: 12,
+                //         offset: [5, 0],
+                //         backgroundColor: netDeltaColor + '15',
+                //         padding: [2, 4],
+                //         borderRadius: 4,
+                //     },
+                // },
                 {
                     name: ChartSeries.StrategyDelta,
                     type: 'line',

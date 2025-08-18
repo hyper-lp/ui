@@ -19,7 +19,7 @@ export function LoadingArea() {
 
 export function CustomFallback() {
     return (
-        <div className="bg-card flex h-[400px] w-full items-center justify-center rounded-lg">
+        <div className="bg-card flex h-[400px] w-full items-center justify-center rounded-lg md:h-[500px]">
             <div className="text-secondary">Loading chart...</div>
         </div>
     )

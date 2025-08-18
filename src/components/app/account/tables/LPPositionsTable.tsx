@@ -10,6 +10,7 @@ import { LPRowTemplate } from './TableTemplates'
 import { formatUSD, formatNumber, shortenValue } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
+import { SideBadge } from '@/components/common/SideBadge'
 import { useAppStore } from '@/stores/app.store'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
@@ -27,8 +28,13 @@ export function LPPositionsTableHeader() {
             status={<p className="truncate font-medium">Status</p>}
             poolAddress={<p className="truncate">Pool</p>}
             nftId={<p className="truncate">NFT ID</p>}
-            hype={<FileMapper id={FileIds.TOKEN_HYPE} width={16} height={20} className="mx-auto rounded-full" />}
-            usdt={<FileMapper id={FileIds.TOKEN_USDT0} width={16} height={16} className="mx-auto rounded-full" />}
+            hype={
+                <div className="mx-auto flex items-center justify-center gap-1">
+                    <FileMapper id={FileIds.TOKEN_HYPE} width={16} height={16} className="rounded-full" />
+                    <p className="truncate text-sm">Δ</p>
+                </div>
+            }
+            usdt={<FileMapper id={FileIds.TOKEN_USDT0} width={18} height={18} className="mx-auto rounded-full" />}
             value={<p className="truncate">Value $</p>}
             split={<p className="truncate">Split</p>}
             tvl={<p className="truncate">TVL $</p>}
@@ -111,8 +117,8 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
                                                 <FileMapper
                                                     id={getDexConfig(position.dex)?.fileId || ''}
-                                                    width={16}
-                                                    height={16}
+                                                    width={18}
+                                                    height={18}
                                                     className="rounded"
                                                 />
                                             </div>
@@ -137,9 +143,9 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                             </div>
                                                         }
                                                     >
-                                                        <span className={position.inRange ? 'text-green-500' : 'text-red-500'}>
+                                                        <SideBadge side={position.inRange ? 'long' : 'short'}>
                                                             {position.inRange ? 'In Range' : 'Out'}
-                                                        </span>
+                                                        </SideBadge>
                                                     </StyledTooltip>
                                                 ) : (
                                                     <span className="text-default/50">-</span>
@@ -434,9 +440,9 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
                                             <div>
                                                 <p className="text-xs text-default/50">Range Status</p>
-                                                <p className={cn('font-medium', position.inRange ? 'text-green-500' : 'text-orange-500')}>
+                                                <SideBadge side={position.inRange ? 'long' : 'short'}>
                                                     {position.inRange ? '✓ In Range' : '⚠ Out of Range'}
-                                                </p>
+                                                </SideBadge>
                                             </div>
 
                                             {/* Liquidity & Technical Data */}

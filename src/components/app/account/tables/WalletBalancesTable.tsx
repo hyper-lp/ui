@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { SideBadge } from '@/components/common/SideBadge'
 // import type { HyperEvmBalance } from '@/interfaces'
 import { FileIds, IconIds } from '@/enums'
 import FileMapper from '@/components/common/FileMapper'
@@ -93,9 +94,9 @@ export function WalletBalancesTable({ className }: WalletBalancesTableProps) {
                                                 />
                                                 <span className="text-default">{balance.symbol}</span>
                                                 {balance.symbol === 'HYPE' && (
-                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-sm font-medium text-green-600 dark:text-green-400">
+                                                    <SideBadge side="long" className="text-sm">
                                                         LONG
-                                                    </span>
+                                                    </SideBadge>
                                                 )}
                                             </div>
                                         }

@@ -7,6 +7,7 @@ import PageWrapper from '@/components/common/PageWrapper'
 import { useAccountData } from '@/hooks/useAccountData'
 import { useAppStore } from '@/stores/app.store'
 import { LPPositionsTable, WalletBalancesTable, PerpPositionsTable, SpotBalancesTable } from '@/components/app/account/tables'
+import { CombinedActivity, HyperCoreTransactionHistory } from '@/components/app/account'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
 import { REFRESH_INTERVALS } from '@/config/app.config'
@@ -19,9 +20,8 @@ import { HypeIcon } from '@/components/common/HypeIcon'
 import { TimeAgo } from '@/components/common/DateWrapper'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
-import { AppUrls, FileIds, IconIds } from '@/enums'
+import { FileIds, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
-import { env } from '@/env/t3-env'
 import { HypeDeltaTooltip } from '@/components/common/HypeDeltaTooltip'
 import { useTheme } from 'next-themes'
 import FileMapper from '@/components/common/FileMapper'
@@ -30,7 +30,7 @@ import numeral from 'numeral'
 // Dynamically import chart to avoid SSR issues
 const DeltaTrackingChart = dynamic(() => import('@/components/charts/account/DeltaTrackingChart'), {
     ssr: false,
-    loading: () => <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[500px]">Loading chart...</div>,
+    loading: () => <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[550px]">Loading chart...</div>,
 })
 
 // Helper function for delta color
@@ -63,7 +63,7 @@ const KPIMetric: React.FC<KPIMetricProps> = ({ label, value, icon, colorFn, clas
 
     const content = (
         <div className={baseClassName}>
-            <span className="text-xs tracking-wider text-default/50">{label}</span>
+            <span className="text-sm tracking-wider text-default/50">{label}</span>
             {icon ? (
                 <div className="flex items-center gap-1">
                     <span className={cn('text-base font-semibold', color)}>{isNumber ? `${value >= 0 ? '+' : ''}${value.toFixed(1)}` : value}</span>
@@ -406,25 +406,35 @@ export default function AccountPage() {
                                     <p className="flex text-lg font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
                                     {[
                                         {
-                                            name: 'debank',
-                                            description: 'DeBank profile',
-                                            url: `https://debank.com/profile/${accountFromUrl}`,
-                                        },
-                                        {
-                                            name: 'scan',
-                                            description: 'HyperEVM scan',
+                                            name: 'evm',
+                                            description: 'HyperEVM explorer',
                                             url: `https://hyperevmscan.io/address/${accountFromUrl}`,
                                         },
                                         {
-                                            name: 'raw',
-                                            description: 'API snapshot',
-                                            url: `${env.NEXT_PUBLIC_APP_URL}/${AppUrls.API_SNAPSHOT}/${accountFromUrl}`,
+                                            name: 'core',
+                                            description: 'HyperLiquid explorer',
+                                            url: `https://app.hyperliquid.xyz/explorer/address/${accountFromUrl}`,
                                         },
+                                        // {
+                                        //     name: 'debank',
+                                        //     description: 'DeBank profile',
+                                        //     url: `https://debank.com/profile/${accountFromUrl}`,
+                                        // },
+                                        // {
+                                        //     name: 'raw',
+                                        //     description: 'API snapshot',
+                                        //     url: `${env.NEXT_PUBLIC_APP_URL}/${AppUrls.API_SNAPSHOT}/${accountFromUrl}`,
+                                        // },
                                     ].map((link) => (
                                         <div key={link.name}>
                                             <StyledTooltip key={link.name} content={<p>{link.description}</p>}>
-                                                <LinkWrapper target="_blank" href={link.url}>
-                                                    <p className="cursor-alias text-default/50 hover:text-default hover:underline">{link.name}</p>
+                                                <LinkWrapper
+                                                    target="_blank"
+                                                    href={link.url}
+                                                    className="flex cursor-alias items-center gap-0.5 text-default/50 hover:text-default hover:underline"
+                                                >
+                                                    <p>{link.name}</p>
+                                                    <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-3.5" />
                                                 </LinkWrapper>
                                             </StyledTooltip>
                                         </div>
@@ -476,7 +486,7 @@ export default function AccountPage() {
                             {/* Global KPIs */}
                             <div className="flex items-center gap-6">
                                 <KPIMetric
-                                    label="AUM on HL"
+                                    label="AUM"
                                     value={formatUSD(metrics.portfolio?.totalUSD || 0)}
                                     className="hidden md:flex"
                                     tooltip={
@@ -505,7 +515,7 @@ export default function AccountPage() {
                                     value={formatUSD(metrics.portfolio?.deployedAUM || 0)}
                                     className="hidden md:flex"
                                     tooltip={
-                                        <div className="space-y-2 text-xs">
+                                        <div className="space-y-2">
                                             <p className="font-semibold">Deployed Capital in Strategy</p>
                                             <div className="space-y-1 text-default/70">
                                                 <p>Capital actively deployed in delta-neutral positions</p>
@@ -517,7 +527,7 @@ export default function AccountPage() {
                                                 </div>
                                             </div>
                                             <div className="border-t border-default/10 pt-1.5">
-                                                <p className="text-xs text-default/50">Excludes idle capital (wallet & spot)</p>
+                                                <p className="text-default/50">Excludes idle capital (wallet & spot)</p>
                                                 <p className="font-medium text-default">Deployed: {formatUSD(metrics.portfolio?.deployedAUM || 0)}</p>
                                             </div>
                                         </div>
@@ -525,13 +535,13 @@ export default function AccountPage() {
                                 />
                                 <div className="hidden h-8 w-px border-l border-dashed border-default/20 md:flex" />
                                 <KPIMetric
-                                    label="STRATEGY Δ"
+                                    label="Strategy Δ"
                                     value={metrics.portfolio?.strategyDelta || 0}
-                                    icon={<HypeIcon size={20} />}
+                                    icon={<HypeIcon size={18} />}
                                     colorFn={getDeltaColor}
                                     className="items-end"
                                     tooltip={
-                                        <div className="space-y-2 text-xs">
+                                        <div className="space-y-2">
                                             <p className="font-semibold">Strategy Delta (Hedge Effectiveness)</p>
                                             <div className="space-y-1 text-default/70">
                                                 <p>Net HYPE exposure from active positions</p>
@@ -565,7 +575,7 @@ export default function AccountPage() {
                                     <>
                                         <div className="h-8 w-px border-l border-dashed border-default/20" />
                                         <div className="flex flex-col items-center lg:items-end">
-                                            <span className="text-xs uppercase tracking-wider text-default/50">Gross Delta-Neutral APR</span>
+                                            <span className="text-sm tracking-wider text-default/50">Gross Delta-Neutral APR</span>
                                             <StyledTooltip
                                                 content={
                                                     <div className="space-y-2">
@@ -574,8 +584,8 @@ export default function AccountPage() {
                                                         <div className="space-y-2">
                                                             {combinedAPRs?.combined24h !== null && combinedAPRs?.combined24h !== undefined && (
                                                                 <div>
-                                                                    <p className="text-xs font-medium text-default">24h APR</p>
-                                                                    <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                    <p className="font-medium text-default">24h APR</p>
+                                                                    <div className="ml-2 space-y-0.5 text-default/70">
                                                                         {lpAPRs?.weightedAvg24h !== null && (
                                                                             <p>LP: {lpAPRs.weightedAvg24h.toFixed(2)}%</p>
                                                                         )}
@@ -595,8 +605,8 @@ export default function AccountPage() {
 
                                                             {combinedAPRs?.combined7d !== null && combinedAPRs?.combined7d !== undefined && (
                                                                 <div>
-                                                                    <p className="text-xs font-medium text-default">7d APR</p>
-                                                                    <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                    <p className="font-medium text-default">7d APR</p>
+                                                                    <div className="ml-2 space-y-0.5 text-default/70">
                                                                         {lpAPRs?.weightedAvg7d !== null && (
                                                                             <p>LP: {lpAPRs.weightedAvg7d.toFixed(2)}%</p>
                                                                         )}
@@ -616,8 +626,8 @@ export default function AccountPage() {
 
                                                             {combinedAPRs?.combined30d !== null && combinedAPRs?.combined30d !== undefined && (
                                                                 <div>
-                                                                    <p className="text-xs font-medium text-default">30d APR</p>
-                                                                    <div className="ml-2 space-y-0.5 text-xs text-default/70">
+                                                                    <p className="font-medium text-default">30d APR</p>
+                                                                    <div className="ml-2 space-y-0.5 text-default/70">
                                                                         {lpAPRs?.weightedAvg30d !== null && (
                                                                             <p>LP: {lpAPRs.weightedAvg30d.toFixed(2)}%</p>
                                                                         )}
@@ -636,9 +646,7 @@ export default function AccountPage() {
                                                             )}
                                                         </div>
 
-                                                        <p className="text-xs italic text-default/50">
-                                                            User-specific, weighted by capital allocation
-                                                        </p>
+                                                        <p className="italic text-default/50">User-specific, weighted by capital allocation</p>
                                                     </div>
                                                 }
                                             >
@@ -891,7 +899,11 @@ export default function AccountPage() {
                             <SpotBalancesTable />
                         </CollapsibleCard>
                     ),
-                    txs: null,
+                    txs: (
+                        <CollapsibleCard title="Trades" defaultExpanded={false} headerRight={null}>
+                            <HyperCoreTransactionHistory account={params.account as string} limit={50} />
+                        </CollapsibleCard>
+                    ),
                     capital:
                         hyperCoreBreakdown.total > 0 ? (
                             <StyledTooltip
@@ -935,6 +947,11 @@ export default function AccountPage() {
                         </>
                     ),
                 }}
+                activity={
+                    <CollapsibleCard title="Activity" defaultExpanded={false} headerRight={null}>
+                        <CombinedActivity account={params.account as string} limit={50} />
+                    </CollapsibleCard>
+                }
             />
         </PageWrapper>
     )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { SideBadge } from '@/components/common/SideBadge'
 // import type { PerpPosition } from '@/interfaces'
 import { FileIds, IconIds } from '@/enums'
 import FileMapper from '@/components/common/FileMapper'
@@ -144,17 +145,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                     <span className="text-sm">{position.asset}</span>
                                                 </div>
                                             }
-                                            side={
-                                                <span
-                                                    className={`rounded px-2 py-0.5 text-xs font-medium ${
-                                                        isLong
-                                                            ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                                                            : 'bg-red-500/10 text-red-600 dark:text-red-400'
-                                                    }`}
-                                                >
-                                                    {isLong ? 'LONG' : 'SHORT'}
-                                                </span>
-                                            }
+                                            side={<SideBadge side={isLong ? 'long' : 'short'}>{isLong ? 'LONG' : 'SHORT'}</SideBadge>}
                                             size={
                                                 <span className={`font-medium ${isLong ? 'text-green-600' : 'text-red-600'}`}>
                                                     {formatNumber(Math.abs(position.size), 4)}
@@ -228,9 +219,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
 
                                                 <div>
                                                     <p className="text-xs text-default/50">Direction</p>
-                                                    <p className={cn('font-medium', isLong ? 'text-green-600' : 'text-red-600')}>
-                                                        {isLong ? '↑ LONG' : '↓ SHORT'}
-                                                    </p>
+                                                    <SideBadge side={isLong ? 'long' : 'short'}>{isLong ? 'LONG' : 'SHORT'}</SideBadge>
                                                 </div>
 
                                                 <div>

@@ -14,7 +14,7 @@ const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in data
 
 const grid = {
     top: 70,
-    right: 110,
+    right: 125,
     bottom: 50,
     left: 50,
     containLabel: true,
@@ -1175,6 +1175,59 @@ export default function DeltaTrackingChart() {
                         color: colors.charts.text,
                     },
                 },
+                // Y-axis slider (manual control only, no inside zoom)
+                {
+                    type: 'slider',
+                    yAxisIndex: 0,
+                    start: zoomRangeRef.current?.y?.start ?? 0,
+                    end: zoomRangeRef.current?.y?.end ?? 100,
+                    width: 16,
+                    left: 12,
+                    backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
+                    borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                    fillerColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                    selectedDataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
+                        },
+                    },
+                    handleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+                        borderWidth: 1,
+                    },
+                    moveHandleStyle: {
+                        color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                        borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+                    },
+                    emphasis: {
+                        handleStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                        },
+                        moveHandleStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                            borderColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+                        },
+                        handleLabel: {
+                            show: false,
+                        },
+                    },
+                    dataBackground: {
+                        lineStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                        areaStyle: {
+                            color: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                        },
+                    },
+                    textStyle: {
+                        color: colors.charts.text,
+                    },
+                },
             ],
         }
 
@@ -1185,11 +1238,11 @@ export default function DeltaTrackingChart() {
 
     if (!options) {
         return (
-            <div className="flex h-[400px] w-full items-center justify-center">
+            <div className="flex h-[400px] w-full items-center justify-center md:h-[500px]">
                 <div className="text-default/50">Loading chart...</div>
             </div>
         )
     }
 
-    return <EchartWrapper options={options} className="h-[400px] w-full" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
+    return <EchartWrapper options={options} className="h-[400px] w-full md:h-[500px]" onDataZoomChange={handleDataZoom} onRestore={handleRestore} />
 }

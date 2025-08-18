@@ -110,3 +110,59 @@ export const SpotRowTemplate = (props: { asset: ReactNode; balance: ReactNode; v
         </div>
     )
 }
+
+/**
+ * Transaction Row Template
+ */
+export const TransactionRowTemplate = (props: {
+    time: ReactNode
+    hash: ReactNode
+    type: ReactNode
+    tokens: ReactNode
+    dex: ReactNode
+    nonce: ReactNode
+    status: ReactNode
+    className?: string
+}) => {
+    return (
+        <div className={cn('flex items-center text-sm', props.className)}>
+            <div className="w-[100px] px-2">{props.time}</div>
+            <div className="w-[120px] px-2">{props.hash}</div>
+            <div className="w-[120px] px-2">{props.type}</div>
+            <div className="w-[140px] px-2">{props.tokens}</div>
+            <div className="w-[100px] px-2">{props.dex}</div>
+            <div className="w-[60px] px-2 text-right">{props.nonce}</div>
+            <div className="w-[60px] px-2 text-center">{props.status}</div>
+        </div>
+    )
+}
+
+/**
+ * HyperCore Trade Row Template
+ */
+export const HyperCoreTradeRowTemplate = (props: {
+    time: ReactNode
+    hash: ReactNode
+    type: ReactNode
+    coin: ReactNode
+    side: ReactNode
+    size: ReactNode
+    price: ReactNode
+    value: ReactNode
+    pnl: ReactNode
+    className?: string
+}) => {
+    return (
+        <div className={cn('flex items-center text-sm', props.className)}>
+            <div className="w-[100px] px-2">{props.time}</div>
+            <div className="w-[120px] px-2">{props.hash}</div>
+            <div className="w-[80px] px-2">{props.type}</div>
+            <div className="w-[80px] px-2">{props.coin}</div>
+            <div className="w-[70px] px-2">{props.side}</div>
+            <div className="w-[100px] px-2 text-right">{props.size}</div>
+            <div className="w-[90px] px-2 text-right">{props.price}</div>
+            <div className="w-[100px] px-2 text-right">{props.value}</div>
+            <div className="w-[100px] px-2 text-right">{props.pnl}</div>
+        </div>
+    )
+}

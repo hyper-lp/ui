@@ -1,28 +1,31 @@
-import type { ExplorerTransaction, HyperEVMScanResponse, TransactionFilter, ExplorerConfig } from '@/interfaces'
+import type { ExplorerTransaction, HyperEVMScanResponse, RawApiTransaction, TransactionFilter, ExplorerConfig } from '@/interfaces'
 import { API_TIMEOUT } from '@/config/app.config'
 
 /**
  * HyperEVMScan API client service
  * Interfaces with hyperevmscan.io API to fetch blockchain data
+ * Uses Etherscan V2 API format with chain ID
  */
 export class HyperEVMScanService {
     private baseUrl: string
     private apiKey?: string
     private timeout: number
+    private chainId: number = 999 // HyperEVM chain ID
 
     constructor(config?: Partial<ExplorerConfig>) {
-        this.baseUrl = config?.apiUrl || 'https://api.hyperevmscan.io/api'
+        this.baseUrl = config?.apiUrl || 'https://api.etherscan.io/v2/api'
         this.apiKey = config?.apiKey
         this.timeout = config?.timeout || API_TIMEOUT
     }
 
     /**
      * Fetch transactions for a specific address
-     * Uses the standard Etherscan API format
+     * Uses the Etherscan V2 API format with chain ID
      */
     async getTransactions(filter: TransactionFilter): Promise<ExplorerTransaction[]> {
         try {
             const params = new URLSearchParams({
+                chainid: this.chainId.toString(),
                 module: 'account',
                 action: 'txlist',
                 address: filter.address,
@@ -80,7 +83,24 @@ export class HyperEVMScanService {
                 return []
             }
 
-            return data.result
+            // Parse and normalize the response data
+            return data.result.map((tx: RawApiTransaction) => ({
+                hash: tx.hash,
+                from: tx.from,
+                to: tx.to || null,
+                value: tx.value,
+                input: tx.input,
+                blockNumber: parseInt(tx.blockNumber, 10),
+                blockHash: tx.blockHash,
+                timestamp: parseInt(tx.timeStamp, 10), // API returns timeStamp, we use timestamp
+                nonce: parseInt(tx.nonce, 10),
+                gasUsed: tx.gasUsed,
+                gasPrice: tx.gasPrice,
+                status: tx.isError === '0' ? 'success' : 'failed',
+                contractAddress: tx.contractAddress || null,
+                functionName: tx.functionName || undefined,
+                methodId: tx.methodId || undefined,
+            }))
         } catch (error) {
             if (error instanceof Error) {
                 if (error.name === 'AbortError') {
@@ -94,11 +114,12 @@ export class HyperEVMScanService {
 
     /**
      * Fetch internal transactions for a specific address
-     * Uses the standard Etherscan API format
+     * Uses the Etherscan V2 API format with chain ID
      */
     async getInternalTransactions(filter: TransactionFilter): Promise<ExplorerTransaction[]> {
         try {
             const params = new URLSearchParams({
+                chainid: this.chainId.toString(),
                 module: 'account',
                 action: 'txlistinternal',
                 address: filter.address,
@@ -134,7 +155,24 @@ export class HyperEVMScanService {
                 return []
             }
 
-            return data.result
+            // Parse and normalize the response data
+            return data.result.map((tx: RawApiTransaction) => ({
+                hash: tx.hash,
+                from: tx.from,
+                to: tx.to || null,
+                value: tx.value,
+                input: tx.input,
+                blockNumber: parseInt(tx.blockNumber, 10),
+                blockHash: tx.blockHash,
+                timestamp: parseInt(tx.timeStamp, 10), // API returns timeStamp, we use timestamp
+                nonce: parseInt(tx.nonce, 10),
+                gasUsed: tx.gasUsed,
+                gasPrice: tx.gasPrice,
+                status: tx.isError === '0' ? 'success' : 'failed',
+                contractAddress: tx.contractAddress || null,
+                functionName: tx.functionName || undefined,
+                methodId: tx.methodId || undefined,
+            }))
         } catch (error) {
             console.error('Error fetching internal transactions:', error)
             return []
@@ -143,11 +181,12 @@ export class HyperEVMScanService {
 
     /**
      * Fetch ERC20 token transfers for a specific address
-     * Uses the standard Etherscan API format
+     * Uses the Etherscan V2 API format with chain ID
      */
     async getTokenTransfers(filter: TransactionFilter): Promise<ExplorerTransaction[]> {
         try {
             const params = new URLSearchParams({
+                chainid: this.chainId.toString(),
                 module: 'account',
                 action: 'tokentx',
                 address: filter.address,
@@ -183,7 +222,24 @@ export class HyperEVMScanService {
                 return []
             }
 
-            return data.result
+            // Parse and normalize the response data (token transfers)
+            return data.result.map((tx: RawApiTransaction) => ({
+                hash: tx.hash,
+                from: tx.from,
+                to: tx.to || null,
+                value: tx.value,
+                input: tx.input || '',
+                blockNumber: parseInt(tx.blockNumber, 10),
+                blockHash: tx.blockHash,
+                timestamp: parseInt(tx.timeStamp, 10), // API returns timeStamp, we use timestamp
+                nonce: parseInt(tx.nonce, 10),
+                gasUsed: tx.gasUsed,
+                gasPrice: tx.gasPrice || '0',
+                status: tx.isError === '0' ? 'success' : 'failed',
+                contractAddress: tx.contractAddress || null,
+                functionName: tx.functionName || undefined,
+                methodId: tx.methodId || undefined,
+            }))
         } catch (error) {
             console.error('Error fetching token transfers:', error)
             return []
@@ -196,6 +252,7 @@ export class HyperEVMScanService {
     async getTransactionByHash(txHash: string): Promise<ExplorerTransaction | null> {
         try {
             const params = new URLSearchParams({
+                chainid: this.chainId.toString(),
                 module: 'proxy',
                 action: 'eth_getTransactionByHash',
                 txhash: txHash,

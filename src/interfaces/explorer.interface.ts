@@ -22,12 +22,33 @@ export interface ExplorerTransaction {
 }
 
 /**
+ * Raw transaction from API response
+ */
+export interface RawApiTransaction {
+    hash: string
+    from: string
+    to: string | null
+    value: string
+    input: string
+    blockNumber: string
+    blockHash: string
+    timeStamp: string
+    nonce: string
+    gasUsed: string
+    gasPrice: string
+    isError: string
+    contractAddress?: string | null
+    functionName?: string
+    methodId?: string
+}
+
+/**
  * HyperEVMScan API response format
  */
 export interface HyperEVMScanResponse {
     status: '0' | '1'
     message: string
-    result: ExplorerTransaction[] | string
+    result: RawApiTransaction[] | string
 }
 
 /**
@@ -54,6 +75,7 @@ export interface ParsedDexTransaction {
     gasUsed: string
     status: 'success' | 'failed'
     functionName?: string
+    nonce?: number
 }
 
 /**

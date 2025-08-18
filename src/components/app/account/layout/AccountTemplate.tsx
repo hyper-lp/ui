@@ -9,6 +9,7 @@ import { SectionCard, ThemeCard } from './Cards'
 import FileMapper from '@/components/common/FileMapper'
 import { useTheme } from 'next-themes'
 import { AppThemes } from '@/enums'
+import { IS_DEV } from '@/config'
 
 export function ErrorBoundaryTemplate(props: { error: string }) {
     return (
@@ -19,6 +20,7 @@ export function ErrorBoundaryTemplate(props: { error: string }) {
 }
 
 export default function AccountTemplate(props: {
+    charts?: ReactNode
     header: ReactNode
     summary?: {
         address: ReactNode
@@ -40,7 +42,7 @@ export default function AccountTemplate(props: {
         capital?: ReactNode
         delta?: ReactNode
     }
-    charts?: ReactNode
+    activity?: ReactNode
     className?: string
 }) {
     const { resolvedTheme } = useTheme()
@@ -53,7 +55,7 @@ export default function AccountTemplate(props: {
             {/* --------------- Content */}
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-4">
                 {/* 1. historic of snapshots */}
-                <SectionCard className="h-[400px] flex-1 !p-1 md:!p-2">{props.charts}</SectionCard>
+                <SectionCard className="h-[400px] flex-1 !p-1 md:h-[500px] md:!p-2">{props.charts}</SectionCard>
 
                 {/* 2. last snapshot */}
                 <div className="flex h-min w-[500px] flex-col gap-4 xl:w-[600px]">
@@ -63,7 +65,7 @@ export default function AccountTemplate(props: {
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_WHITE : FileIds.HYPER_EVM_DARK}
                             width={140}
                             height={24}
-                            className="mb-1 ml-4 rounded-none"
+                            className="ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
                             {/* HYPE LPs */}
@@ -82,7 +84,7 @@ export default function AccountTemplate(props: {
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_WHITE : FileIds.HYPER_CORE_DARK}
                             width={140}
                             height={24}
-                            className="mb-1 ml-4 rounded-none"
+                            className="ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
                             {/* HYPE Short */}
@@ -96,6 +98,18 @@ export default function AccountTemplate(props: {
                             </ErrorBoundary>
                         </div>
                     </div>
+
+                    {/* Activity */}
+                    {IS_DEV && (
+                        <div>
+                            <p className="ml-4 rounded-none text-lg font-semibold">Activity</p>
+                            <div className="flex h-min flex-col gap-2 p-2">
+                                <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading Activity TXs" />}>
+                                    {props.activity}
+                                </ErrorBoundary>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -23,7 +23,7 @@ interface CachedResponse {
 
 // Simple in-memory cache for transactions
 const transactionCache = new Map<string, { data: CachedResponse; timestamp: number }>()
-const CACHE_TTL = 60000 // 1 minute cache
+const CACHE_TTL = 5000 // 5 seconds cache
 
 export async function GET(request: Request, context: { params: Promise<{ account: string }> }) {
     try {
@@ -73,46 +73,12 @@ export async function GET(request: Request, context: { params: Promise<{ account
                 endBlock,
             })
 
-            // If we got no transactions, try to return some mock data for testing
+            // If we got no transactions, return empty array
             if (transactions.length === 0) {
-                // Return mock transaction for testing (remove this in production)
-                const mockTransactions: ParsedDexTransaction[] = [
-                    {
-                        txHash: '0x' + '0'.repeat(64),
-                        blockNumber: 1000000,
-                        timestamp: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
-                        from: account.toLowerCase(),
-                        to: '0x0000000000000000000000000000000000000000',
-                        gasUsed: '21000',
-                        status: 'success',
-                        type: 'unknown',
-                        dex: DexProtocol.HYPERSWAP,
-                        token0Symbol: 'HYPE',
-                        token1Symbol: '',
-                        token0Amount: '1',
-                        token1Amount: '',
-                    },
-                    {
-                        txHash: '0x' + '1'.repeat(64),
-                        blockNumber: 999999,
-                        timestamp: Math.floor(Date.now() / 1000) - 7200, // 2 hours ago
-                        from: account.toLowerCase(),
-                        to: '0x1111111111111111111111111111111111111111',
-                        gasUsed: '150000',
-                        status: 'success',
-                        type: 'unknown',
-                        dex: DexProtocol.HYPERSWAP,
-                        token0Symbol: '',
-                        token1Symbol: '',
-                        token0Amount: '',
-                        token1Amount: '',
-                    },
-                ]
-
                 return NextResponse.json({
                     success: true,
                     account,
-                    transactions: mockTransactions,
+                    transactions: [],
                     groupedByDex: {},
                     stats: {
                         total: 0,
@@ -136,7 +102,7 @@ export async function GET(request: Request, context: { params: Promise<{ account
                         total: 0,
                         filteredCount: 0,
                     },
-                    message: 'Explorer API key may not be configured correctly',
+                    message: env.HYPEREVM_SCAN_API_KEY ? undefined : 'Explorer API key not configured',
                 })
             }
 
@@ -149,6 +115,7 @@ export async function GET(request: Request, context: { params: Promise<{ account
                 to: tx.to || '',
                 gasUsed: tx.gasUsed,
                 status: tx.status,
+                nonce: tx.nonce,
                 type: tx.functionName?.includes('swap')
                     ? 'swap'
                     : tx.functionName?.includes('mint') || tx.functionName?.includes('add')

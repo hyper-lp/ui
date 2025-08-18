@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { SideBadge } from '@/components/common/SideBadge'
 // import type { SpotBalance } from '@/interfaces'
 import { IconIds } from '@/enums'
 import FileMapper from '@/components/common/FileMapper'
@@ -87,9 +88,9 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                                 )}
                                                 <span className="text-sm">{balance.asset}</span>
                                                 {balance.asset === 'HYPE' && (
-                                                    <span className="rounded bg-green-500/10 px-2 py-0.5 text-sm font-medium text-green-600 dark:text-green-400">
+                                                    <SideBadge side="long" className="text-sm">
                                                         LONG
-                                                    </span>
+                                                    </SideBadge>
                                                 )}
                                             </div>
                                         }

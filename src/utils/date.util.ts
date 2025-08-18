@@ -88,13 +88,13 @@ export const getDurationBetween = ({
 
     // format
     let oneLiner = ''
-    if (showYears && inYears) oneLiner += `${inYears}${space}${year}${inYears > 1 ? 's' : ''}${shortFormat ? '' : ','} `
-    if (showMonths && inMonths) oneLiner += `${inMonths}${space}${month}${inMonths > 1 ? 's' : ''}${shortFormat ? '' : ','} `
-    if (showWeeks && inWeeks) oneLiner += `${inWeeks}${space}${week}${inWeeks > 1 ? 's' : ''}${shortFormat ? '' : ','} `
-    if (showDays && inDays) oneLiner += `${inDays}${space}${day}${inDays > 1 ? 's' : ''}${shortFormat ? '' : ','} `
-    if (showHours && inHours) oneLiner += `${inHours}${space}${hour}${inHours > 1 ? 's' : ''}${shortFormat ? '' : ','} `
-    if (showMinutes && inMinutes) oneLiner += `${inMinutes}${space}${minute}${inMinutes > 1 ? 's' : ''}${shortFormat ? '' : ','} `
-    if (showSeconds && inSeconds) oneLiner += `${inSeconds}${space}${second}${inSeconds > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showYears && inYears) oneLiner += `${inYears}${space}${year}${!shortFormat && inYears > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showMonths && inMonths) oneLiner += `${inMonths}${space}${month}${!shortFormat && inMonths > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showWeeks && inWeeks) oneLiner += `${inWeeks}${space}${week}${!shortFormat && inWeeks > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showDays && inDays) oneLiner += `${inDays}${space}${day}${!shortFormat && inDays > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showHours && inHours) oneLiner += `${inHours}${space}${hour}${!shortFormat && inHours > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showMinutes && inMinutes) oneLiner += `${inMinutes}${space}${minute}${!shortFormat && inMinutes > 1 ? 's' : ''}${shortFormat ? '' : ','} `
+    if (showSeconds && inSeconds) oneLiner += `${inSeconds}${space}${second}${!shortFormat && inSeconds > 1 ? 's' : ''}${shortFormat ? '' : ','} `
 
     return {
         // details
@@ -107,7 +107,8 @@ export const getDurationBetween = ({
         inYears,
 
         // format
-        oneLiner: diffInMilliseconds > 0 && oneLiner ? `${oneLiner.slice(0, -2).trim()}${ago ? ' ago' : ''}` : 'now',
+        // oneLiner: diffInMilliseconds > 0 && oneLiner ? `${oneLiner.slice(0, -2).trim()}${ago ? ' ago' : ''}` : 'now',
+        oneLiner: diffInMilliseconds > 0 && oneLiner ? `${oneLiner}${ago ? ' ago' : ''}` : 'now',
         humanize: diffDuration.humanize(),
     }
 }

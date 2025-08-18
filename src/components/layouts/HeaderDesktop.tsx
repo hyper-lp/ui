@@ -114,7 +114,7 @@ export default function HeaderDesktop(props: { className?: string }) {
                                 target="_blank"
                                 className="flex cursor-alias items-center gap-2 transition-all duration-300 hover:scale-110"
                             >
-                                <FileMapper {...item} />
+                                <FileMapper {...item} priority />
                             </LinkWrapper>
                         </StyledTooltip>
                     </div>

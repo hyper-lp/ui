@@ -23,11 +23,9 @@ export function ImageWrapper({
 }) {
     const [imgError, setImgError] = useState(false)
     if (!src || imgError) return <div className={cn('skeleton-loading', className)} style={{ width, height }} />
-    
-    const imageStyle = scaleByHeight 
-        ? { height: height, width: 'auto' }
-        : { width: 'auto', height: 'auto', maxWidth: width, maxHeight: height }
-    
+
+    const imageStyle = scaleByHeight ? { height: height, width: 'auto' } : { width: 'auto', height: 'auto', maxWidth: width, maxHeight: height }
+
     return (
         <Image
             src={src}

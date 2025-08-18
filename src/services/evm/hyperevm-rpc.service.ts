@@ -35,7 +35,7 @@ class HyperEvmRpcService {
             }
 
             const data = await response.json()
-            
+
             if (data.error) {
                 console.error('RPC error:', data.error)
                 return 0
@@ -74,7 +74,7 @@ class HyperEvmRpcService {
             }
 
             const data = await response.json()
-            
+
             if (data.error) {
                 console.error('RPC error:', data.error)
                 return 0

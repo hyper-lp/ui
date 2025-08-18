@@ -838,7 +838,7 @@ export default function AccountPage() {
                                         >
                                             <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
                                                 <p className="text-sm text-default/50">24h APR</p>
-                                                <p className="text-sm font-medium text-primary">
+                                                <p className="text-sm font-medium text-success">
                                                     {weightedAvgAPR < 0.01 && weightedAvgAPR > 0
                                                         ? `${numeral(weightedAvgAPR).divide(100).format('0,0.[0]%')}`
                                                         : `${numeral(weightedAvgAPR).divide(100).format('0,0.[0]%')}`}{' '}

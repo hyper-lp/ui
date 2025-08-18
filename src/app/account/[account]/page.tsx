@@ -576,12 +576,8 @@ export default function AccountPage() {
 
                                                 <div className="ml-3">
                                                     <div className="flex justify-between gap-6">
-                                                        <span className="opacity-60">LP positions</span>
-                                                        <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSD || 0)}</span>
-                                                    </div>
-                                                    <div className="flex justify-between gap-6">
-                                                        <span className="opacity-60">Unclaimed fees</span>
-                                                        <span>{formatUSD(metrics.hyperEvm?.values?.unclaimedFeesUSD || 0)}</span>
+                                                        <span className="opacity-60">LPs</span>
+                                                        <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSDWithFees || 0)}</span>
                                                     </div>
                                                     <div className="flex justify-between gap-6">
                                                         <span className="opacity-60">Perpetual positions</span>

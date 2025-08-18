@@ -14,7 +14,7 @@ const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in data
 
 const grid = {
     top: 70,
-    right: 125,
+    right: 120,
     bottom: 50,
     left: 50,
     containLabel: true,
@@ -802,6 +802,7 @@ export default function DeltaTrackingChart() {
                 type: 'time',
                 axisLabel: {
                     showMinLabel: false,
+                    showMaxLabel: true,
                     fontSize: 10,
                     opacity: 0.5,
                     interval: 'auto',
@@ -809,6 +810,7 @@ export default function DeltaTrackingChart() {
                     show: true,
                     color: colors.charts.text,
                     formatter: (value: number) => DAYJS_FORMATS.dateTimeChart(value),
+                    align: 'center',
                 },
                 splitLine: {
                     show: true,

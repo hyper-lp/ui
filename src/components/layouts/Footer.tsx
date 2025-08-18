@@ -23,7 +23,9 @@ export default function Footer(props: { className?: string }) {
     }, [])
     if (!commitDate) return null
     return (
-        <footer className={cn('flex min-h-16 w-full items-center justify-between gap-2 px-6 text-xs font-light md:gap-0', props.className)}>
+        <footer
+            className={cn('flex min-h-16 w-full items-center justify-between gap-2 px-6 text-sm font-light md:gap-0 xl:text-base', props.className)}
+        >
             {/* left */}
             <div className="hidden flex-row gap-8 md:flex">
                 <div>
@@ -56,7 +58,7 @@ export default function Footer(props: { className?: string }) {
                     <p className="truncate">Sponsors</p>
                 </StyledTooltip>
                 <LinkWrapper href={AppUrls.STATUS} target="_blank">
-                    <p className="cursor-alias truncate hover:text-primary hover:underline">Status</p>
+                    <p className="cursor-alias truncate hover:text-primary hover:underline">Status 🤖</p>
                 </LinkWrapper>
                 <LinkWrapper href={AppUrls.DOCS} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Docs</p>

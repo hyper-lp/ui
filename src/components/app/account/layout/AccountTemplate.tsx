@@ -3,7 +3,6 @@
 import { cn } from '@/utils'
 import { ReactNode } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-// import FileMapper from '@/components/common/FileMapper'
 import { FileIds } from '@/enums'
 import { SectionCard, ThemeCard } from './Cards'
 import FileMapper from '@/components/common/FileMapper'

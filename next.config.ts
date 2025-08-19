@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { execSync } from 'child_process'
 
 const nextConfig: NextConfig = {
     productionBrowserSourceMaps: false, // Save ~30% bundle size
@@ -60,7 +61,20 @@ const nextConfig: NextConfig = {
                     },
                 ],
             },
+            {
+                source: '/_next/static/(.*)',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
+                    },
+                ],
+            },
         ]
+    },
+    generateBuildId: async () => {
+        // Use git commit hash as build ID for consistent chunk naming
+        return execSync('git rev-parse HEAD').toString().trim().substring(0, 8)
     },
 }
 

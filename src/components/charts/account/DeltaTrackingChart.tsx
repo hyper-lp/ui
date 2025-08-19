@@ -498,7 +498,8 @@ export default function DeltaTrackingChart() {
 
             // Convert HYPE deltas to USD using the snapshot's price
             const lpUSD = snapshot.metrics.hyperEvm.deltas.lpsHYPE * hypePrice
-            const perpUSD = -snapshot.metrics.hyperCore?.values?.perpsUSD
+            // const perpUSD = -snapshot.metrics.hyperCore?.values?.perpsUSD
+            const perpUSD = -snapshot.metrics.hyperCore?.values?.perpsUSD + snapshot.metrics.hyperCore?.values?.withdrawableUSDC
             const spotUSD = snapshot.metrics.hyperCore.deltas.spotHYPE * hypePrice
             const balancesUSD = snapshot.metrics.hyperEvm.deltas.balancesHYPE * hypePrice
             const netUSD = snapshot.metrics.portfolio.netDeltaHYPE * hypePrice

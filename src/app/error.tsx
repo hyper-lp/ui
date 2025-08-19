@@ -8,7 +8,21 @@ import { AppUrls, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-    useEffect(() => console.error(error), [error])
+    useEffect(() => {
+        console.error(error)
+
+        // Auto-reload for chunk loading errors
+        if (error.message?.includes('Loading chunk') || error.message?.includes('Failed to fetch dynamically imported module')) {
+            const lastReload = sessionStorage.getItem('lastChunkErrorReload')
+            const now = Date.now()
+
+            // Only reload if we haven't tried recently
+            if (!lastReload || now - parseInt(lastReload) > 10000) {
+                sessionStorage.setItem('lastChunkErrorReload', now.toString())
+                setTimeout(() => window.location.reload(), 1500)
+            }
+        }
+    }, [error])
     return (
         <PageWrapper>
             <div className="mx-auto mt-10 flex w-full max-w-lg flex-col items-center gap-4">

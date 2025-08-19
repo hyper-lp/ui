@@ -79,7 +79,7 @@ export const useAppStore = create<AppStore>()(
 
             // Account snapshots management
             addressSnapshots: {},
-            maxSnapshots: 30, // 30 minutes at 1-minute intervals
+            maxSnapshots: 20, // Reduced to save localStorage space
             lastSnapshotAddedAt: -1, // -1 means no snapshot has been added yet
             currentAddress: null,
             isFetchingAccount: false,
@@ -90,9 +90,30 @@ export const useAppStore = create<AppStore>()(
                 set((state) => {
                     const address = snapshot.evmAddress.toLowerCase()
                     const currentSnapshots = state.addressSnapshots[address] || []
+
+                    // Clean up old addresses if we have too many (keep only 5 most recent addresses)
+                    const addressEntries = Object.entries(state.addressSnapshots)
+                    let cleanedSnapshots = { ...state.addressSnapshots }
+
+                    if (addressEntries.length > 5) {
+                        // Sort by most recent snapshot timestamp
+                        const sortedAddresses = addressEntries
+                            .map(([addr, snaps]) => ({
+                                address: addr,
+                                lastTime: snaps[snaps.length - 1]?.timestamp || 0,
+                            }))
+                            .sort((a, b) => b.lastTime - a.lastTime)
+
+                        // Keep only top 5 addresses
+                        cleanedSnapshots = {}
+                        sortedAddresses.slice(0, 5).forEach(({ address: addr }) => {
+                            cleanedSnapshots[addr] = state.addressSnapshots[addr]
+                        })
+                    }
+
                     return {
                         addressSnapshots: {
-                            ...state.addressSnapshots,
+                            ...cleanedSnapshots,
                             [address]: [...currentSnapshots, snapshot].slice(-state.maxSnapshots),
                         },
                         lastSnapshotAddedAt: Date.now(),
@@ -148,16 +169,57 @@ export const useAppStore = create<AppStore>()(
         }),
         {
             name: `${APP_METADATA.SITE_DOMAIN}-app-store-${IS_DEV ? 'dev' : 'prod'}-${env.NEXT_PUBLIC_COMMIT_TIMESTAMP}`,
-            storage: createJSONStorage(() => localStorage),
+            storage: createJSONStorage(() => ({
+                getItem: (name: string) => {
+                    try {
+                        return localStorage.getItem(name)
+                    } catch (error) {
+                        console.error('Failed to get from localStorage:', error)
+                        return null
+                    }
+                },
+                setItem: (name: string, value: string) => {
+                    try {
+                        localStorage.setItem(name, value)
+                    } catch (error) {
+                        console.error('localStorage quota exceeded, clearing old data...')
+                        // Clear old localStorage items if quota exceeded
+                        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                            // Try to clear old versions of the store
+                            const keys = Object.keys(localStorage)
+                            keys.forEach((key) => {
+                                if (key.includes('app-store') && !key.includes(env.NEXT_PUBLIC_COMMIT_TIMESTAMP)) {
+                                    localStorage.removeItem(key)
+                                }
+                            })
+                            // Try again after cleanup
+                            try {
+                                localStorage.setItem(name, value)
+                            } catch {
+                                // If still failing, clear everything and try once more
+                                localStorage.clear()
+                                localStorage.setItem(name, value)
+                            }
+                        }
+                    }
+                },
+                removeItem: (name: string) => {
+                    try {
+                        localStorage.removeItem(name)
+                    } catch (error) {
+                        console.error('Failed to remove from localStorage:', error)
+                    }
+                },
+            })),
             skipHydration: false,
             onRehydrateStorage: () => (state) => {
                 if (state && !state.hasHydrated) state.setHasHydrated(true)
             },
             partialize: (state) => ({
                 sectionStates: state.sectionStates,
-                addressSnapshots: state.addressSnapshots,
+                // Don't persist snapshots - they should be fetched fresh from API
+                // addressSnapshots are intentionally excluded
                 maxSnapshots: state.maxSnapshots,
-                lastSnapshotAddedAt: state.lastSnapshotAddedAt,
                 currentAddress: state.currentAddress,
             }),
         },

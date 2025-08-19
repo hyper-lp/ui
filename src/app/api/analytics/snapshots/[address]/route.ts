@@ -21,7 +21,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ad
             `SELECT snapshot FROM "AccountSnapshot" 
              WHERE address = $1 
              ORDER BY timestamp DESC 
-             LIMIT 50`,
+             LIMIT 100`,
             [accountAddress],
         )
 

@@ -208,26 +208,26 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                         <div className="flex justify-between font-medium">
                                             <div className="">+ Idle/dust capital</div>
                                             <span>
-                                                {formatUSD(
+                                                {numeral(
                                                     (metrics.hyperEvm?.values?.balancesUSD || 0) +
                                                         (metrics.hyperCore?.values?.spotUSD || 0) +
                                                         (metrics.hyperCore?.values?.withdrawableUSDC || 0),
-                                                )}
+                                                ).format('0,0a$')}
                                             </span>
                                         </div>
 
                                         <div className="ml-3 opacity-60">
                                             <div className="flex justify-between gap-6">
                                                 <span className="">• Wallet balances</span>
-                                                <span>{numeral(metrics.hyperEvm?.values?.balancesUSD || 0).format('0a$')}</span>
+                                                <span>{numeral(metrics.hyperEvm?.values?.balancesUSD || 0).format('0,0a$')}</span>
                                             </div>
                                             <div className="flex justify-between gap-6">
                                                 <span className="">• Spot balances</span>
-                                                <span>{numeral(metrics.hyperCore?.values?.spotUSD || 0).format('0a$')}</span>
+                                                <span>{numeral(metrics.hyperCore?.values?.spotUSD || 0).format('0,0a$')}</span>
                                             </div>
                                             <div className="flex justify-between gap-6">
                                                 <span className="">• Withdrawable USDC</span>
-                                                <span>{numeral(metrics.hyperCore?.values?.withdrawableUSDC || 0).format('0a$')}</span>
+                                                <span>{numeral(metrics.hyperCore?.values?.withdrawableUSDC || 0).format('0,0a$')}</span>
                                             </div>
                                         </div>
                                     </div>

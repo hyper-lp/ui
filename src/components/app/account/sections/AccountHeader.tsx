@@ -285,18 +285,18 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" />
                     <div className="hidden flex-col items-center md:flex lg:items-end">
                         <span className="text-base tracking-wider text-default/50">Net P&L</span>
-                        <StyledTooltip
-                            content={
-                                <LinkWrapper href={AppUrls.DOCS} target="_blank" className="w-full">
-                                    <div className="flex items-center gap-1 hover:text-primary hover:underline">
+                        <LinkWrapper href={AppUrls.DOCS} target="_blank" className="w-full">
+                            <StyledTooltip
+                                content={
+                                    <div className="flex items-center gap-1">
                                         <p>Methodology we want to implement</p>
                                         <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-3.5" />
                                     </div>
-                                </LinkWrapper>
-                            }
-                        >
-                            <span className="text-lg font-semibold text-default/30">Coming soon</span>
-                        </StyledTooltip>
+                                }
+                            >
+                                <span className="text-lg font-semibold text-default/30 hover:text-primary hover:underline">Coming soon</span>
+                            </StyledTooltip>
+                        </LinkWrapper>
                     </div>
 
                     {aprRange !== null && (
@@ -323,8 +323,20 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                         <span
                                                             className={cn('font-medium', {
                                                                 'text-success':
-                                                                    aprRange.min.toFixed(0) === combinedAPRs.combined24h.toFixed(0) ||
-                                                                    aprRange.max.toFixed(0) === combinedAPRs.combined24h.toFixed(0),
+                                                                    Math.min(
+                                                                        ...[
+                                                                            combinedAPRs.combined30d || 0,
+                                                                            combinedAPRs.combined24h || 0,
+                                                                            combinedAPRs.combined7d || 0,
+                                                                        ],
+                                                                    ) === combinedAPRs.combined24h ||
+                                                                    Math.max(
+                                                                        ...[
+                                                                            combinedAPRs.combined30d || 0,
+                                                                            combinedAPRs.combined24h || 0,
+                                                                            combinedAPRs.combined7d || 0,
+                                                                        ],
+                                                                    ) === combinedAPRs.combined24h,
                                                             })}
                                                         >
                                                             {combinedAPRs.combined24h > 0 ? '+' : ''}
@@ -359,8 +371,20 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                         <span
                                                             className={cn('font-medium', {
                                                                 'text-success':
-                                                                    aprRange.min.toFixed(0) === combinedAPRs.combined7d.toFixed(0) ||
-                                                                    aprRange.max.toFixed(0) === combinedAPRs.combined7d.toFixed(0),
+                                                                    Math.min(
+                                                                        ...[
+                                                                            combinedAPRs.combined30d || 0,
+                                                                            combinedAPRs.combined24h || 0,
+                                                                            combinedAPRs.combined7d || 0,
+                                                                        ],
+                                                                    ) === combinedAPRs.combined7d ||
+                                                                    Math.max(
+                                                                        ...[
+                                                                            combinedAPRs.combined30d || 0,
+                                                                            combinedAPRs.combined24h || 0,
+                                                                            combinedAPRs.combined7d || 0,
+                                                                        ],
+                                                                    ) === combinedAPRs.combined7d,
                                                             })}
                                                         >
                                                             {combinedAPRs.combined7d > 0 ? '+' : ''}
@@ -395,8 +419,20 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                         <span
                                                             className={cn('font-medium', {
                                                                 'text-success':
-                                                                    aprRange.min.toFixed(0) === combinedAPRs.combined30d.toFixed(0) ||
-                                                                    aprRange.max.toFixed(0) === combinedAPRs.combined30d.toFixed(0),
+                                                                    Math.min(
+                                                                        ...[
+                                                                            combinedAPRs.combined30d || 0,
+                                                                            combinedAPRs.combined24h || 0,
+                                                                            combinedAPRs.combined7d || 0,
+                                                                        ],
+                                                                    ) === combinedAPRs.combined30d ||
+                                                                    Math.max(
+                                                                        ...[
+                                                                            combinedAPRs.combined30d || 0,
+                                                                            combinedAPRs.combined24h || 0,
+                                                                            combinedAPRs.combined7d || 0,
+                                                                        ],
+                                                                    ) === combinedAPRs.combined30d,
                                                             })}
                                                         >
                                                             {combinedAPRs.combined30d > 0 ? '+' : ''}

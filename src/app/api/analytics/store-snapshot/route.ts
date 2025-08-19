@@ -28,8 +28,9 @@ export async function POST(request: NextRequest) {
             `INSERT INTO "AccountSnapshot" 
             (id, address, timestamp, "evmAddress", "coreAddress", "schemaVersion", snapshot, 
              "totalUSD", "deployedAUM", "netDeltaHYPE", "strategyDelta",
-             "lpsDeltaHYPE", "balancesDeltaHYPE", "perpsDeltaHYPE", "spotsDeltaHYPE", "hypePrice") 
-            VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+             "lpsDeltaHYPE", "balancesDeltaHYPE", "perpsDeltaHYPE", "spotsDeltaHYPE", 
+             "perpsNotionalUSD", "perpsPnlUSD", "withdrawableUSDC", "hypePrice") 
+            VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
             [
                 address,
                 new Date(snapshot.timestamp),
@@ -45,6 +46,9 @@ export async function POST(request: NextRequest) {
                 snapshot.metrics.hyperEvm.deltas.balancesHYPE,
                 snapshot.metrics.hyperCore.deltas.perpsHYPE,
                 snapshot.metrics.hyperCore.deltas.spotHYPE,
+                snapshot.metrics.hyperCore.values.perpsNotionalUSD,
+                snapshot.metrics.hyperCore.values.perpsPnlUSD,
+                snapshot.metrics.hyperCore.values.withdrawableUSDC,
                 snapshot.prices?.HYPE || 0,
             ],
         )

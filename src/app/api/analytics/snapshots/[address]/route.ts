@@ -16,9 +16,25 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ad
         const { address } = params
         const accountAddress = address.toLowerCase()
 
-        // Fetch last 10 snapshots for this address
+        // Fetch last 100 snapshots for this address
+        // Include indexed fields for efficient access
         const result = await client.query(
-            `SELECT snapshot FROM "AccountSnapshot" 
+            `SELECT 
+                snapshot,
+                "timestamp",
+                "totalUSD",
+                "deployedAUM",
+                "lpsDeltaHYPE",
+                "balancesDeltaHYPE", 
+                "perpsDeltaHYPE",
+                "spotsDeltaHYPE",
+                "strategyDelta",
+                "netDeltaHYPE",
+                "perpsNotionalUSD",
+                "perpsPnlUSD",
+                "withdrawableUSDC",
+                "hypePrice"
+             FROM "AccountSnapshot" 
              WHERE address = $1 
              ORDER BY timestamp DESC 
              LIMIT 100`,
@@ -26,7 +42,26 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ad
         )
 
         // Parse JSON snapshots and reverse to get chronological order
-        const snapshots = result.rows.map((row) => row.snapshot).reverse()
+        // Include indexed fields for potential optimization
+        const snapshots = result.rows.map((row) => ({
+            ...row.snapshot,
+            // Ensure indexed fields are available directly
+            _indexed: {
+                timestamp: row.timestamp,
+                totalUSD: parseFloat(row.totalUSD),
+                deployedAUM: parseFloat(row.deployedAUM),
+                lpsDeltaHYPE: parseFloat(row.lpsDeltaHYPE),
+                balancesDeltaHYPE: parseFloat(row.balancesDeltaHYPE),
+                perpsDeltaHYPE: parseFloat(row.perpsDeltaHYPE),
+                spotsDeltaHYPE: parseFloat(row.spotsDeltaHYPE),
+                strategyDelta: parseFloat(row.strategyDelta),
+                netDeltaHYPE: parseFloat(row.netDeltaHYPE),
+                perpsNotionalUSD: parseFloat(row.perpsNotionalUSD),
+                perpsPnlUSD: parseFloat(row.perpsPnlUSD),
+                withdrawableUSDC: parseFloat(row.withdrawableUSDC),
+                hypePrice: parseFloat(row.hypePrice),
+            }
+        })).reverse()
 
         return NextResponse.json({ snapshots })
     } catch (error) {

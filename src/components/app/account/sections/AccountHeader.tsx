@@ -282,8 +282,8 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     </div> */}
 
                     {/* Net P&L */}
-                    <div className="h-10 border-l border-dashed border-default/20" />
-                    <div className="flex flex-col items-center lg:items-end">
+                    <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" />
+                    <div className="hidden flex-col items-center md:flex lg:items-end">
                         <span className="text-base tracking-wider text-default/50">Net P&L</span>
                         <StyledTooltip
                             content={
@@ -295,7 +295,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                 </LinkWrapper>
                             }
                         >
-                            <span className="text-lg font-semibold text-default/30">Todo</span>
+                            <span className="text-lg font-semibold text-default/30">Coming Soon</span>
                         </StyledTooltip>
                     </div>
 

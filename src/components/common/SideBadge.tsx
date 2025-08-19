@@ -19,7 +19,7 @@ export function SideBadge({ side, children, className }: SideBadgeProps) {
     return (
         <span
             className={cn(
-                'rounded px-2 py-0.5 text-xs font-medium',
+                'rounded px-1.5 py-0.5 text-sm font-medium',
                 isLong
                     ? 'bg-green-500/10 text-green-600 dark:text-green-400'
                     : isShort

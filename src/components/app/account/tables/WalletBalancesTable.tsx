@@ -96,11 +96,7 @@ export function WalletBalancesTable({ className }: WalletBalancesTableProps) {
                                                     className="rounded-full"
                                                 />
                                                 <span className="text-default">{balance.symbol}</span>
-                                                {(balance.symbol === 'HYPE' || balance.symbol === 'WHYPE') && (
-                                                    <SideBadge side="long" className="text-sm">
-                                                        LONG
-                                                    </SideBadge>
-                                                )}
+                                                {(balance.symbol === 'HYPE' || balance.symbol === 'WHYPE') && <SideBadge side="long">LONG</SideBadge>}
                                             </div>
                                         }
                                         balance={

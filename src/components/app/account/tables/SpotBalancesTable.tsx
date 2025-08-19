@@ -90,11 +90,7 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                                     />
                                                 )}
                                                 <span className="text-sm">{balance.asset}</span>
-                                                {balance.asset === 'HYPE' && (
-                                                    <SideBadge side="long" className="text-sm">
-                                                        LONG
-                                                    </SideBadge>
-                                                )}
+                                                {balance.asset === 'HYPE' && <SideBadge side="long">LONG</SideBadge>}
                                             </div>
                                         }
                                         balance={

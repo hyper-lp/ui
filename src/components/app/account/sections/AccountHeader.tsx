@@ -295,7 +295,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                 </LinkWrapper>
                             }
                         >
-                            <span className="text-lg font-semibold text-default/30">Coming Soon</span>
+                            <span className="text-lg font-semibold text-default/30">Coming soon</span>
                         </StyledTooltip>
                     </div>
 
@@ -321,12 +321,11 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">24h</span>
                                                         <span
-                                                            className={cn(
-                                                                'font-medium',
-                                                                (aprRange.min === combinedAPRs.combined24h ||
-                                                                    aprRange.max === combinedAPRs.combined24h) &&
-                                                                    'text-success',
-                                                            )}
+                                                            className={cn('font-medium', {
+                                                                'text-success':
+                                                                    aprRange.min.toFixed(0) === combinedAPRs.combined24h.toFixed(0) ||
+                                                                    aprRange.max.toFixed(0) === combinedAPRs.combined24h.toFixed(0),
+                                                            })}
                                                         >
                                                             {combinedAPRs.combined24h > 0 ? '+' : ''}
                                                             {combinedAPRs.combined24h.toFixed(0)}% before IL
@@ -358,11 +357,11 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">7d</span>
                                                         <span
-                                                            className={cn(
-                                                                'font-medium',
-                                                                aprRange.min === combinedAPRs.combined7d ||
-                                                                    (aprRange.max === combinedAPRs.combined7d && 'text-success'),
-                                                            )}
+                                                            className={cn('font-medium', {
+                                                                'text-success':
+                                                                    aprRange.min.toFixed(0) === combinedAPRs.combined7d.toFixed(0) ||
+                                                                    aprRange.max.toFixed(0) === combinedAPRs.combined7d.toFixed(0),
+                                                            })}
                                                         >
                                                             {combinedAPRs.combined7d > 0 ? '+' : ''}
                                                             {combinedAPRs.combined7d.toFixed(0)}% before IL
@@ -394,11 +393,11 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">30d</span>
                                                         <span
-                                                            className={cn(
-                                                                'font-medium',
-                                                                aprRange.min === combinedAPRs.combined30d ||
-                                                                    (aprRange.max === combinedAPRs.combined30d && 'text-success'),
-                                                            )}
+                                                            className={cn('font-medium', {
+                                                                'text-success':
+                                                                    aprRange.min.toFixed(0) === combinedAPRs.combined30d.toFixed(0) ||
+                                                                    aprRange.max.toFixed(0) === combinedAPRs.combined30d.toFixed(0),
+                                                            })}
                                                         >
                                                             {combinedAPRs.combined30d > 0 ? '+' : ''}
                                                             {combinedAPRs.combined30d.toFixed(0)}% before IL

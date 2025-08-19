@@ -117,7 +117,7 @@ export default function Footer(props: { className?: string }) {
                 <LinkWrapper href={AppUrls.STATUS} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Status</p>
                 </LinkWrapper>
-                <LinkWrapper href={AppUrls.DOCS} target="_blank">
+                <LinkWrapper href={AppUrls.DOCS_NOTION} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Docs</p>
                 </LinkWrapper>
                 <LinkWrapper href={AppUrls.HYPERLP_X} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">

@@ -21,6 +21,7 @@ export enum AppUrls {
     GITHUB = 'https://github.com/hyperlp',
     PRIVY = 'https://www.privy.io/',
     DOCS = 'https://en.wikipedia.org/wiki/PnL_explained',
+    DOCS_NOTION = 'https://www.notion.so/HyperLP-Docs-254bbbfcdd3780fb9d0cd5bfbab131f2',
     HYPERLP_X = 'https://x.com/HyperLPxyz',
     CONTACT_US = 'https://t.me/+rnRHBHo9QVBkMDY0',
     STATUS = 'https://merso.betteruptime.com/',

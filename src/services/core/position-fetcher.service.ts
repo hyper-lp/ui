@@ -901,9 +901,9 @@ export class PositionFetcher {
                                 // Annual rate = hourly * 24 * 365
                                 const annualizedRate = (eightHourRate / 8) * 24 * 365
 
-                                // Convert to percentage and invert for shorts
-                                // (positive funding = shorts earn from longs)
-                                const annualizedAPR = -annualizedRate * 100
+                                // Invert for shorts (positive funding = shorts earn from longs)
+                                // Note: funding rate from API is already in percentage form
+                                const annualizedAPR = -annualizedRate
 
                                 fundingRates[asset.name] = annualizedAPR
                                 this.fundingRatesCache.set(asset.name, annualizedAPR)

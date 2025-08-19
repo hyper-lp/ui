@@ -717,12 +717,12 @@ export default function DeltaTrackingChart() {
                     //         color: aumColor,
                     //     },
                     // },
-                    {
-                        name: ChartSeries.DeployedAUM,
-                        textStyle: {
-                            color: aumColor,
-                        },
-                    },
+                    // {
+                    //     name: ChartSeries.DeployedAUM,
+                    //     textStyle: {
+                    //         color: aumColor,
+                    //     },
+                    // },
                     {
                         name: ChartSeries.HyperEvmLps,
                         textStyle: {
@@ -763,7 +763,7 @@ export default function DeltaTrackingChart() {
                 top: 10,
                 selected: {
                     // [ChartSeries.AUM]: false,
-                    [ChartSeries.DeployedAUM]: true,
+                    // [ChartSeries.DeployedAUM]: true,
                     [ChartSeries.HyperEvmLps]: true,
                     [ChartSeries.HyperEvmBalances]: false,
                     [ChartSeries.HyperCorePerps]: true,

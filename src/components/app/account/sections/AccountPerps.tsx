@@ -75,7 +75,7 @@ export default function AccountPerps() {
                                     )}
                                 >
                                     {perpFundingAPR > 0 ? '+' : ''}
-                                    {numeral(perpFundingAPR).format('0,0.0%')}
+                                    {perpFundingAPR.toFixed(1)}%
                                 </p>
                             </div>
                         </StyledTooltip>

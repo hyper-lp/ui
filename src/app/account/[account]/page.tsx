@@ -292,7 +292,7 @@ export default function AccountPage() {
                     hyperCore={{
                         short: (
                             <CollapsibleCard
-                                title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perpetuals leg</h3>}
+                                title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perps</h3>}
                                 defaultExpanded={false}
                                 headerRight={null}
                                 isLoading

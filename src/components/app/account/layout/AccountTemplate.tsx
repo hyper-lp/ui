@@ -61,7 +61,7 @@ export default function AccountTemplate(props: {
                     {/* HyperEvm */}
                     <div>
                         <FileMapper
-                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_WHITE : FileIds.HYPER_EVM_DARK}
+                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_MINT : FileIds.HYPER_EVM_DARK}
                             width={200}
                             height={32}
                             scaleByHeight
@@ -81,7 +81,7 @@ export default function AccountTemplate(props: {
                     {/* HyperCore */}
                     <div>
                         <FileMapper
-                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_WHITE : FileIds.HYPER_CORE_DARK}
+                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_MINT : FileIds.HYPER_CORE_DARK}
                             width={200}
                             height={32}
                             scaleByHeight

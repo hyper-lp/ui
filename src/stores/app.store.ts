@@ -188,10 +188,14 @@ export const useAppStore = create<AppStore>()(
                             // Try to clear old versions of the store
                             const keys = Object.keys(localStorage)
                             keys.forEach((key) => {
-                                if (key.includes('app-store') && !key.includes(env.NEXT_PUBLIC_COMMIT_TIMESTAMP)) {
+                                if (
+                                    key.includes('app-store') &&
+                                    (!env.NEXT_PUBLIC_COMMIT_TIMESTAMP || !key.includes(env.NEXT_PUBLIC_COMMIT_TIMESTAMP))
+                                ) {
                                     localStorage.removeItem(key)
                                 }
                             })
+
                             // Try again after cleanup
                             try {
                                 localStorage.setItem(name, value)

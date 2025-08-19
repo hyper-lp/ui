@@ -163,6 +163,7 @@ export default function AccountPage() {
                         timings={snapshot?.timings}
                     />
                 }
+                // charts={null}
                 charts={<DeltaTrackingChart />}
                 hyperEvm={{
                     lp: <AccountLPs />,

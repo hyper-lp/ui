@@ -14,7 +14,7 @@ const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in data
 
 const grid = {
     top: 70,
-    right: 145,
+    right: 140,
     bottom: 50,
     left: 50,
     containLabel: true,
@@ -36,7 +36,7 @@ const createSkeletonData = (phaseOffset: number, amplitude: number, baseValue: n
 }
 
 export enum ChartSeries {
-    AUM = 'Total AUM',
+    hyperLpBalance = 'HyperLP balance',
     DeployedAUM = 'Deployed AUM',
     HyperEvmLps = 'LPs Δ',
     HyperEvmBalances = 'Wallet Δ',
@@ -147,12 +147,13 @@ export default function DeltaTrackingChart() {
             },
             legend: {
                 data: [
-                    { name: 'Deployed AUM', itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
-                    { name: 'LPs Δ', itemStyle: { color: colors.hyperEvmLp }, textStyle: { color: textOpacity } },
-                    { name: 'Wallet Δ', itemStyle: { color: colors.hyperEvmBalances }, textStyle: { color: textOpacity } },
-                    { name: 'Perps Δ', itemStyle: { color: colors.hyperCorePerp }, textStyle: { color: textOpacity } },
-                    { name: 'Spots Δ', itemStyle: { color: colors.hyperCoreSpot }, textStyle: { color: textOpacity } },
-                    { name: 'Strategy Δ', itemStyle: { color: netDeltaColor }, textStyle: { color: textOpacity } },
+                    { name: ChartSeries.hyperLpBalance, itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
+                    { name: ChartSeries.DeployedAUM, itemStyle: { color: aumColor }, textStyle: { color: textOpacity } },
+                    { name: ChartSeries.HyperEvmLps, itemStyle: { color: colors.hyperEvmLp }, textStyle: { color: textOpacity } },
+                    { name: ChartSeries.HyperEvmBalances, itemStyle: { color: colors.hyperEvmBalances }, textStyle: { color: textOpacity } },
+                    { name: ChartSeries.HyperCorePerps, itemStyle: { color: colors.hyperCorePerp }, textStyle: { color: textOpacity } },
+                    { name: ChartSeries.HyperCoreSpots, itemStyle: { color: colors.hyperCoreSpot }, textStyle: { color: textOpacity } },
+                    { name: ChartSeries.StrategyDelta, itemStyle: { color: netDeltaColor }, textStyle: { color: textOpacity } },
                 ],
                 top: 10,
                 icon: 'roundRect',
@@ -160,19 +161,46 @@ export default function DeltaTrackingChart() {
                 itemHeight: 8,
                 itemGap: 15,
                 selected: {
-                    'Deployed AUM': true,
-                    'LPs Δ': true,
-                    'Wallet Δ': false,
-                    'Perps Δ': true,
-                    'Spots Δ': false,
-                    'Strategy Δ': true,
+                    [ChartSeries.DeployedAUM]: true,
+                    [ChartSeries.HyperEvmLps]: true,
+                    [ChartSeries.HyperEvmBalances]: false,
+                    [ChartSeries.HyperCorePerps]: true,
+                    [ChartSeries.HyperCoreSpots]: false,
+                    [ChartSeries.StrategyDelta]: true,
                 },
                 inactiveColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
             },
             series: [
-                // Deployed AUM skeleton
+                // HyperLP balance skeleton
                 {
-                    name: 'Deployed AUM',
+                    name: ChartSeries.hyperLpBalance,
+                    type: 'line',
+                    data: createSkeletonData(0, 100, 1000),
+                    smooth: false,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: aumColor,
+                        width: 2,
+                        opacity: 0.3,
+                        type: 'dotted',
+                    },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationDelay: 0,
+                    endLabel: {
+                        show: true,
+                        formatter: 'HyperLP $••,•••',
+                        color: textOpacity,
+                        fontSize: 14,
+                        offset: [5, 0],
+                        backgroundColor: aumColor + '08',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
+                // Deployed AUM skeleton (Deployed AUM)
+                {
+                    name: ChartSeries.DeployedAUM,
                     type: 'line',
                     data: createSkeletonData(0, 100, 1000),
                     smooth: false,
@@ -199,7 +227,7 @@ export default function DeltaTrackingChart() {
                 },
                 // LPs skeleton
                 {
-                    name: 'LPs Δ',
+                    name: ChartSeries.HyperEvmLps,
                     type: 'line',
                     data: createSkeletonData(1, 80, 300),
                     smooth: false,
@@ -225,7 +253,7 @@ export default function DeltaTrackingChart() {
                 },
                 // Wallet skeleton
                 {
-                    name: 'Wallet Δ',
+                    name: ChartSeries.HyperEvmBalances,
                     type: 'line',
                     data: createSkeletonData(2, 60, 100),
                     smooth: false,
@@ -251,7 +279,7 @@ export default function DeltaTrackingChart() {
                 },
                 // Perps skeleton
                 {
-                    name: 'Perps Δ',
+                    name: ChartSeries.HyperCorePerps,
                     type: 'line',
                     data: createSkeletonData(3, 70, -200),
                     smooth: false,
@@ -277,7 +305,7 @@ export default function DeltaTrackingChart() {
                 },
                 // Strategy Delta skeleton with dashed line
                 {
-                    name: 'Strategy Δ',
+                    name: ChartSeries.StrategyDelta,
                     type: 'line',
                     data: createSkeletonData(4, 50, 50),
                     smooth: false,
@@ -610,7 +638,7 @@ export default function DeltaTrackingChart() {
 
                     // Define custom sort order for tooltip items
                     const seriesOrder = [
-                        ChartSeries.AUM,
+                        ChartSeries.hyperLpBalance,
                         ChartSeries.DeployedAUM,
                         ChartSeries.HyperEvmLps,
                         ChartSeries.HyperEvmBalances,
@@ -631,7 +659,7 @@ export default function DeltaTrackingChart() {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     sortedParams.forEach((param: any) => {
                         // Skip formatting for AUM and Deployed AUM series
-                        if (param.seriesName === ChartSeries.AUM || param.seriesName === ChartSeries.DeployedAUM) {
+                        if (param.seriesName === ChartSeries.hyperLpBalance || param.seriesName === ChartSeries.DeployedAUM) {
                             const value = Array.isArray(param.value) ? param.value[1] : 0
                             html += `
                                 <div style="margin: 8px 0;">
@@ -711,12 +739,12 @@ export default function DeltaTrackingChart() {
             },
             legend: {
                 data: [
-                    // {
-                    //     name: ChartSeries.AUM,
-                    //     textStyle: {
-                    //         color: aumColor,
-                    //     },
-                    // },
+                    {
+                        name: ChartSeries.hyperLpBalance,
+                        textStyle: {
+                            color: aumColor,
+                        },
+                    },
                     {
                         name: ChartSeries.DeployedAUM,
                         textStyle: {
@@ -762,7 +790,7 @@ export default function DeltaTrackingChart() {
                 ],
                 top: 10,
                 selected: {
-                    // [ChartSeries.AUM]: false,
+                    [ChartSeries.hyperLpBalance]: false,
                     [ChartSeries.DeployedAUM]: false,
                     [ChartSeries.HyperEvmLps]: true,
                     [ChartSeries.HyperEvmBalances]: false,
@@ -875,41 +903,41 @@ export default function DeltaTrackingChart() {
                 },
             ],
             series: [
-                // {
-                //     name: ChartSeries.AUM,
-                //     type: 'line',
-                //     data: totalCapitalUSD,
-                //     smooth: false,
-                //     symbol: 'circle',
-                //     symbolSize: 6,
-                //     showSymbol: true,
-                //     yAxisIndex: 0,
-                //     lineStyle: {
-                //         color: aumColor,
-                //         width: 2,
-                //         type: 'solid',
-                //     },
-                //     itemStyle: {
-                //         color: aumColor,
-                //     },
-                //     emphasis: {
-                //         focus: 'series',
-                //     },
-                //     endLabel: {
-                //         show: true,
-                //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                //         formatter: (params: any) => {
-                //             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                //             return `${ChartSeries.AUM} ${formatUSD(value)}`
-                //         },
-                //         color: aumColor,
-                //         fontSize: 14,
-                //         offset: [5, 0],
-                //         backgroundColor: aumColor + '15',
-                //         padding: [2, 4],
-                //         borderRadius: 4,
-                //     },
-                // },
+                {
+                    name: ChartSeries.hyperLpBalance,
+                    type: 'line',
+                    data: totalCapitalUSD,
+                    smooth: false,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    showSymbol: true,
+                    yAxisIndex: 0,
+                    lineStyle: {
+                        color: aumColor,
+                        width: 2,
+                        type: 'solid',
+                    },
+                    itemStyle: {
+                        color: aumColor,
+                    },
+                    emphasis: {
+                        focus: 'series',
+                    },
+                    endLabel: {
+                        show: true,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        formatter: (params: any) => {
+                            const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                            return `HyperLP ${formatUSD(value)}`
+                        },
+                        color: aumColor,
+                        fontSize: 12,
+                        offset: [5, 0],
+                        backgroundColor: aumColor + '15',
+                        padding: [2, 4],
+                        borderRadius: 4,
+                    },
+                },
                 {
                     name: ChartSeries.DeployedAUM,
                     type: 'line',

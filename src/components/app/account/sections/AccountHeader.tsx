@@ -7,9 +7,10 @@ import { DAYJS_FORMATS } from '@/utils/date.util'
 import { TimeAgo } from '@/components/common/DateWrapper'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import IconWrapper from '@/components/icons/IconWrapper'
-import { FileIds, IconIds } from '@/enums'
+import { AppUrls, FileIds, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import FileMapper from '@/components/common/FileMapper'
+import numeral from 'numeral'
 
 interface AccountHeaderProps {
     accountFromUrl: string
@@ -20,6 +21,7 @@ interface AccountHeaderProps {
     metrics: {
         portfolio?: {
             deployedAUM?: number
+            totalUSD?: number
             apr?: {
                 combined24h?: number | null
                 combined7d?: number | null
@@ -29,6 +31,7 @@ interface AccountHeaderProps {
         hyperEvm?: {
             values?: {
                 lpsUSDWithFees?: number
+                balancesUSD?: number
             }
             apr?: {
                 weightedAvg24h?: number | null
@@ -39,6 +42,8 @@ interface AccountHeaderProps {
         hyperCore?: {
             values?: {
                 perpsUSD?: number
+                spotUSD?: number
+                withdrawableUSDC?: number
             }
             apr?: {
                 fundingAPR24h?: number | null
@@ -180,41 +185,69 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         <span className="text-base tracking-wider text-default/50">HyperLP balance</span>
                         <StyledTooltip
                             content={
-                                <div className="space-y-3">
-                                    <div className="font-semibold">Deployed AUM on this strategy</div>
-
-                                    <div className="space-y-0">
-                                        <div className="opacity-75">Capital actively deployed</div>
-
+                                <div className="flex flex-col">
+                                    <div className="mb-2 font-semibold">Breakdown</div>
+                                    <div className="flex justify-between font-medium">
+                                        <span>+ Deployed AUM</span>
+                                        <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
+                                    </div>
+                                    <div className="space-y-0 opacity-60">
                                         <div className="ml-3">
                                             <div className="flex justify-between gap-6">
-                                                <span className="opacity-60">LPs</span>
+                                                <span className="">• LPs</span>
                                                 <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSDWithFees || 0)}</span>
                                             </div>
                                             <div className="flex justify-between gap-6">
-                                                <span className="opacity-60">Perpetual positions</span>
+                                                <span className="">• Perpetuals</span>
                                                 <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between font-medium">
-                                        <span>= Total deployed AUM</span>
-                                        <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
+                                    <div className="mt-3 space-y-0">
+                                        <div className="flex justify-between font-medium">
+                                            <div className="">+ Idle/dust capital</div>
+                                            <span>
+                                                {formatUSD(
+                                                    (metrics.hyperEvm?.values?.balancesUSD || 0) +
+                                                        (metrics.hyperCore?.values?.spotUSD || 0) +
+                                                        (metrics.hyperCore?.values?.withdrawableUSDC || 0),
+                                                )}
+                                            </span>
+                                        </div>
+
+                                        <div className="ml-3 opacity-60">
+                                            <div className="flex justify-between gap-6">
+                                                <span className="">• Wallet balances</span>
+                                                <span>{numeral(metrics.hyperEvm?.values?.balancesUSD || 0).format('0a$')}</span>
+                                            </div>
+                                            <div className="flex justify-between gap-6">
+                                                <span className="">• Spot balances</span>
+                                                <span>{numeral(metrics.hyperCore?.values?.spotUSD || 0).format('0a$')}</span>
+                                            </div>
+                                            <div className="flex justify-between gap-6">
+                                                <span className="">• Withdrawable USDC</span>
+                                                <span>{numeral(metrics.hyperCore?.values?.withdrawableUSDC || 0).format('0a$')}</span>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div className="mb-1 opacity-60">Excludes idle/dust capital (wallet & spot)</div>
+                                    <div className="mt-3 flex justify-between border-t border-default/20 pt-4 font-semibold" />
+                                    <div className="flex justify-between font-semibold">
+                                        <span>= HyperLP balance</span>
+                                        <span>{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
+                                    </div>
                                 </div>
                             }
                         >
-                            <span className="text-xl font-semibold">{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
+                            <span className="text-xl font-semibold">{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
                         </StyledTooltip>
                     </div>
 
                     {/* Active funds */}
-                    <div className="h-10 border-l border-dashed border-default/20" />
-                    <div className="flex flex-col items-center lg:items-end">
-                        <span className="text-base tracking-wider text-default/50">Net P&L</span>
+                    {/* <div className="h-10 border-l border-dashed border-default/20" /> */}
+                    {/* <div className="flex flex-col items-center lg:items-end">
+                        <span className="text-base tracking-wider text-default/50">HyperLP balance</span>
                         <StyledTooltip
                             content={
                                 <div className="space-y-3">
@@ -244,6 +277,24 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                 </div>
                             }
                         >
+                            <span className="text-xl font-semibold">{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
+                        </StyledTooltip>
+                    </div> */}
+
+                    {/* Net P&L */}
+                    <div className="h-10 border-l border-dashed border-default/20" />
+                    <div className="flex flex-col items-center lg:items-end">
+                        <span className="text-base tracking-wider text-default/50">Net P&L</span>
+                        <StyledTooltip
+                            content={
+                                <LinkWrapper href={AppUrls.DOCS} target="_blank" className="w-full">
+                                    <div className="flex items-center gap-1 hover:text-primary hover:underline">
+                                        <p>Methodology we want to implement</p>
+                                        <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-3.5" />
+                                    </div>
+                                </LinkWrapper>
+                            }
+                        >
                             <span className="text-lg font-semibold text-default/30">Todo</span>
                         </StyledTooltip>
                     </div>
@@ -252,7 +303,8 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         <>
                             <div className="h-10 border-l border-dashed border-default/20" />
                             <div className="flex flex-col items-center lg:items-end">
-                                <span className="text-base tracking-wider text-default/50">Est. Gross Delta-Neutral APR</span>
+                                {/* <span className="text-base tracking-wider text-default/50">Est. Gross Delta-Neutral APR</span> */}
+                                <span className="text-base tracking-wider text-default/50">Estimated Gross APR</span>
                                 <StyledTooltip
                                     content={
                                         <div className="space-y-3">
@@ -269,7 +321,12 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">24h</span>
                                                         <span
-                                                            className={cn('font-medium', aprRange.min === combinedAPRs.combined24h && 'text-success')}
+                                                            className={cn(
+                                                                'font-medium',
+                                                                (aprRange.min === combinedAPRs.combined24h ||
+                                                                    aprRange.max === combinedAPRs.combined24h) &&
+                                                                    'text-success',
+                                                            )}
                                                         >
                                                             {combinedAPRs.combined24h > 0 ? '+' : ''}
                                                             {combinedAPRs.combined24h.toFixed(0)}% before IL
@@ -301,7 +358,11 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">7d</span>
                                                         <span
-                                                            className={cn('font-medium', aprRange.min === combinedAPRs.combined7d && 'text-success')}
+                                                            className={cn(
+                                                                'font-medium',
+                                                                aprRange.min === combinedAPRs.combined7d ||
+                                                                    (aprRange.max === combinedAPRs.combined7d && 'text-success'),
+                                                            )}
                                                         >
                                                             {combinedAPRs.combined7d > 0 ? '+' : ''}
                                                             {combinedAPRs.combined7d.toFixed(0)}% before IL
@@ -333,7 +394,11 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">30d</span>
                                                         <span
-                                                            className={cn('font-medium', aprRange.min === combinedAPRs.combined30d && 'text-success')}
+                                                            className={cn(
+                                                                'font-medium',
+                                                                aprRange.min === combinedAPRs.combined30d ||
+                                                                    (aprRange.max === combinedAPRs.combined30d && 'text-success'),
+                                                            )}
                                                         >
                                                             {combinedAPRs.combined30d > 0 ? '+' : ''}
                                                             {combinedAPRs.combined30d.toFixed(0)}% before IL

@@ -21,25 +21,16 @@ export function ErrorBoundaryTemplate(props: { error: string }) {
 export default function AccountTemplate(props: {
     charts?: ReactNode
     header: ReactNode
-    summary?: {
-        address: ReactNode
-        aum: ReactNode
-        netDelta: ReactNode
-        apr: ReactNode
-    } | null
+
     hyperEvm: {
         lp: ReactNode
         balances: ReactNode
         txs: ReactNode
-        capital?: ReactNode
-        delta?: ReactNode
     }
     hyperCore: {
         short: ReactNode
         spot: ReactNode
         txs: ReactNode
-        capital?: ReactNode
-        delta?: ReactNode
     }
     activity?: ReactNode
     className?: string

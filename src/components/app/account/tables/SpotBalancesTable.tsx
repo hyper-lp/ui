@@ -28,7 +28,7 @@ export function SpotBalancesTableHeader() {
             balance={<p className="truncate text-right">Balance</p>}
             value={<p className="truncate text-right">Value $</p>}
             price={<p className="truncate text-right">Price</p>}
-            className="h-8 border-b border-default/10 text-xs text-default/50"
+            className="h-8 border-b border-default/10 text-sm text-default/50"
         />
     )
 }
@@ -101,13 +101,17 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                             displayBalance > 0.0001 ? (
                                                 <StyledTooltip
                                                     content={
-                                                        <div className="flex flex-col gap-1">
-                                                            <p className="text-sm text-default/50">Exact Balance</p>
-                                                            <p>
-                                                                {formatNumber(displayBalance, 8)} {balance.asset}
-                                                            </p>
-                                                            <p className="text-sm text-default/50">Raw Value</p>
-                                                            <p className="text-sm">{balance.balance}</p>
+                                                        <div className="space-y-2">
+                                                            <div>
+                                                                <p className="text-sm font-medium opacity-60">Exact Balance</p>
+                                                                <p className="text-sm font-medium">
+                                                                    {formatNumber(displayBalance, 8)} {balance.asset}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium opacity-60">Raw Value</p>
+                                                                <p className="text-sm font-medium">{balance.balance}</p>
+                                                            </div>
                                                         </div>
                                                     }
                                                 >
@@ -124,26 +128,29 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                             price > 0 ? (
                                                 <StyledTooltip
                                                     content={
-                                                        <div className="flex flex-col gap-1">
-                                                            <p className="text-sm text-default/50">{balance.asset} Price</p>
-                                                            <p>{formatUSD(price)}</p>
+                                                        <div className="space-y-2">
+                                                            <div>
+                                                                <p className="text-sm font-medium opacity-60">{balance.asset} Price</p>
+                                                                <p className="text-sm font-medium">{formatUSD(price)}</p>
+                                                            </div>
                                                             {balance.asset === 'HYPE' && (
-                                                                <>
-                                                                    <p className="text-sm text-default/50">Market Cap</p>
-                                                                    <p>{formatUSD(price * 1000000000)}</p>
-                                                                </>
+                                                                <div>
+                                                                    <p className="text-sm font-medium opacity-60">Market Cap</p>
+                                                                    <p className="text-sm font-medium">{formatUSD(price * 1000000000)}</p>
+                                                                </div>
                                                             )}
                                                             {(balance.asset === 'USDC' || balance.asset === 'USDT0') && (
-                                                                <>
-                                                                    <p className="text-sm text-default/50">Peg Deviation</p>
+                                                                <div>
+                                                                    <p className="text-sm font-medium opacity-60">Peg Deviation</p>
                                                                     <p
                                                                         className={cn(
+                                                                            'text-sm font-medium',
                                                                             Math.abs(price - 1) < 0.01 ? 'text-green-600' : 'text-orange-500',
                                                                         )}
                                                                     >
                                                                         {((price - 1) * 100).toFixed(3)}%
                                                                     </p>
-                                                                </>
+                                                                </div>
                                                             )}
                                                         </div>
                                                     }
@@ -379,7 +386,7 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                             <div className="flex gap-2">
                                                 <StyledTooltip
                                                     content={
-                                                        <pre className="max-h-96 max-w-2xl overflow-auto text-xs">
+                                                        <pre className="max-h-96 max-w-2xl overflow-auto text-sm">
                                                             {JSON.stringify(balance, null, 2)}
                                                         </pre>
                                                     }

@@ -13,7 +13,10 @@ import { SCHEMA_VERSION } from '@/constants/schema.constants'
 const CACHE_TTL = 5000 // 5 seconds
 const cache = new Map<string, { data: AccountSnapshot; timestamp: number }>()
 
-export async function GET(_request: NextRequest, context: { params: Promise<{ account: string }> }) {
+export async function GET(
+    _request: NextRequest,
+    context: { params: Promise<{ account: string }> },
+): Promise<NextResponse<AccountSnapshot | { success: false; error: string }>> {
     const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
     const sumPerpValue = (items: PerpPosition[]) => items.reduce((sum, item) => sum + item.notionalValue + item.unrealizedPnl, 0)
     const formatLPPositions = (positions: LPPosition[]) =>
@@ -82,9 +85,13 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
         const usdValues = {
             lps: sumUSDValue(lpPositions),
             spots: sumUSDValue(spotBalances),
-            perps: sumPerpValue(perpPositions) + (withdrawableUSDC || 0),
+            perps: sumPerpValue(perpPositions),
             balances: sumUSDValue(hyperEvmBalances || []),
         }
+
+        // Calculate perp breakdown
+        const perpsNotionalUSD = perpPositions.reduce((sum, item) => sum + item.notionalValue, 0)
+        const perpsPnlUSD = perpPositions.reduce((sum, item) => sum + item.unrealizedPnl, 0)
 
         // Calculate delta exposures in HYPE units
         const deltaValues = {
@@ -283,10 +290,18 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ac
                 },
                 hyperCore: {
                     values: {
-                        perpsUSD: usdValues.perps,
-                        spotUSD: usdValues.spots,
-                        totalUSD: usdValues.perps + usdValues.spots,
+                        // perps
+                        perpsNotionalUSD: perpsNotionalUSD,
+                        perpsPnlUSD: perpsPnlUSD,
+                        perpsNotionalUSDPlusPnlUsd: usdValues.perps, // This is notional + PnL
                         withdrawableUSDC: withdrawableUSDC || 0,
+
+                        // spot
+                        perpsUSD: usdValues.perps, // Keep for backward compatibility
+                        spotUSD: usdValues.spots,
+
+                        // total
+                        totalUSD: usdValues.perps + usdValues.spots,
                     },
                     deltas: {
                         perpsHYPE: deltaValues.perps,

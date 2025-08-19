@@ -36,6 +36,11 @@ model AccountSnapshot {
   strategyDelta     Decimal  @db.Decimal(38, 18)  // ChartSeries.StrategyDelta (already in HYPE)
   netDeltaHYPE      Decimal  @db.Decimal(38, 18)  // ChartSeries.NetDelta
   
+  // Perp breakdown fields
+  perpsNotionalUSD  Decimal  @db.Decimal(38, 18)  // Perp notional value
+  perpsPnlUSD       Decimal  @db.Decimal(38, 18)  // Perp unrealized PnL
+  withdrawableUSDC  Decimal  @db.Decimal(38, 18)  // Idle margin (not part of position)
+  
   // Store HYPE price for USD conversion
   hypePrice         Decimal  @db.Decimal(38, 18)  // HYPE price at snapshot time
   

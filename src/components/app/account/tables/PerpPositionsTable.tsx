@@ -28,9 +28,9 @@ function WithdrawableUSDCTable({ withdrawableUSDC }: { withdrawableUSDC: number 
             <div className="overflow-x-auto">
                 <div className="min-w-max">
                     <SpotRowTemplate
-                        asset={<p className="truncate text-xs text-default/50">Asset</p>}
-                        balance={<p className="truncate text-right text-xs text-default/50">Available</p>}
-                        value={<p className="truncate text-right text-xs text-default/50">Value $</p>}
+                        asset={<p className="truncate text-sm text-default/50">Asset</p>}
+                        balance={<p className="truncate text-right text-sm text-default/50">Available</p>}
+                        value={<p className="truncate text-right text-sm text-default/50">Value $</p>}
                         className="h-8 border-b border-default/10"
                     />
                     <SpotRowTemplate
@@ -169,7 +169,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                         {formatUSD(position.unrealizedPnl)}
                                                     </span>
                                                     <span
-                                                        className={`ml-1 text-xs ${position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                                        className={`ml-1 text-sm ${position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}
                                                     >
                                                         ({pnlPercentage >= 0 ? '+' : ''}
                                                         {Math.abs(pnlPercentage) < 0.05 ? '0' : pnlPercentage.toFixed(1)}%)
@@ -179,13 +179,13 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                             funding={
                                                 <StyledTooltip
                                                     content={
-                                                        <div className="space-y-1">
-                                                            <p className="text-xs font-medium">Funding Rate</p>
-                                                            <p className="text-xs text-default/70">
+                                                        <div className="space-y-1 text-sm">
+                                                            <p className="font-medium">Funding Rate</p>
+                                                            <p className="text-default/70">
                                                                 8h: {!isLong ? '+' : '-'}
                                                                 {Math.abs(eightHourRate).toFixed(4)}%
                                                             </p>
-                                                            <p className="text-xs text-default/70">
+                                                            <p className="text-default/70">
                                                                 APR: {!isLong ? '+' : '-'}
                                                                 {Math.abs(annualizedAPR).toFixed(1)}%
                                                             </p>
@@ -215,29 +215,29 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Position ID</p>
+                                                    <p className="text-sm text-default/50">Position ID</p>
                                                     <p className="text-sm">{shortenValue(position.id)}</p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Asset</p>
+                                                    <p className="text-sm text-default/50">Asset</p>
                                                     <p className="font-medium">{position.asset}</p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Direction</p>
+                                                    <p className="text-sm text-default/50">Direction</p>
                                                     <SideBadge side={isLong ? 'long' : 'short'}>{isLong ? 'LONG' : 'SHORT'}</SideBadge>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Size</p>
+                                                    <p className="text-sm text-default/50">Size</p>
                                                     <p className="font-medium">
                                                         {formatNumber(Math.abs(position.size), 6)} {position.asset}
                                                     </p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Notional Value</p>
+                                                    <p className="text-sm text-default/50">Notional Value</p>
                                                     <p className="font-bold text-primary">{formatUSD(Math.abs(position.notionalValue))}</p>
                                                 </div>
 
@@ -247,17 +247,17 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Entry Price</p>
+                                                    <p className="text-sm text-default/50">Entry Price</p>
                                                     <p className="font-medium">{formatUSD(position.entryPrice)}</p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Mark Price</p>
+                                                    <p className="text-sm text-default/50">Mark Price</p>
                                                     <p className="font-medium">{formatUSD(position.markPrice)}</p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Price Change</p>
+                                                    <p className="text-sm text-default/50">Price Change</p>
                                                     <p
                                                         className={cn(
                                                             'font-medium',
@@ -269,7 +269,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Liquidation Price</p>
+                                                    <p className="text-sm text-default/50">Liquidation Price</p>
                                                     <p className="font-medium text-orange-500">
                                                         {formatUSD(isLong ? position.entryPrice * 0.85 : position.entryPrice * 1.15)}
                                                     </p>
@@ -281,7 +281,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Unrealized PnL</p>
+                                                    <p className="text-sm text-default/50">Unrealized PnL</p>
                                                     <p className={cn('font-bold', position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600')}>
                                                         {position.unrealizedPnl >= 0 ? '+' : ''}
                                                         {formatUSD(position.unrealizedPnl)}
@@ -289,7 +289,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">PnL %</p>
+                                                    <p className="text-sm text-default/50">PnL %</p>
                                                     <p className={cn('font-medium', pnlPercentage >= 0 ? 'text-green-600' : 'text-red-600')}>
                                                         {pnlPercentage >= 0 ? '+' : ''}
                                                         {Math.abs(pnlPercentage) < 0.005 ? '0' : pnlPercentage.toFixed(2)}%
@@ -297,7 +297,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">ROI</p>
+                                                    <p className="text-sm text-default/50">ROI</p>
                                                     <p className={cn('font-medium', position.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600')}>
                                                         {((position.unrealizedPnl / position.marginUsed) * 100).toFixed(1)}%
                                                     </p>
@@ -309,12 +309,12 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Margin Used</p>
+                                                    <p className="text-sm text-default/50">Margin Used</p>
                                                     <p className="font-medium">{formatUSD(position.marginUsed)}</p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Leverage</p>
+                                                    <p className="text-sm text-default/50">Leverage</p>
                                                     <p
                                                         className={cn(
                                                             'font-medium',
@@ -326,14 +326,14 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Margin Ratio</p>
+                                                    <p className="text-sm text-default/50">Margin Ratio</p>
                                                     <p className="font-medium">
                                                         {((position.marginUsed / Math.abs(position.notionalValue)) * 100).toFixed(1)}%
                                                     </p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Distance to Liq</p>
+                                                    <p className="text-sm text-default/50">Distance to Liq</p>
                                                     <p
                                                         className={cn(
                                                             'font-medium',
@@ -363,14 +363,14 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Total Funding Paid</p>
+                                                    <p className="text-sm text-default/50">Total Funding Paid</p>
                                                     <p className={cn('font-medium', position.fundingPaid >= 0 ? 'text-green-600' : 'text-red-600')}>
                                                         {formatUSD(position.fundingPaid)}
                                                     </p>
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Current 8h Rate</p>
+                                                    <p className="text-sm text-default/50">Current 8h Rate</p>
                                                     <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
                                                         {!isLong ? '+' : '-'}
                                                         {Math.abs(eightHourRate).toFixed(4)}%
@@ -378,7 +378,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Annualized APR</p>
+                                                    <p className="text-sm text-default/50">Annualized APR</p>
                                                     <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
                                                         {!isLong ? '+' : '-'}
                                                         {Math.abs(annualizedAPR).toFixed(2)}%
@@ -386,7 +386,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Est. Daily Funding (3×8h)</p>
+                                                    <p className="text-sm text-default/50">Est. Daily Funding (3×8h)</p>
                                                     <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
                                                         {!isLong ? '+' : '-'}
                                                         {formatUSD(Math.abs(position.notionalValue) * (eightHourRate / 100) * 3)}
@@ -394,7 +394,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                                 </div>
 
                                                 <div>
-                                                    <p className="text-xs text-default/50">Est. Monthly Funding</p>
+                                                    <p className="text-sm text-default/50">Est. Monthly Funding</p>
                                                     <p className={cn('font-medium', !isLong ? 'text-green-600' : 'text-red-600')}>
                                                         {!isLong ? '+' : '-'}
                                                         {formatUSD((Math.abs(position.notionalValue) * (annualizedAPR / 100)) / 12)}
@@ -404,16 +404,16 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
 
                                             {/* Raw Data */}
                                             <div className="mt-4 flex items-center justify-between">
-                                                <span className="text-xs text-default/40">Raw data available via tooltip →</span>
+                                                <span className="text-sm text-default/40">Raw data available via tooltip →</span>
                                                 <StyledTooltip
                                                     content={
-                                                        <pre className="max-h-96 max-w-2xl overflow-auto text-xs">
+                                                        <pre className="max-h-96 max-w-2xl overflow-auto text-sm">
                                                             {JSON.stringify(position, null, 2)}
                                                         </pre>
                                                     }
                                                     placement="left"
                                                 >
-                                                    <div className="flex cursor-help items-center gap-1 rounded bg-default/10 px-2 py-1 text-xs hover:bg-default/20">
+                                                    <div className="flex cursor-help items-center gap-1 rounded bg-default/10 px-2 py-1 text-sm hover:bg-default/20">
                                                         <IconWrapper id={IconIds.INFORMATION} className="size-3 text-default/60" />
                                                         <span className="text-default/60">Position Data</span>
                                                     </div>

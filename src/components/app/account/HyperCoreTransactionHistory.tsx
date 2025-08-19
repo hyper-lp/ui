@@ -207,13 +207,13 @@ export function HyperCoreTransactionHistory({ account, limit = DEFAULT_TRANSACTI
                                 </div>
                                 {isExpanded && (
                                     <div className="border-t border-default/5 bg-default/5 px-4 py-3">
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
                                             <div>
-                                                <span className="text-default/50">Trade Hash:</span>{' '}
+                                                <span className="text-default/50">Trade Hash</span>{' '}
                                                 <span className="font-mono">{tx.hash.slice(0, 16)}...</span>
                                             </div>
                                             <div>
-                                                <span className="text-default/50">Status:</span>{' '}
+                                                <span className="text-default/50">Status</span>{' '}
                                                 <span
                                                     className={
                                                         tx.status === 'success'
@@ -225,19 +225,19 @@ export function HyperCoreTransactionHistory({ account, limit = DEFAULT_TRANSACTI
                                                 </span>
                                             </div>
                                             <div>
-                                                <span className="text-default/50">Fee:</span> <span>{tx.fee ? formatUSD(tx.fee) : '-'}</span>
+                                                <span className="text-default/50">Fee</span> <span>{tx.fee ? formatUSD(tx.fee) : '-'}</span>
                                             </div>
                                             <div>
-                                                <span className="text-default/50">Notional:</span> <span>{formatUSD(tx.value)}</span>
+                                                <span className="text-default/50">Notional</span> <span>{formatUSD(tx.value)}</span>
                                             </div>
                                             {tx.fundingRate !== undefined && (
                                                 <div>
-                                                    <span className="text-default/50">Funding Rate:</span>{' '}
+                                                    <span className="text-default/50">Funding Rate</span>{' '}
                                                     <span>{(tx.fundingRate * 100).toFixed(4)}%</span>
                                                 </div>
                                             )}
                                             <div>
-                                                <span className="text-default/50">Timestamp:</span>{' '}
+                                                <span className="text-default/50">Timestamp</span>{' '}
                                                 <span>{new Date(tx.timestamp).toLocaleString()}</span>
                                             </div>
                                         </div>

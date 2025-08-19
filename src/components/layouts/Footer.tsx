@@ -7,9 +7,10 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import LinkWrapper from '../common/LinkWrapper'
-import { AppUrls, FileIds } from '@/enums'
+import { AppUrls, FileIds, IconIds } from '@/enums'
 import StyledTooltip from '../common/StyledTooltip'
 import FileMapper from '../common/FileMapper'
+import IconWrapper from '../icons/IconWrapper'
 dayjs.extend(utc)
 dayjs.extend(relativeTime)
 
@@ -114,13 +115,13 @@ export default function Footer(props: { className?: string }) {
                     ))}
                 </div>
                 <LinkWrapper href={AppUrls.STATUS} target="_blank">
-                    <p className="cursor-alias truncate hover:text-primary hover:underline">Status 🤖</p>
+                    <p className="cursor-alias truncate hover:text-primary hover:underline">Status</p>
                 </LinkWrapper>
                 <LinkWrapper href={AppUrls.DOCS} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Docs</p>
                 </LinkWrapper>
-                <LinkWrapper href={AppUrls.CONTACT_US} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">
-                    Contact
+                <LinkWrapper href={AppUrls.HYPERLP_X} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">
+                    <IconWrapper id={IconIds.X} className="rounded-none" />
                 </LinkWrapper>
             </div>
             {/* <Authors className="justify-start md:justify-end" /> */}

@@ -14,7 +14,7 @@ const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in data
 
 const grid = {
     top: 70,
-    right: 120,
+    right: 145,
     bottom: 50,
     left: 50,
     containLabel: true,
@@ -190,7 +190,7 @@ export default function DeltaTrackingChart() {
                         show: true,
                         formatter: 'Deployed $••,•••',
                         color: textOpacity,
-                        fontSize: 12,
+                        fontSize: 14,
                         offset: [5, 0],
                         backgroundColor: aumColor + '08',
                         padding: [2, 4],
@@ -216,7 +216,7 @@ export default function DeltaTrackingChart() {
                         show: true,
                         formatter: 'LPs Δ +•k$',
                         color: textOpacity,
-                        fontSize: 12,
+                        fontSize: 14,
                         offset: [5, 0],
                         backgroundColor: colors.hyperEvmLp + '08',
                         padding: [2, 4],
@@ -242,7 +242,7 @@ export default function DeltaTrackingChart() {
                         show: true,
                         formatter: 'Wallet Δ +•k$',
                         color: textOpacity,
-                        fontSize: 12,
+                        fontSize: 14,
                         offset: [5, 0],
                         backgroundColor: colors.hyperEvmBalances + '08',
                         padding: [2, 4],
@@ -268,7 +268,7 @@ export default function DeltaTrackingChart() {
                         show: true,
                         formatter: 'Perps Δ -•k$',
                         color: textOpacity,
-                        fontSize: 12,
+                        fontSize: 14,
                         offset: [5, 0],
                         backgroundColor: colors.hyperCorePerp + '08',
                         padding: [2, 4],
@@ -333,7 +333,7 @@ export default function DeltaTrackingChart() {
                         show: true,
                         formatter: 'Strategy Δ +•k$',
                         color: textOpacity,
-                        fontSize: 12,
+                        fontSize: 14,
                         offset: [5, 0],
                         backgroundColor: netDeltaColor + '08',
                         padding: [2, 4],
@@ -717,12 +717,12 @@ export default function DeltaTrackingChart() {
                     //         color: aumColor,
                     //     },
                     // },
-                    // {
-                    //     name: ChartSeries.DeployedAUM,
-                    //     textStyle: {
-                    //         color: aumColor,
-                    //     },
-                    // },
+                    {
+                        name: ChartSeries.DeployedAUM,
+                        textStyle: {
+                            color: aumColor,
+                        },
+                    },
                     {
                         name: ChartSeries.HyperEvmLps,
                         textStyle: {
@@ -763,7 +763,7 @@ export default function DeltaTrackingChart() {
                 top: 10,
                 selected: {
                     // [ChartSeries.AUM]: false,
-                    // [ChartSeries.DeployedAUM]: true,
+                    [ChartSeries.DeployedAUM]: false,
                     [ChartSeries.HyperEvmLps]: true,
                     [ChartSeries.HyperEvmBalances]: false,
                     [ChartSeries.HyperCorePerps]: true,
@@ -903,7 +903,7 @@ export default function DeltaTrackingChart() {
                 //             return `${ChartSeries.AUM} ${formatUSD(value)}`
                 //         },
                 //         color: aumColor,
-                //         fontSize: 12,
+                //         fontSize: 14,
                 //         offset: [5, 0],
                 //         backgroundColor: aumColor + '15',
                 //         padding: [2, 4],
@@ -1168,11 +1168,11 @@ export default function DeltaTrackingChart() {
                     data: strategyDeltasUSD,
                     smooth: false,
                     symbol: 'circle',
-                    symbolSize: 6,
+                    symbolSize: 7,
                     showSymbol: true,
                     lineStyle: {
                         color: netDeltaColor,
-                        width: 2,
+                        width: 3,
                         type: 'dashed',
                     },
                     itemStyle: {
@@ -1211,7 +1211,7 @@ export default function DeltaTrackingChart() {
                             return `${ChartSeries.StrategyDelta} ${formattedValue}`
                         },
                         color: netDeltaColor,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: 600,
                         offset: [5, 0],
                         backgroundColor: netDeltaColor + '15',

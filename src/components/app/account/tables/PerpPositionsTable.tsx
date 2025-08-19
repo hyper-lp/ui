@@ -24,7 +24,7 @@ function WithdrawableUSDCTable({ withdrawableUSDC }: { withdrawableUSDC: number 
 
     return (
         <div className="mb-4">
-            <h3 className="ml-2 text-sm font-medium text-default/60">Withdrawable</h3>
+            <h3 className="ml-2 text-sm font-medium text-default/30">Withdrawable</h3>
             <div className="overflow-x-auto">
                 <div className="min-w-max">
                     <SpotRowTemplate
@@ -108,7 +108,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
         <div className={className}>
             <WithdrawableUSDCTable withdrawableUSDC={withdrawableUSDC} />
 
-            {withdrawableUSDC > 0 && <h3 className="mb-2 ml-2 text-sm font-medium text-default/60">Perpetual Positions</h3>}
+            {withdrawableUSDC > 0 && <h3 className="mb-2 ml-2 text-sm font-medium text-default/30">Short Positions</h3>}
             <div className="overflow-x-auto">
                 <div className="min-w-max">
                     <PerpPositionsTableHeader />

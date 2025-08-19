@@ -14,7 +14,7 @@ export default function AccountSpots() {
             title={
                 <h3 className="text-lg font-semibold text-hyper-core-spots">
                     Spot
-                    <span className="pl-1 text-default/30">= dust</span>
+                    {/* <span className="pl-1 text-default/30">= dust</span> */}
                 </h3>
             }
             defaultExpanded={false}

@@ -15,7 +15,7 @@ export default function AccountLPs() {
     return (
         <CollapsibleCard
             title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs</h3>}
-            defaultExpanded={false}
+            defaultExpanded={true}
             headerRight={
                 <div className="flex items-center gap-6">
                     {weightedAvgAPR !== null && (

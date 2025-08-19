@@ -83,7 +83,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
             {/* Title */}
             <div className="flex w-full flex-wrap items-center gap-1">
                 <p className="text-wrap text-primary">Example of Delta Neutral LP</p>
-                <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-primary" />
+                <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" />
                 <p className="text-wrap text-primary">HYPE/USD₮0</p>
                 <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
                 <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
@@ -174,9 +174,10 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                 </div>
 
                 {/* Global KPIs */}
-                <div className="flex items-center gap-3 md:gap-6">
+                <div className="flex items-center gap-3 md:gap-5">
+                    {/* HyperLP balance */}
                     <div className="flex flex-col items-center lg:items-end">
-                        <span className="text-base tracking-wider text-default/50">Deployed AUM</span>
+                        <span className="text-base tracking-wider text-default/50">HyperLP balance</span>
                         <StyledTooltip
                             content={
                                 <div className="space-y-3">
@@ -210,17 +211,54 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         </StyledTooltip>
                     </div>
 
+                    {/* Active funds */}
+                    <div className="h-10 border-l border-dashed border-default/20" />
+                    <div className="flex flex-col items-center lg:items-end">
+                        <span className="text-base tracking-wider text-default/50">Net P&L</span>
+                        <StyledTooltip
+                            content={
+                                <div className="space-y-3">
+                                    <div className="font-semibold">Deployed AUM on this strategy</div>
+
+                                    <div className="space-y-0">
+                                        <div className="opacity-75">Capital actively deployed</div>
+
+                                        <div className="ml-3">
+                                            <div className="flex justify-between gap-6">
+                                                <span className="opacity-60">LPs</span>
+                                                <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSDWithFees || 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between gap-6">
+                                                <span className="opacity-60">Perpetual positions</span>
+                                                <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between font-medium">
+                                        <span>= Total deployed AUM</span>
+                                        <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
+                                    </div>
+
+                                    <div className="mb-1 opacity-60">Excludes idle/dust capital (wallet & spot)</div>
+                                </div>
+                            }
+                        >
+                            <span className="text-lg font-semibold text-default/30">Todo</span>
+                        </StyledTooltip>
+                    </div>
+
                     {aprRange !== null && (
                         <>
-                            <div className="h-8 w-px border-l border-dashed border-default/20" />
+                            <div className="h-10 border-l border-dashed border-default/20" />
                             <div className="flex flex-col items-center lg:items-end">
-                                <span className="text-base tracking-wider text-default/50">Gross Delta-Neutral APR</span>
+                                <span className="text-base tracking-wider text-default/50">Est. Gross Delta-Neutral APR</span>
                                 <StyledTooltip
                                     content={
                                         <div className="space-y-3">
                                             <div className="space-y-1 pb-2">
                                                 <div className="flex items-center gap-1 text-sm font-medium">
-                                                    <span>Gross Delta-Neutral APR on Deployed AUM</span>
+                                                    <span>Gross Delta-Neutral APR on LPs + Perps</span>
                                                 </div>
                                                 <div className="text-sm">= (2/3 × LP APR) + (1/3 × Funding APR)</div>
                                             </div>
@@ -230,7 +268,9 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                 <div className="space-y-0">
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">24h</span>
-                                                        <span className="font-medium">
+                                                        <span
+                                                            className={cn('font-medium', aprRange.min === combinedAPRs.combined24h && 'text-success')}
+                                                        >
                                                             {combinedAPRs.combined24h > 0 ? '+' : ''}
                                                             {combinedAPRs.combined24h.toFixed(0)}% before IL
                                                         </span>
@@ -260,7 +300,9 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                 <div className="space-y-0">
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">7d</span>
-                                                        <span className="font-medium">
+                                                        <span
+                                                            className={cn('font-medium', aprRange.min === combinedAPRs.combined7d && 'text-success')}
+                                                        >
                                                             {combinedAPRs.combined7d > 0 ? '+' : ''}
                                                             {combinedAPRs.combined7d.toFixed(0)}% before IL
                                                         </span>
@@ -290,7 +332,9 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                 <div className="space-y-1">
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium">30d</span>
-                                                        <span className="font-medium">
+                                                        <span
+                                                            className={cn('font-medium', aprRange.min === combinedAPRs.combined30d && 'text-success')}
+                                                        >
                                                             {combinedAPRs.combined30d > 0 ? '+' : ''}
                                                             {combinedAPRs.combined30d.toFixed(0)}% before IL
                                                         </span>
@@ -331,13 +375,13 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                             `${aprRange.min > 0 ? '+' : ''}${aprRange.min.toFixed(2)}%`
                                         ) : (
                                             <span>
-                                                <span className="pr-1 text-sm text-default/50">low</span>
+                                                <span className="pr-1 text-sm text-default/30">low</span>
                                                 <span>
                                                     {aprRange.min > 0 ? '+' : ''}
                                                     {aprRange.min.toFixed(0)}%
                                                 </span>
 
-                                                <span className="pl-4 pr-1 text-sm text-default/50">high</span>
+                                                <span className="pl-4 pr-1 text-sm text-default/30">high</span>
                                                 <span>
                                                     {aprRange.max > 0 ? '+' : ''}
                                                     {aprRange.max.toFixed(0)}%

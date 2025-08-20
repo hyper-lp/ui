@@ -87,8 +87,8 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
         <div className="mb-4 flex flex-col gap-2 px-2 lg:px-4">
             {/* Title */}
             <div className="flex w-full flex-wrap items-center gap-1">
-                <p className="text-wrap text-primary">Example of Delta Neutral LP</p>
-                <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" />
+                <p className="text-wrap text-primary">Below is an example of a Delta Neutral LP</p>
+                {/* <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" /> */}
                 <p className="text-wrap text-primary">HYPE/USD₮0</p>
                 <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
                 <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
@@ -232,15 +232,16 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                         </div>
                                     </div>
 
-                                    <div className="mt-3 flex justify-between border-t border-default/20 pt-4 font-semibold" />
-                                    <div className="flex justify-between font-semibold">
-                                        <span>= HyperLP balance</span>
-                                        <span>{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
+                                    <div className="mt-3 border-t border-default/20 pt-4">
+                                        <div className="flex justify-between font-semibold">
+                                            <span>= HyperLP balance</span>
+                                            <span>{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
+                                        </div>
                                     </div>
                                 </div>
                             }
                         >
-                            <span className="text-xl font-semibold">{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
+                            <span className="cursor-help text-xl font-semibold">{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
                         </StyledTooltip>
                     </div>
 
@@ -285,18 +286,38 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" />
                     <div className="hidden flex-col items-center md:flex lg:items-end">
                         <span className="text-base tracking-wider text-default/50">Net P&L</span>
-                        <LinkWrapper href={AppUrls.DOCS} target="_blank" className="w-full">
-                            <StyledTooltip
-                                content={
-                                    <div className="flex items-center gap-1">
-                                        <p>Methodology we want to implement</p>
-                                        <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-3.5" />
+
+                        <StyledTooltip
+                            content={
+                                <div className="flex max-w-[380px] flex-col gap-2">
+                                    <div className="flex flex-col">
+                                        <p className="text-lg font-semibold">Net P&L coming soon</p>
+                                        <p className="text-default/60">We’re working on adding proper P&L benchmarks for LPs leg.</p>
                                     </div>
-                                }
-                            >
-                                <span className="text-lg font-semibold text-default/30 hover:text-primary hover:underline">Coming soon</span>
-                            </StyledTooltip>
-                        </LinkWrapper>
+                                    <div className="flex flex-col">
+                                        <p className="font-semibold underline">3 points of view to consider for the LP leg</p>
+                                        <ul className="list-disc pl-2 text-default/60">
+                                            <li>
+                                                <span className="font-semibold">HOLD</span> Compare to just holding the tokens in your wallet
+                                            </li>
+                                            <li>
+                                                <span className="font-semibold">HYPE</span> Compare to holding HYPE, using deposit-time prices
+                                            </li>
+                                            <li>
+                                                <span className="font-semibold">USDT0</span> Compare to holding USDT0, using deposit-time prices
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <LinkWrapper href={AppUrls.DOCS} target="_blank" className="flex items-center gap-1 underline hover:text-primary">
+                                        <p>Also we want a P&L explained display</p>
+                                        <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-3.5" />
+                                    </LinkWrapper>
+                                </div>
+                            }
+                        >
+                            <span className="cursor-help text-lg font-semibold text-default/30 hover:text-primary hover:underline">Coming soon</span>
+                        </StyledTooltip>
                     </div>
 
                     {aprRange !== null && (

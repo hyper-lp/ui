@@ -1,0 +1,48 @@
+generator keeper {
+  provider = "prisma-client-js"
+  output   = "../../src/lib/prisma-keeper-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_KEEPER")
+}
+
+// Vault model - referenced by Rebalance
+model Vault {
+  id          String      @id
+  name        String
+  symbol      String
+  address     String      @unique @db.VarChar(42)
+  poolAddress String      @db.VarChar(42)
+  metadata    Json
+  createdAt   DateTime    @default(now()) @db.Timestamptz
+  updatedAt   DateTime    @updatedAt @db.Timestamptz
+  
+  // Relations
+  rebalances  Rebalance[]
+  
+  @@index([address])
+  @@index([poolAddress])
+}
+
+// Rebalance events model
+model Rebalance {
+  id            String   @id @default(cuid())
+  vaultId       String
+  timestamp     DateTime @db.Timestamptz
+  status        String   @db.VarChar(20) // 'pending', 'executed', 'failed', 'cancelled'
+  poolAddress   String   @db.VarChar(42)
+  vaultAddress  String   @db.VarChar(42)
+  metadata      Json     // Contains detailed rebalance information
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+  
+  // Relations
+  vault         Vault    @relation(fields: [vaultId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  
+  @@index([poolAddress])
+  @@index([status, timestamp])
+  @@index([vaultAddress, timestamp])
+  @@index([vaultId, timestamp])
+}

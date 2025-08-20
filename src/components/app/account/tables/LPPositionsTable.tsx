@@ -158,36 +158,124 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                             }
                                             nftId={<p className="truncate">#{position.tokenId}</p>}
                                             status={
-                                                <p className="truncate">
-                                                    {position.isClosed ? (
-                                                        <span className="text-default/40">Closed</span>
-                                                    ) : position.inRange !== undefined ? (
-                                                        <StyledTooltip
-                                                            content={
-                                                                <div className="space-y-2">
-                                                                    <div>
-                                                                        <p className="text-sm font-medium opacity-60">Tick Lower</p>
-                                                                        <p className="text-sm">{position.tickLower}</p>
+                                                <StyledTooltip
+                                                    content={
+                                                        position.tickLower !== undefined &&
+                                                        position.tickUpper !== undefined &&
+                                                        position.tickCurrent !== undefined ? (
+                                                            <div className="space-y-3">
+                                                                <div className="space-y-1 pb-2">
+                                                                    <div className="text-sm font-medium">Position Range Details</div>
+                                                                    <div className="text-sm opacity-60">Current position within liquidity range</div>
+                                                                </div>
+
+                                                                {/* Tick Information */}
+                                                                <div className="space-y-0">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="font-medium">Tick Range</span>
+                                                                        <span className="font-medium">
+                                                                            {position.tickLower} → {position.tickUpper}
+                                                                        </span>
                                                                     </div>
-                                                                    <div>
-                                                                        <p className="text-sm font-medium opacity-60">Tick Upper</p>
-                                                                        <p className="text-sm">{position.tickUpper}</p>
-                                                                    </div>
-                                                                    <div>
-                                                                        <p className="text-sm font-medium opacity-60">Current Tick</p>
-                                                                        <p className="text-sm">{position.tickCurrent}</p>
+                                                                    <div className="ml-3">
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">Current tick</span>
+                                                                            <span className="opacity-60">{position.tickCurrent}</span>
+                                                                        </div>
+                                                                        <div className="flex justify-between gap-6">
+                                                                            <span className="opacity-60">Range width</span>
+                                                                            <span className="opacity-60">
+                                                                                {position.tickUpper - position.tickLower} ticks
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            }
-                                                        >
+
+                                                                {/* Price Range */}
+                                                                {(() => {
+                                                                    const priceLower = Math.pow(1.0001, position.tickLower)
+                                                                    const priceUpper = Math.pow(1.0001, position.tickUpper)
+                                                                    const priceCurrent = Math.pow(1.0001, position.tickCurrent)
+                                                                    const lowerPercent = ((priceLower - priceCurrent) / priceCurrent) * 100
+                                                                    const upperPercent = ((priceUpper - priceCurrent) / priceCurrent) * 100
+                                                                    const positionInRange = position.inRange
+                                                                        ? ((priceCurrent - priceLower) / (priceUpper - priceLower)) * 100
+                                                                        : 0
+
+                                                                    return (
+                                                                        <>
+                                                                            <div className="space-y-0">
+                                                                                <div className="flex items-center justify-between">
+                                                                                    <span className="font-medium">Price Range</span>
+                                                                                    <span className="font-medium">
+                                                                                        {lowerPercent.toFixed(1)}% to +{upperPercent.toFixed(1)}%
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="ml-3">
+                                                                                    <div className="flex justify-between gap-6">
+                                                                                        <span className="opacity-60">Lower bound</span>
+                                                                                        <span className="opacity-60">
+                                                                                            {lowerPercent.toFixed(1)}% from current
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between gap-6">
+                                                                                        <span className="opacity-60">Upper bound</span>
+                                                                                        <span className="opacity-60">
+                                                                                            +{upperPercent.toFixed(1)}% from current
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div className="border-t border-default/20 pt-3">
+                                                                                <div className="flex items-center justify-between">
+                                                                                    <span className="font-medium">Position Status</span>
+                                                                                    <span
+                                                                                        className={`font-medium ${position.inRange ? 'text-success' : 'text-warning'}`}
+                                                                                    >
+                                                                                        {!position.inRange
+                                                                                            ? priceCurrent < priceLower
+                                                                                                ? `Below by ${Math.abs(lowerPercent).toFixed(1)}%`
+                                                                                                : `Above by ${(((priceCurrent - priceUpper) / priceUpper) * 100).toFixed(1)}%`
+                                                                                            : `${positionInRange.toFixed(0)}% through range`}
+                                                                                    </span>
+                                                                                </div>
+                                                                                {position.inRange && (
+                                                                                    <div className="ml-3 mt-1">
+                                                                                        <div className="flex justify-between gap-6">
+                                                                                            <span className="opacity-60">Distance to lower</span>
+                                                                                            <span className="opacity-60">
+                                                                                                {Math.abs(lowerPercent).toFixed(1)}%
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between gap-6">
+                                                                                            <span className="opacity-60">Distance to upper</span>
+                                                                                            <span className="opacity-60">
+                                                                                                {upperPercent.toFixed(1)}%
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        </>
+                                                                    )
+                                                                })()}
+                                                            </div>
+                                                        ) : null
+                                                    }
+                                                >
+                                                    <p className="truncate">
+                                                        {position.isClosed ? (
+                                                            <span className="text-default/40">Closed</span>
+                                                        ) : position.inRange !== undefined ? (
                                                             <SideBadge side={position.inRange ? 'long' : 'short'}>
                                                                 {position.inRange ? 'In Range' : 'Out'}
                                                             </SideBadge>
-                                                        </StyledTooltip>
-                                                    ) : (
-                                                        <span className="text-default/50">-</span>
-                                                    )}
-                                                </p>
+                                                        ) : (
+                                                            <span className="text-default/50">-</span>
+                                                        )}
+                                                    </p>
+                                                </StyledTooltip>
                                             }
                                             poolAddress={
                                                 <StyledTooltip

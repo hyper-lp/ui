@@ -317,7 +317,7 @@ export async function GET(
                     },
                 },
                 portfolio: {
-                    totalUSD: Object.values(usdValues).reduce((sum, val) => sum + val, 0) + unclaimedFeesTotal,
+                    totalUSD: usdValues.lps + unclaimedFeesTotal + usdValues.perps + usdValues.balances + usdValues.spots + (withdrawableUSDC || 0),
                     deployedAUM: usdValues.lps + unclaimedFeesTotal + usdValues.perps,
                     netDeltaHYPE: Object.values(deltaValues).reduce((sum, val) => sum + val, 0),
                     strategyDelta: deltaValues.lps + deltaValues.perps,

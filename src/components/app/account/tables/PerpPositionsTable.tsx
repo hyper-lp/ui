@@ -24,7 +24,7 @@ function WithdrawableUSDCTable({ withdrawableUSDC }: { withdrawableUSDC: number 
 
     return (
         <div className="mb-4">
-            <h3 className="ml-2 text-sm font-medium text-default/30">Withdrawable</h3>
+            <h3 className="ml-2 text-sm font-medium text-default/30">Idle USDC (withdrawable but kept in account)</h3>
             <div className="overflow-x-auto">
                 <div className="min-w-max">
                     <SpotRowTemplate

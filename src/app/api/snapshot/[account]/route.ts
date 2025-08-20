@@ -18,7 +18,7 @@ export async function GET(
     context: { params: Promise<{ account: string }> },
 ): Promise<NextResponse<AccountSnapshot | { success: false; error: string }>> {
     const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
-    const sumPerpValue = (items: PerpPosition[]) => items.reduce((sum, item) => sum + item.notionalValue + item.unrealizedPnl, 0)
+    const sumPerpValue = (items: PerpPosition[]) => items.reduce((sum, item) => sum + item.marginUsed + item.unrealizedPnl, 0)
     const formatLPPositions = (positions: LPPosition[]) =>
         positions.map((p) => ({
             ...p,

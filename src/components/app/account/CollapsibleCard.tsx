@@ -28,8 +28,8 @@ export function CollapsibleCard({
             <div className="flex items-center justify-between py-2 pl-2 pr-4">
                 <button onClick={() => setIsExpanded(!isExpanded)} className="flex flex-1 items-center gap-2 text-left">
                     <IconWrapper
-                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                        className={cn('size-5', isExpanded ? 'text-background-opposite' : 'text-default')}
+                        id={IconIds.CHEVRON_DOWN}
+                        className={cn('size-5 transition-transform', isExpanded ? 'text-background-opposite' : 'text-default', isExpanded && 'rotate-180')}
                     />
                     {title}
                 </button>

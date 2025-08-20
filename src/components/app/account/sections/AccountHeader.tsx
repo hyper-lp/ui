@@ -140,7 +140,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="flex items-center gap-1 text-xl font-medium transition-colors hover:text-primary"
+                                className="flex items-center gap-1 text-xl font-medium transition-colors hover:bg-default/5 hover:text-primary"
                             >
                                 <IconWrapper
                                     id={IconIds.CHEVRON_DOWN}

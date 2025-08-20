@@ -11,7 +11,6 @@ import { AppUrls, FileIds, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import FileMapper from '@/components/common/FileMapper'
 import numeral from 'numeral'
-import { useRouter } from 'next/navigation'
 
 interface AccountHeaderProps {
     accountFromUrl: string
@@ -65,7 +64,28 @@ interface AccountHeaderProps {
     }
 }
 
+const DEMO_ACCOUNTS = [
+    {
+        address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
+        name: 'Alpha',
+        description: 'Demo - Project X 500-250',
+    },
+    {
+        address: '0x8466D5b78CaFc01fC1264D2D724751b70211D979',
+        name: 'Bravo',
+        description: 'Demo - Hyperswap 500-250',
+    },
+    {
+        address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
+        name: 'Charlie',
+        description: 'Demo - Hyperswap 1000-500',
+    },
+]
+
 export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpdateIn, isFetching, refetch, metrics, timings }: AccountHeaderProps) {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null)
+
     // Calculate APR range from all time periods
     const combinedAPRs = metrics?.portfolio?.apr
     const lpAPRs = metrics?.hyperEvm?.apr
@@ -84,16 +104,30 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
         return { min, max }
     }, [combinedAPRs])
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
     return (
         <div className="mb-4 flex flex-col gap-2 px-2 lg:px-4">
             {/* Title */}
             <div className="flex w-full flex-wrap items-center gap-1">
-                <p className="text-wrap text-primary">Below is an example of a delta neutral</p>
+                <p className="text-wrap text-default">Below is an example of a delta neutral</p>
                 {/* <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" /> */}
-                <p className="text-wrap text-primary">HYPE/USD₮0</p>
+                <p className="text-wrap text-hyper-evm-lps">HYPE/USD₮0</p>
                 <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
                 <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
-                <p className="text-wrap text-primary">LP (actively rebalanced) with a dynamic short leg on HyperCore</p>
+                <p className="text-wrap text-hyper-evm-lps">LP (actively rebalanced)</p>
+                <p className="text-wrap text-default">with a</p>
+                <p className="text-wrap text-hyper-core-perps">dynamic short leg</p>
             </div>
 
             {/* Summary */}
@@ -102,8 +136,46 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                 <div className="flex flex-col">
                     {/* row */}
                     <div className="flex items-baseline gap-2 text-sm">
-                        <p className="hidden text-xl font-medium xl:flex">{accountFromUrl}</p>
-                        <p className="flex text-xl font-medium xl:hidden">{shortenValue(accountFromUrl, 6)}</p>
+                        {/* Address Dropdown */}
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="flex items-center gap-2 text-xl font-medium transition-colors hover:text-primary"
+                            >
+                                <IconWrapper
+                                    id={IconIds.CHEVRON_DOWN}
+                                    className={cn('size-4 transition-transform', isDropdownOpen && 'rotate-180')}
+                                />
+                                <span className="hidden xl:flex">{accountFromUrl}</span>
+                                <span className="flex xl:hidden">{shortenValue(accountFromUrl, 6)}</span>
+                            </button>
+
+                            {isDropdownOpen && (
+                                <div className="absolute left-0 top-full z-50 mt-2 min-w-[400px] rounded-lg border border-default/20 bg-background shadow-lg">
+                                    {DEMO_ACCOUNTS.map((account) => (
+                                        <LinkWrapper
+                                            key={account.address}
+                                            href={`/account/${account.address}`}
+                                            target="_blank"
+                                            className="flex items-start gap-3 border-b border-default/10 p-3 transition-colors last:border-b-0 hover:bg-default/5"
+                                        >
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={cn('font-semibold', account.address === accountFromUrl && 'text-primary')}>
+                                                        {account.name}
+                                                    </span>
+                                                    <span className="text-default/50">•</span>
+                                                    <span className="text-default/50">{account.description}</span>
+                                                </div>
+                                                <p className="mt-1 font-mono text-sm text-default/70">{account.address}</p>
+                                            </div>
+                                            <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="mt-0.5 size-4 text-default/50" />
+                                        </LinkWrapper>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
                         {[
                             {
                                 name: 'evm',

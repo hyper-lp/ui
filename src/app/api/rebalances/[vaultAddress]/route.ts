@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
 
         // Build WHERE clause conditions
         const conditions = [`r."vaultAddress" = $1`]
-        const values: any[] = [vaultAddress]
+        const values: (string | number)[] = [vaultAddress]
         let paramCount = 1
 
         if (status) {

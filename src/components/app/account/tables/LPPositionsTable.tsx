@@ -50,6 +50,7 @@ export function LPPositionsTableHeader() {
 
 export function LPPositionsTable({ className }: LPPositionsTableProps) {
     const [selectedPosition, setSelectedPosition] = useState<LPPosition | null>(null)
+    const [showClosedPositions, setShowClosedPositions] = useState(false)
 
     // Get positions and APR data directly from the store
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
@@ -88,8 +89,8 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                 <LPPositionsTableHeader />
                 <div className="divide-y divide-default/5">
                     {positions
-                        // Show all positions excepted closed ones
-                        .filter((position) => !position.isClosed)
+                        // Filter based on showClosedPositions state
+                        .filter((position) => showClosedPositions || !position.isClosed)
                         .map((position) => {
                             const isHypeToken0 = position.token0Symbol === 'HYPE' || position.token0Symbol === 'WHYPE'
                             const hypeAmount = isHypeToken0 ? position.token0Amount : position.token1Amount
@@ -523,6 +524,19 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                         })}
                 </div>
             </div>
+
+            {/* Show/Hide Closed Positions Toggle */}
+            {positions.some((p) => p.isClosed) && (
+                <div className="mt-3 flex px-3 pb-2">
+                    <button
+                        onClick={() => setShowClosedPositions(!showClosedPositions)}
+                        className="flex gap-3 text-xs text-default/40 transition-colors hover:text-default/60"
+                    >
+                        <p className={!showClosedPositions ? 'line-through' : ''}>Hide closed</p>
+                        <p className={showClosedPositions ? 'line-through' : ''}>Show closed</p>
+                    </button>
+                </div>
+            )}
 
             {/* DEX Iframe Modal */}
             <DexIframeModal

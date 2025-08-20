@@ -88,7 +88,8 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                 <LPPositionsTableHeader />
                 <div className="divide-y divide-default/5">
                     {positions
-                        .filter((position) => position.valueUSD > 1)
+                        // Show all positions excepted closed ones
+                        .filter((position) => !position.isClosed)
                         .map((position) => {
                             const isHypeToken0 = position.token0Symbol === 'HYPE' || position.token0Symbol === 'WHYPE'
                             const hypeAmount = isHypeToken0 ? position.token0Amount : position.token1Amount

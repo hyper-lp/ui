@@ -343,122 +343,126 @@ export class PositionFetcher {
         }
 
         // Step 10: Calculate values for each position
-        return positions.map((pos) => {
-            const poolState = poolStates.get(pos.poolAddress)
-            const dex = getDexByPositionManager(pos.pmAddress) || pos.protocol
+        const calculatedPositions = await Promise.all(
+            positions.map(async (pos) => {
+                const poolState = poolStates.get(pos.poolAddress)
+                const dex = getDexByPositionManager(pos.pmAddress) || pos.protocol
 
-            if (!poolState) {
-                // No pool state available for this position
-            }
-
-            // Determine if position is in range
-            const inRange = poolState ? pos.tickLower <= poolState.tick && poolState.tick < pos.tickUpper : false
-
-            // Determine token symbols first
-            const token0Symbol = this.getTokenSymbol(pos.token0)
-            const token1Symbol = this.getTokenSymbol(pos.token1)
-
-            // Get correct decimals for each token
-            const token0Decimals = this.TOKEN_DECIMALS[token0Symbol] || 18
-            const token1Decimals = this.TOKEN_DECIMALS[token1Symbol] || 18
-
-            // Calculate token amounts
-            let token0Amount = 0
-            let token1Amount = 0
-
-            if (poolState) {
-                const amounts = calculateTokenAmounts(pos.liquidity, poolState.sqrtPriceX96, pos.tickLower, pos.tickUpper, poolState.tick)
-                // Apply correct decimals
-                token0Amount = Number(amounts.amount0) / 10 ** token0Decimals
-                token1Amount = Number(amounts.amount1) / 10 ** token1Decimals
-            }
-
-            // Get token prices
-            const token0Price = this.getTokenPrice(token0Symbol)
-            const token1Price = this.getTokenPrice(token1Symbol)
-
-            // Calculate USD values
-            const token0ValueUSD = token0Amount * token0Price
-            const token1ValueUSD = token1Amount * token1Price
-            const valueUSD = token0ValueUSD + token1ValueUSD
-
-            // Calculate uncollected fees (only shows fees already collected from pool but not withdrawn)
-            const fees0Uncollected = pos.tokensOwed0 > 0n ? Number(pos.tokensOwed0) / 10 ** token0Decimals : 0
-            const fees1Uncollected = pos.tokensOwed1 > 0n ? Number(pos.tokensOwed1) / 10 ** token1Decimals : 0
-
-            // Calculate unclaimed fees (fees earned but not yet collected from the pool)
-            let unclaimedFees0 = 0
-            let unclaimedFees1 = 0
-            let unclaimedFeesUSD = 0
-
-            if (poolState && pos.liquidity > 0n) {
-                const tickDataKey = `${pos.poolAddress}-${pos.tickLower}-${pos.tickUpper}`
-                const tickData = tickDataMap.get(tickDataKey)
-
-                if (tickData && poolState.feeGrowthGlobal0X128 !== undefined && poolState.feeGrowthGlobal1X128 !== undefined) {
-                    // Calculate fee growth inside for token0
-                    const feeGrowthInside0 = this.calculateFeeGrowthInside(
-                        pos.tickLower,
-                        pos.tickUpper,
-                        poolState.tick,
-                        poolState.feeGrowthGlobal0X128,
-                        tickData.feeGrowthOutside0Lower,
-                        tickData.feeGrowthOutside0Upper,
-                    )
-
-                    // Calculate fee growth inside for token1
-                    const feeGrowthInside1 = this.calculateFeeGrowthInside(
-                        pos.tickLower,
-                        pos.tickUpper,
-                        poolState.tick,
-                        poolState.feeGrowthGlobal1X128,
-                        tickData.feeGrowthOutside1Lower,
-                        tickData.feeGrowthOutside1Upper,
-                    )
-
-                    // Calculate unclaimed fees
-                    const unclaimedFees0Raw = this.calculateUnclaimedFees(pos.liquidity, feeGrowthInside0, pos.feeGrowthInside0LastX128)
-
-                    const unclaimedFees1Raw = this.calculateUnclaimedFees(pos.liquidity, feeGrowthInside1, pos.feeGrowthInside1LastX128)
-
-                    // Convert to human-readable values
-                    unclaimedFees0 = Number(unclaimedFees0Raw) / 10 ** token0Decimals
-                    unclaimedFees1 = Number(unclaimedFees1Raw) / 10 ** token1Decimals
-
-                    // Calculate USD value
-                    unclaimedFeesUSD = unclaimedFees0 * token0Price + unclaimedFees1 * token1Price
+                if (!poolState) {
+                    // No pool state available for this position
                 }
-            }
 
-            return {
-                id: pos.tokenId,
-                tokenId: pos.tokenId,
-                dex: dex.toUpperCase(),
-                pool: pos.poolAddress,
-                token0: pos.token0,
-                token1: pos.token1,
-                token0Symbol,
-                token1Symbol,
-                fee: pos.fee,
-                tickLower: pos.tickLower,
-                tickUpper: pos.tickUpper,
-                tickCurrent: poolState?.tick,
-                liquidity: pos.liquidity.toString(),
-                sqrtPriceX96: poolState?.sqrtPriceX96?.toString(),
-                inRange,
-                valueUSD,
-                token0Amount,
-                token1Amount,
-                token0ValueUSD,
-                token1ValueUSD,
-                fees0Uncollected: fees0Uncollected > 0 ? fees0Uncollected : undefined,
-                fees1Uncollected: fees1Uncollected > 0 ? fees1Uncollected : undefined,
-                unclaimedFees0: unclaimedFees0 > 0 ? unclaimedFees0 : undefined,
-                unclaimedFees1: unclaimedFees1 > 0 ? unclaimedFees1 : undefined,
-                unclaimedFeesUSD: unclaimedFeesUSD > 0 ? unclaimedFeesUSD : undefined,
-                isClosed: pos.liquidity === 0n,
-            }
-        })
+                // Determine if position is in range
+                const inRange = poolState ? pos.tickLower <= poolState.tick && poolState.tick < pos.tickUpper : false
+
+                // Determine token symbols first
+                const token0Symbol = this.getTokenSymbol(pos.token0)
+                const token1Symbol = this.getTokenSymbol(pos.token1)
+
+                // Get correct decimals for each token
+                const token0Decimals = this.TOKEN_DECIMALS[token0Symbol] || 18
+                const token1Decimals = this.TOKEN_DECIMALS[token1Symbol] || 18
+
+                // Calculate token amounts
+                let token0Amount = 0
+                let token1Amount = 0
+
+                if (poolState) {
+                    const amounts = calculateTokenAmounts(pos.liquidity, poolState.sqrtPriceX96, pos.tickLower, pos.tickUpper, poolState.tick)
+                    // Apply correct decimals
+                    token0Amount = Number(amounts.amount0) / 10 ** token0Decimals
+                    token1Amount = Number(amounts.amount1) / 10 ** token1Decimals
+                }
+
+                // Get token prices
+                const token0Price = await this.getTokenPrice(token0Symbol)
+                const token1Price = await this.getTokenPrice(token1Symbol)
+
+                // Calculate USD values
+                const token0ValueUSD = token0Amount * token0Price
+                const token1ValueUSD = token1Amount * token1Price
+                const valueUSD = token0ValueUSD + token1ValueUSD
+
+                // Calculate uncollected fees (only shows fees already collected from pool but not withdrawn)
+                const fees0Uncollected = pos.tokensOwed0 > 0n ? Number(pos.tokensOwed0) / 10 ** token0Decimals : 0
+                const fees1Uncollected = pos.tokensOwed1 > 0n ? Number(pos.tokensOwed1) / 10 ** token1Decimals : 0
+
+                // Calculate unclaimed fees (fees earned but not yet collected from the pool)
+                let unclaimedFees0 = 0
+                let unclaimedFees1 = 0
+                let unclaimedFeesUSD = 0
+
+                if (poolState && pos.liquidity > 0n) {
+                    const tickDataKey = `${pos.poolAddress}-${pos.tickLower}-${pos.tickUpper}`
+                    const tickData = tickDataMap.get(tickDataKey)
+
+                    if (tickData && poolState.feeGrowthGlobal0X128 !== undefined && poolState.feeGrowthGlobal1X128 !== undefined) {
+                        // Calculate fee growth inside for token0
+                        const feeGrowthInside0 = this.calculateFeeGrowthInside(
+                            pos.tickLower,
+                            pos.tickUpper,
+                            poolState.tick,
+                            poolState.feeGrowthGlobal0X128,
+                            tickData.feeGrowthOutside0Lower,
+                            tickData.feeGrowthOutside0Upper,
+                        )
+
+                        // Calculate fee growth inside for token1
+                        const feeGrowthInside1 = this.calculateFeeGrowthInside(
+                            pos.tickLower,
+                            pos.tickUpper,
+                            poolState.tick,
+                            poolState.feeGrowthGlobal1X128,
+                            tickData.feeGrowthOutside1Lower,
+                            tickData.feeGrowthOutside1Upper,
+                        )
+
+                        // Calculate unclaimed fees
+                        const unclaimedFees0Raw = this.calculateUnclaimedFees(pos.liquidity, feeGrowthInside0, pos.feeGrowthInside0LastX128)
+
+                        const unclaimedFees1Raw = this.calculateUnclaimedFees(pos.liquidity, feeGrowthInside1, pos.feeGrowthInside1LastX128)
+
+                        // Convert to human-readable values
+                        unclaimedFees0 = Number(unclaimedFees0Raw) / 10 ** token0Decimals
+                        unclaimedFees1 = Number(unclaimedFees1Raw) / 10 ** token1Decimals
+
+                        // Calculate USD value
+                        unclaimedFeesUSD = unclaimedFees0 * token0Price + unclaimedFees1 * token1Price
+                    }
+                }
+
+                return {
+                    id: pos.tokenId,
+                    tokenId: pos.tokenId,
+                    dex: dex.toUpperCase(),
+                    pool: pos.poolAddress,
+                    token0: pos.token0,
+                    token1: pos.token1,
+                    token0Symbol,
+                    token1Symbol,
+                    fee: pos.fee,
+                    tickLower: pos.tickLower,
+                    tickUpper: pos.tickUpper,
+                    tickCurrent: poolState?.tick,
+                    liquidity: pos.liquidity.toString(),
+                    sqrtPriceX96: poolState?.sqrtPriceX96?.toString(),
+                    inRange,
+                    valueUSD,
+                    token0Amount,
+                    token1Amount,
+                    token0ValueUSD,
+                    token1ValueUSD,
+                    fees0Uncollected: fees0Uncollected > 0 ? fees0Uncollected : undefined,
+                    fees1Uncollected: fees1Uncollected > 0 ? fees1Uncollected : undefined,
+                    unclaimedFees0: unclaimedFees0 > 0 ? unclaimedFees0 : undefined,
+                    unclaimedFees1: unclaimedFees1 > 0 ? unclaimedFees1 : undefined,
+                    unclaimedFeesUSD: unclaimedFeesUSD > 0 ? unclaimedFeesUSD : undefined,
+                    isClosed: pos.liquidity === 0n,
+                }
+            }),
+        )
+
+        return calculatedPositions
     }
 
     /**
@@ -960,12 +964,16 @@ export class PositionFetcher {
             this.tokenPriceCache.set('USDT0', 1)
             this.tokenPriceCache.set('USDC', 1)
 
-            // Fetch HYPE price from aggregator if not found
-            if (!this.tokenPriceCache.has('HYPE')) {
+            // Always ensure HYPE price is fetched
+            if (!this.tokenPriceCache.has('HYPE') || this.tokenPriceCache.get('HYPE') === 0) {
+                console.log('[PositionFetcher] Fetching HYPE price from aggregator...')
                 const hypePrice = await priceAggregator.getTokenPrice('HYPE')
-                if (hypePrice !== null) {
+                if (hypePrice !== null && hypePrice > 0) {
+                    console.log(`[PositionFetcher] HYPE price fetched: $${hypePrice}`)
                     this.tokenPriceCache.set('HYPE', hypePrice)
                     this.tokenPriceCache.set('WHYPE', hypePrice)
+                } else {
+                    console.warn('[PositionFetcher] Failed to fetch HYPE price from aggregator')
                 }
             }
             if (!this.tokenPriceCache.has('BTC')) {
@@ -1043,17 +1051,38 @@ export class PositionFetcher {
     /**
      * Get token price in USD
      */
-    public getTokenPrice(symbol: string): number {
+    public async getTokenPrice(symbol: string): Promise<number> {
         // Use cached prices if available
         const cached = this.tokenPriceCache.get(symbol)
         if (cached !== undefined) return cached
 
         // Default prices for stablecoins
         if (symbol === 'USDT0' || symbol === 'USDT' || symbol === 'USDC' || symbol === 'USD₮0') {
+            this.tokenPriceCache.set(symbol, 1.0)
             return 1.0
         }
 
-        // If no price found, return 0
+        // For HYPE/WHYPE, try to fetch from price aggregator
+        if (symbol === 'HYPE' || symbol === 'WHYPE') {
+            console.log(`[PositionFetcher] Fetching ${symbol} price from aggregator...`)
+            const price = await priceAggregator.getTokenPrice(symbol === 'WHYPE' ? 'HYPE' : symbol)
+            if (price !== null && price > 0) {
+                this.tokenPriceCache.set(symbol, price)
+                if (symbol === 'HYPE') {
+                    this.tokenPriceCache.set('WHYPE', price)
+                }
+                return price
+            }
+        }
+
+        // Try to fetch all prices if not cached
+        await this.fetchTokenPrices()
+
+        // Check cache again after fetching
+        const newCached = this.tokenPriceCache.get(symbol)
+        if (newCached !== undefined) return newCached
+
+        // If still no price found, return 0
         console.warn(`[PositionFetcher] No price found for token: ${symbol}`)
         return 0
     }
@@ -1141,7 +1170,7 @@ export class PositionFetcher {
                 if (balance > 0n) {
                     const token = tokens[i]
                     const tokenAmount = Number(balance) / 10 ** token.decimals
-                    const tokenPrice = this.tokenPriceCache.get(token.symbol) || 0
+                    const tokenPrice = await this.getTokenPrice(token.symbol)
 
                     // Skip if balance is too small
                     if (tokenAmount > 0.0001) {

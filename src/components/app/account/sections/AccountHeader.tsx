@@ -140,11 +140,11 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="flex items-center gap-2 text-xl font-medium transition-colors hover:text-primary"
+                                className="flex items-center gap-1 text-xl font-medium transition-colors hover:text-primary"
                             >
                                 <IconWrapper
                                     id={IconIds.CHEVRON_DOWN}
-                                    className={cn('size-4 transition-transform', isDropdownOpen && 'rotate-180')}
+                                    className={cn('size-4 text-default/50 transition-transform', isDropdownOpen && 'rotate-180')}
                                 />
                                 <span className="hidden xl:flex">{accountFromUrl}</span>
                                 <span className="flex xl:hidden">{shortenValue(accountFromUrl, 6)}</span>
@@ -213,7 +213,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         <button
                             onClick={() => refetch()}
                             disabled={isFetching}
-                            className="rounded bg-default/5 p-1 hover:bg-default/10 hover:text-default disabled:opacity-50"
+                            className="rounded hover:bg-default/10 hover:text-default disabled:opacity-50"
                             title="Refresh all page data for this address"
                         >
                             <IconWrapper id={IconIds.REFRESH} className={cn('size-3.5', isFetching && 'animate-spin')} />

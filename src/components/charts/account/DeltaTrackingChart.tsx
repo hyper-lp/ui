@@ -579,6 +579,7 @@ export default function DeltaTrackingChart() {
                     },
                 },
             ],
+            // todo add explaination on blue line = rebalances
             tooltip: {
                 trigger: 'axis',
                 triggerOn: 'mousemove',

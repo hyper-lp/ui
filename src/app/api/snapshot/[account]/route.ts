@@ -337,12 +337,12 @@ export async function GET(
 
             prices: {
                 HYPE:
-                    positionFetcher.getTokenPrice('HYPE') ||
-                    positionFetcher.getTokenPrice('WHYPE') ||
+                    (await positionFetcher.getTokenPrice('HYPE')) ||
+                    (await positionFetcher.getTokenPrice('WHYPE')) ||
                     (await priceAggregator.getTokenPrice('HYPE')) ||
                     0,
-                USDC: positionFetcher.getTokenPrice('USDC') || 1,
-                USDT: positionFetcher.getTokenPrice('USDT') || 1,
+                USDC: (await positionFetcher.getTokenPrice('USDC')) || 1,
+                USDT: (await positionFetcher.getTokenPrice('USDT')) || 1,
             },
 
             timings: {

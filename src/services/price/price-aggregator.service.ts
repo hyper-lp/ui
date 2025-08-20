@@ -110,9 +110,9 @@ export class PriceAggregatorService {
                 }
             }
 
-            // Special handling for HYPE - check user state endpoint
+            // Special handling for HYPE - try multiple endpoints
             if (symbol === 'HYPE') {
-                // Try to get HYPE price from asset contexts or other endpoints
+                // Try spotMetaAndAssetCtxs endpoint
                 const assetResponse = await fetch(`${this.HYPERLIQUID_API_URL}/info`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -125,8 +125,27 @@ export class PriceAggregatorService {
                     if (assetData[0]?.['universe']?.find((asset: { name: string }) => asset.name === 'HYPE')) {
                         const hypeAsset = assetData[0]['universe'].find((asset: { name: string; markPx?: string }) => asset.name === 'HYPE')
                         if (hypeAsset?.markPx) {
-                            return parseFloat(hypeAsset.markPx)
+                            const price = parseFloat(hypeAsset.markPx)
+                            if (price > 0) {
+                                console.log(`[PriceAggregator] HYPE price from spotMetaAndAssetCtxs: $${price}`)
+                                return price
+                            }
                         }
+                    }
+                }
+
+                // Try meta endpoint as fallback
+                const metaResponse = await fetch(`${this.HYPERLIQUID_API_URL}/info`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'meta' }),
+                })
+
+                if (metaResponse.ok) {
+                    const metaData = await metaResponse.json()
+                    if (metaData?.universe?.find((asset: { name: string }) => asset.name === 'HYPE')) {
+                        // Even if no price in meta, we know HYPE exists
+                        console.log('[PriceAggregator] HYPE found in meta endpoint but no price available')
                     }
                 }
             }

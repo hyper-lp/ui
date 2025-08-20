@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ add
         const params = await context.params
         const { address } = params
         const accountAddress = address.toLowerCase()
-        
+
         // Get limit from query params with a default of 500 and max of 1000
         const searchParams = request.nextUrl.searchParams
         const requestedLimit = parseInt(searchParams.get('limit') || '500', 10)

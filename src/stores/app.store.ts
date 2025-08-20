@@ -99,9 +99,9 @@ export const useAppStore = create<AppStore>()(
                 set((state) => {
                     const address = snapshot.evmAddress.toLowerCase()
                     const currentSnapshots = state.addressSnapshots[address] || []
-                    
+
                     // Check if this snapshot already exists (by timestamp)
-                    const exists = currentSnapshots.some(s => s.timestamp === snapshot.timestamp)
+                    const exists = currentSnapshots.some((s) => s.timestamp === snapshot.timestamp)
                     if (exists) {
                         console.log(`[addSnapshot] Snapshot already exists for timestamp ${snapshot.timestamp}, skipping`)
                         return state // Don't update if snapshot already exists
@@ -130,9 +130,8 @@ export const useAppStore = create<AppStore>()(
                     // Add the new snapshot and keep the last maxSnapshots
                     const updatedSnapshots = [...currentSnapshots, snapshot]
                     // Only slice if we exceed maxSnapshots
-                    const finalSnapshots = updatedSnapshots.length > state.maxSnapshots 
-                        ? updatedSnapshots.slice(-state.maxSnapshots)
-                        : updatedSnapshots
+                    const finalSnapshots =
+                        updatedSnapshots.length > state.maxSnapshots ? updatedSnapshots.slice(-state.maxSnapshots) : updatedSnapshots
 
                     return {
                         addressSnapshots: {

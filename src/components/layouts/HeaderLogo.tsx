@@ -31,7 +31,7 @@ export default function HeaderLogo() {
                     <p className="text-xs text-default/40">Alpha</p>
                 </div>
                 <ImageWrapper
-                    src={isDark ? FileIds.POWERED_BY_HYPERLIQUID_WHITE : FileIds.POWERED_BY_HYPERLIQUID_HL800}
+                    src={isDark ? FileIds.POWERED_BY_HYPERLIQUID_WHITE : FileIds.POWERED_BY_HYPERLIQUID_HL300}
                     alt="Logo"
                     width={140}
                     height={16}

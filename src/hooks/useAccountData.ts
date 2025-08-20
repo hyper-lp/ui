@@ -21,11 +21,12 @@ export function useAccountData(address: string) {
         if (address) {
             setCurrentAddress(address)
 
-            // Fetch historical snapshots from database
-            fetch(`${AppUrls.API_SNAPSHOTS}/${address}`)
+            // Fetch historical snapshots from database (default 500, max 1000)
+            fetch(`${AppUrls.API_SNAPSHOTS}/${address}?limit=500`)
                 .then((res) => res.json())
                 .then((data) => {
                     if (data.snapshots && Array.isArray(data.snapshots)) {
+                        console.log(`[useAccountData] Fetched ${data.snapshots.length} historical snapshots`)
                         setSnapshots(data.snapshots)
                     }
                 })

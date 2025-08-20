@@ -8,15 +8,20 @@ const pool = new Pool({
     connectionTimeoutMillis: 2000,
 })
 
-export async function GET(_request: NextRequest, context: { params: Promise<{ address: string }> }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ address: string }> }) {
     const client = await pool.connect()
 
     try {
         const params = await context.params
         const { address } = params
         const accountAddress = address.toLowerCase()
+        
+        // Get limit from query params with a default of 500 and max of 1000
+        const searchParams = request.nextUrl.searchParams
+        const requestedLimit = parseInt(searchParams.get('limit') || '500', 10)
+        const limit = Math.min(Math.max(1, requestedLimit), 1000) // Clamp between 1 and 1000
 
-        // Fetch last 100 snapshots for this address
+        // Fetch last N snapshots for this address
         // Include indexed fields for efficient access
         const result = await client.query(
             `SELECT 
@@ -37,8 +42,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ad
              FROM "AccountSnapshot" 
              WHERE address = $1 
              ORDER BY timestamp DESC 
-             LIMIT 100`,
-            [accountAddress],
+             LIMIT $2`,
+            [accountAddress, limit],
         )
 
         // Parse JSON snapshots and reverse to get chronological order

@@ -26,7 +26,7 @@ export function useAccountData(address: string) {
                 .then((res) => res.json())
                 .then((data) => {
                     if (data.snapshots && Array.isArray(data.snapshots)) {
-                        console.log(`[useAccountData] Fetched ${data.snapshots.length} historical snapshots`)
+                        console.log(`[useAccountData] Setting ${data.snapshots.length} historical snapshots`)
                         setSnapshots(data.snapshots)
                     }
                 })

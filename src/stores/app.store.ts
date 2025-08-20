@@ -84,7 +84,7 @@ export const useAppStore = create<AppStore>()(
 
             // Account snapshots management
             addressSnapshots: {},
-            maxSnapshots: 20, // Reduced to save localStorage space
+            maxSnapshots: 500, // Increased to show more historical data (snapshots are not persisted to localStorage)
             lastSnapshotAddedAt: -1, // -1 means no snapshot has been added yet
             currentAddress: null,
             isFetchingAccount: false,
@@ -99,6 +99,13 @@ export const useAppStore = create<AppStore>()(
                 set((state) => {
                     const address = snapshot.evmAddress.toLowerCase()
                     const currentSnapshots = state.addressSnapshots[address] || []
+                    
+                    // Check if this snapshot already exists (by timestamp)
+                    const exists = currentSnapshots.some(s => s.timestamp === snapshot.timestamp)
+                    if (exists) {
+                        console.log(`[addSnapshot] Snapshot already exists for timestamp ${snapshot.timestamp}, skipping`)
+                        return state // Don't update if snapshot already exists
+                    }
 
                     // Clean up old addresses if we have too many (keep only 5 most recent addresses)
                     const addressEntries = Object.entries(state.addressSnapshots)
@@ -120,10 +127,17 @@ export const useAppStore = create<AppStore>()(
                         })
                     }
 
+                    // Add the new snapshot and keep the last maxSnapshots
+                    const updatedSnapshots = [...currentSnapshots, snapshot]
+                    // Only slice if we exceed maxSnapshots
+                    const finalSnapshots = updatedSnapshots.length > state.maxSnapshots 
+                        ? updatedSnapshots.slice(-state.maxSnapshots)
+                        : updatedSnapshots
+
                     return {
                         addressSnapshots: {
                             ...cleanedSnapshots,
-                            [address]: [...currentSnapshots, snapshot].slice(-state.maxSnapshots),
+                            [address]: finalSnapshots,
                         },
                         lastSnapshotAddedAt: Date.now(),
                     }

@@ -492,7 +492,7 @@ export default function DeltaTrackingChart() {
 
         // 1. get stored snapshots
         let storedSnapshots = getSnapshots()
-        console.log(`[DeltaTrackingChart] Using ${storedSnapshots.length} snapshots for chart`)
+        console.log(`[DeltaTrackingChart] Re-rendering with ${storedSnapshots.length} snapshots, trigger: lastSnapshotAddedAt=${lastSnapshotAddedAt}`)
 
         // Show loading skeleton if no data
         if (storedSnapshots.length === 0) {

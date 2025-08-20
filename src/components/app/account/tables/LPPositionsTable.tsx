@@ -684,8 +684,8 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
                                                 {position.feeTier && (
                                                     <div>
-                                                        <p className="text-sm text-default/50">Fee Tier (String)</p>
-                                                        <p className="font-medium">{(Number(position.feeTier) / 10000).toFixed(2)}%</p>
+                                                        <p className="text-sm text-default/50">Fee Tier</p>
+                                                        <p className="font-medium">{position.feeTier}</p>
                                                     </div>
                                                 )}
 

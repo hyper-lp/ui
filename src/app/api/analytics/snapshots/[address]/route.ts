@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Pool } from 'pg'
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL_MONITORING,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-})
+import { getMonitoringPool } from '@/lib/database-pools'
 
 export async function GET(request: NextRequest, context: { params: Promise<{ address: string }> }) {
+    const pool = getMonitoringPool()
     const client = await pool.connect()
 
     try {

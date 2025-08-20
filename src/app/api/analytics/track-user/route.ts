@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Pool } from 'pg'
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL_MONITORING,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-})
+import { getMonitoringPool } from '@/lib/database-pools'
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,6 +9,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Address is required' }, { status: 400 })
         }
 
+        const pool = getMonitoringPool()
         const client = await pool.connect()
         try {
             // Try to update first

@@ -5,13 +5,13 @@ import { fundingHistoryService } from '@/services/core/funding-history.service'
 import { priceAggregator } from '@/services/price/price-aggregator.service'
 import { hyperEvmRpcService } from '@/services/evm/hyperevm-rpc.service'
 import { calculateLpDelta, calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/utils/delta.util'
+import { MemoryCache, createCachedResponse } from '@/utils/cache.util'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { LPPosition, PerpPosition } from '@/interfaces'
 import { SCHEMA_VERSION } from '@/constants/schema.constants'
 
-// Simple in-memory cache with 5-second TTL
-const CACHE_TTL = 2000 // 2 seconds
-const cache = new Map<string, { data: AccountSnapshot; timestamp: number }>()
+// Simple in-memory cache with 2-second TTL
+const cache = new MemoryCache<AccountSnapshot>(2000)
 
 export async function GET(
     _request: NextRequest,
@@ -32,16 +32,9 @@ export async function GET(
         const cacheKey = accountAddress
 
         // Check cache first
-        const cached = cache.get(cacheKey)
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-            // Return cached data with cache hit header
-            return NextResponse.json(cached.data, {
-                headers: {
-                    'X-Cache': 'HIT',
-                    'X-Cache-Age': String(Date.now() - cached.timestamp),
-                    'Cache-Control': 'no-store, no-cache, must-revalidate',
-                },
-            })
+        const cachedData = cache.get(cacheKey)
+        if (cachedData) {
+            return createCachedResponse(cachedData, true, cache.getCacheAge(cacheKey))
         }
 
         // Track API user (fire and forget, don't block the API if it fails)
@@ -91,6 +84,8 @@ export async function GET(
         // Calculate perp breakdown
         const perpsNotionalUSD = perpPositions.reduce((sum, item) => sum + item.notionalValue, 0)
         const perpsPnlUSD = perpPositions.reduce((sum, item) => sum + item.unrealizedPnl, 0)
+        const perpsMarginUSD = perpPositions.reduce((sum, item) => sum + item.marginUsed, 0)
+        const perpsMarginUSDPlusPnlUSD = perpsMarginUSD + perpsPnlUSD
 
         // Calculate delta exposures in HYPE units
         const deltaValues = {
@@ -269,14 +264,16 @@ export async function GET(
                 },
                 hyperCore: {
                     values: {
-                        // perps
+                        // perps breakdown
                         perpsNotionalUSD: perpsNotionalUSD,
                         perpsPnlUSD: perpsPnlUSD,
-                        perpsNotionalUSDPlusPnlUsd: usdValues.perps, // This is notional + PnL
+                        perpsNotionalUSDPlusPnlUsd: usdValues.perps, // This is margin + PnL
+                        perpsMarginUSD: perpsMarginUSD,
+                        perpsMarginUSDPlusPnlUSD: perpsMarginUSDPlusPnlUSD,
                         withdrawableUSDC: withdrawableUSDC || 0,
 
                         // spot
-                        perpsUSD: usdValues.perps, // Keep for backward compatibility
+                        perpsUSD: usdValues.perps, // Keep for backward compatibility (margin + PnL)
                         spotUSD: usdValues.spots,
 
                         // total
@@ -339,23 +336,9 @@ export async function GET(
         }
 
         // Store in cache
-        cache.set(cacheKey, {
-            data: accountData,
-            timestamp: Date.now(),
-        })
+        cache.set(cacheKey, accountData)
 
-        // Clean up old cache entries (keep max 100 entries)
-        if (cache.size > 100) {
-            const firstKey = cache.keys().next().value
-            if (firstKey) cache.delete(firstKey)
-        }
-
-        return NextResponse.json(accountData, {
-            headers: {
-                'X-Cache': 'MISS',
-                'Cache-Control': 'no-store, no-cache, must-revalidate',
-            },
-        })
+        return createCachedResponse(accountData, false)
     } catch (error) {
         console.error('Error fetching positions:', error)
         return NextResponse.json(

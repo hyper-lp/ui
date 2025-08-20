@@ -530,8 +530,10 @@ export default function DeltaTrackingChart() {
             // Convert HYPE deltas to USD using the snapshot's price
             const lpUSD = snapshot.metrics.hyperEvm.deltas.lpsHYPE * hypePrice
             // For short position: delta = -(notional + PnL)
-            // Use the pre-calculated perpsNotionalUSDPlusPnlUsd for accuracy
-            const perpUSD = -(snapshot.metrics.hyperCore?.values?.perpsNotionalUSDPlusPnlUsd || 0)
+            // Calculate as notional + PnL (not margin + PnL)
+            const perpNotional = snapshot.metrics.hyperCore?.values?.perpsNotionalUSD || 0
+            const perpPnL = snapshot.metrics.hyperCore?.values?.perpsPnlUSD || 0
+            const perpUSD = -(perpNotional + perpPnL)
 
             const spotUSD = snapshot.metrics.hyperCore.deltas.spotHYPE * hypePrice
             const balancesUSD = snapshot.metrics.hyperEvm.deltas.balancesHYPE * hypePrice

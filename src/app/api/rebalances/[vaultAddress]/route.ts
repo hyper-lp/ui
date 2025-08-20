@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Pool } from 'pg'
+import { getKeeperPool } from '@/lib/database-pools'
+import { MemoryCache, createCachedResponse } from '@/utils/cache.util'
 import type { RebalanceResponse, RebalanceMetadata } from '@/interfaces/rebalance.interface'
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL_KEEPER,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-})
-
-// Simple in-memory cache with 5-second TTL
-const CACHE_TTL = 1000 // 1 second
-const cache = new Map<string, { data: RebalanceResponse; timestamp: number }>()
+// Simple in-memory cache with 1-second TTL
+const cache = new MemoryCache<RebalanceResponse>(1000)
 
 export async function GET(request: NextRequest, context: { params: Promise<{ vaultAddress: string }> }): Promise<NextResponse<RebalanceResponse>> {
     try {
@@ -31,17 +24,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
         const cacheKey = `${vaultAddress}-${limit}-${offset}-${status}-${orderBy}-${order}`
 
         // Check cache first
-        const cached = cache.get(cacheKey)
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-            return NextResponse.json(cached.data, {
-                headers: {
-                    'X-Cache': 'HIT',
-                    'X-Cache-Age': String(Date.now() - cached.timestamp),
-                    'Cache-Control': 'no-store, no-cache, must-revalidate',
-                },
-            })
+        const cachedData = cache.get(cacheKey)
+        if (cachedData) {
+            return createCachedResponse(cachedData, true, cache.getCacheAge(cacheKey))
         }
 
+        const pool = getKeeperPool()
         const client = await pool.connect()
 
         // Build WHERE clause conditions
@@ -136,25 +124,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
         }
 
         // Store in cache
-        cache.set(cacheKey, {
-            data: response,
-            timestamp: Date.now(),
-        })
-
-        // Clean up old cache entries (keep max 100 entries)
-        if (cache.size > 100) {
-            const firstKey = cache.keys().next().value
-            if (firstKey) cache.delete(firstKey)
-        }
+        cache.set(cacheKey, response)
 
         client.release()
 
-        return NextResponse.json(response, {
-            headers: {
-                'X-Cache': 'MISS',
-                'Cache-Control': 'no-store, no-cache, must-revalidate',
-            },
-        })
+        return createCachedResponse(response, false)
     } catch (error) {
         console.error('Error fetching rebalances:', error)
         return NextResponse.json(

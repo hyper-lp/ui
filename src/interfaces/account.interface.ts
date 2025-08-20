@@ -85,12 +85,14 @@ export interface AccountSnapshotMetrics {
     }
     hyperCore: {
         values: {
-            // perpsUSD: number // Perp positions value in USD
+            // perps breakdown
             perpsNotionalUSD: number
             perpsPnlUSD: number
             perpsNotionalUSDPlusPnlUsd: number
+            perpsMarginUSD: number // Total margin used
+            perpsMarginUSDPlusPnlUSD: number // Margin + PnL
             withdrawableUSDC: number // Withdrawable USDC from HyperCore
-            perpsUSD: number
+            perpsUSD: number // Keep for backward compatibility (margin + PnL)
 
             // spot
             spotUSD: number // Spot balances value in USD

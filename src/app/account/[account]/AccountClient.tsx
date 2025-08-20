@@ -114,6 +114,8 @@ export default function AccountClient() {
                 perpsNotionalUSD: 0,
                 perpsPnlUSD: 0,
                 perpsNotionalUSDPlusPnlUsd: 0,
+                perpsMarginUSD: 0,
+                perpsMarginUSDPlusPnlUSD: 0,
                 withdrawableUSDC: 0,
                 perpsUSD: 0,
                 spotUSD: 0,

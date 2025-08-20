@@ -10,7 +10,7 @@ import type { LPPosition, PerpPosition } from '@/interfaces'
 import { SCHEMA_VERSION } from '@/constants/schema.constants'
 
 // Simple in-memory cache with 5-second TTL
-const CACHE_TTL = 5000 // 5 seconds
+const CACHE_TTL = 2000 // 2 seconds
 const cache = new Map<string, { data: AccountSnapshot; timestamp: number }>()
 
 export async function GET(
@@ -18,7 +18,7 @@ export async function GET(
     context: { params: Promise<{ account: string }> },
 ): Promise<NextResponse<AccountSnapshot | { success: false; error: string }>> {
     const sumUSDValue = (items: Array<{ valueUSD: number }>) => items.reduce((sum, item) => sum + item.valueUSD, 0)
-    const sumPerpValue = (items: PerpPosition[]) => items.reduce((sum, item) => sum + item.notionalValue + item.unrealizedPnl, 0)
+    const sumPerpValue = (items: PerpPosition[]) => items.reduce((sum, item) => sum + item.marginUsed + item.unrealizedPnl, 0)
     const formatLPPositions = (positions: LPPosition[]) =>
         positions.map((p) => ({
             ...p,
@@ -62,7 +62,6 @@ export async function GET(
             perpData: perpPositions,
             withdrawableUSDC,
             hyperEvmData: hyperEvmBalances,
-            fundingRates,
             timings: fetchTimings,
         } = positionsData
 
@@ -158,46 +157,26 @@ export async function GET(
         }
 
         // Calculate user-specific weighted average funding APR for perps
-        // Initialize with current funding rate (live)
         const fundingAPRs = {
-            current: null as number | null, // Current funding rate
-            apr24h: null as number | null, // 24h historical average
-            apr7d: null as number | null, // 7d historical average
-            apr30d: null as number | null, // 30d historical average
+            avgAPR24h: null as number | null, // 24h historical average
+            avgAPR7d: null as number | null, // 7d historical average
+            avgAPR30d: null as number | null, // 30d historical average
         }
 
         if (perpPositions.length > 0) {
-            // Current funding rate calculation (live rate)
-            if (fundingRates && Object.keys(fundingRates).length > 0) {
-                let totalNotional = 0
-                let weightedFundingSum = 0
-
-                perpPositions.forEach((position) => {
-                    const notional = Math.abs(position.notionalValue)
-                    const fundingRate = fundingRates[position.asset]
-
-                    if (notional > 0 && fundingRate !== undefined) {
-                        totalNotional += notional
-                        weightedFundingSum += fundingRate * notional
-                    }
-                })
-
-                if (totalNotional > 0) {
-                    fundingAPRs.current = weightedFundingSum / totalNotional
-                }
-            }
-
             // Fetch historical funding APRs from Hyperliquid
-            const historicalFunding = await fundingHistoryService.calculateWeightedFundingAPRs(
-                perpPositions.map((p) => ({
-                    asset: p.asset,
-                    notionalValue: p.notionalValue,
-                })),
-            )
+            // Pass margin-weighted positions with direction
+            const positionsForFunding = perpPositions.map((p) => ({
+                asset: p.asset,
+                marginValue: p.marginUsed,
+                isShort: p.size < 0,
+            }))
 
-            fundingAPRs.apr24h = historicalFunding.apr24h
-            fundingAPRs.apr7d = historicalFunding.apr7d
-            fundingAPRs.apr30d = historicalFunding.apr30d
+            const historicalFunding = await fundingHistoryService.calculateWeightedFundingAPRs(positionsForFunding)
+
+            fundingAPRs.avgAPR24h = historicalFunding.apr24h
+            fundingAPRs.avgAPR7d = historicalFunding.apr7d
+            fundingAPRs.avgAPR30d = historicalFunding.apr30d
         }
 
         // Calculate combined APRs for different time periods (weighted by USD value)
@@ -213,37 +192,37 @@ export async function GET(
 
         if (totalValue > 0) {
             // 24h combined APR
-            if (lpAPRs.apr24h !== null || fundingAPRs.apr24h !== null) {
+            if (lpAPRs.apr24h !== null || fundingAPRs.avgAPR24h !== null) {
                 let weightedSum = 0
                 if (lpAPRs.apr24h !== null) {
                     weightedSum += lpAPRs.apr24h * lpValue
                 }
-                if (fundingAPRs.apr24h !== null) {
-                    weightedSum += fundingAPRs.apr24h * perpValue
+                if (fundingAPRs.avgAPR24h !== null) {
+                    weightedSum += fundingAPRs.avgAPR24h * perpValue
                 }
                 combinedAPRs.apr24h = weightedSum / totalValue
             }
 
             // 7d combined APR
-            if (lpAPRs.apr7d !== null || fundingAPRs.apr7d !== null) {
+            if (lpAPRs.apr7d !== null || fundingAPRs.avgAPR7d !== null) {
                 let weightedSum = 0
                 if (lpAPRs.apr7d !== null) {
                     weightedSum += lpAPRs.apr7d * lpValue
                 }
-                if (fundingAPRs.apr7d !== null) {
-                    weightedSum += fundingAPRs.apr7d * perpValue
+                if (fundingAPRs.avgAPR7d !== null) {
+                    weightedSum += fundingAPRs.avgAPR7d * perpValue
                 }
                 combinedAPRs.apr7d = weightedSum / totalValue
             }
 
             // 30d combined APR
-            if (lpAPRs.apr30d !== null || fundingAPRs.apr30d !== null) {
+            if (lpAPRs.apr30d !== null || fundingAPRs.avgAPR30d !== null) {
                 let weightedSum = 0
                 if (lpAPRs.apr30d !== null) {
                     weightedSum += lpAPRs.apr30d * lpValue
                 }
-                if (fundingAPRs.apr30d !== null) {
-                    weightedSum += fundingAPRs.apr30d * perpValue
+                if (fundingAPRs.avgAPR30d !== null) {
+                    weightedSum += fundingAPRs.avgAPR30d * perpValue
                 }
                 combinedAPRs.apr30d = weightedSum / totalValue
             }
@@ -310,10 +289,9 @@ export async function GET(
                     },
                     perpAggregates,
                     apr: {
-                        currentFundingAPR: fundingAPRs.current,
-                        fundingAPR24h: fundingAPRs.apr24h,
-                        fundingAPR7d: fundingAPRs.apr7d,
-                        fundingAPR30d: fundingAPRs.apr30d,
+                        avgFundingAPR24h: fundingAPRs.avgAPR24h,
+                        avgFundingAPR7d: fundingAPRs.avgAPR7d,
+                        avgFundingAPR30d: fundingAPRs.avgAPR30d,
                     },
                 },
                 portfolio: {
@@ -332,7 +310,6 @@ export async function GET(
 
             marketData: {
                 poolAPR: poolAPRData,
-                fundingRates: fundingRates || {},
             },
 
             prices: {

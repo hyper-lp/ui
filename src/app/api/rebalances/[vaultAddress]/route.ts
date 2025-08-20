@@ -9,9 +9,11 @@ const pool = new Pool({
     connectionTimeoutMillis: 2000,
 })
 
-export async function GET(request: NextRequest, context: { params: Promise<{ vaultAddress: string }> }): Promise<NextResponse<RebalanceResponse>> {
-    const client = await pool.connect()
+// Simple in-memory cache with 5-second TTL
+const CACHE_TTL = 1000 // 1 second
+const cache = new Map<string, { data: RebalanceResponse; timestamp: number }>()
 
+export async function GET(request: NextRequest, context: { params: Promise<{ vaultAddress: string }> }): Promise<NextResponse<RebalanceResponse>> {
     try {
         const params = await context.params
         const { vaultAddress } = params
@@ -24,6 +26,23 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
         const status = searchParams.get('status') || null
         const orderBy = searchParams.get('orderBy') || 'timestamp'
         const order = (searchParams.get('order') || 'desc').toUpperCase()
+
+        // Create cache key from parameters
+        const cacheKey = `${vaultAddress}-${limit}-${offset}-${status}-${orderBy}-${order}`
+
+        // Check cache first
+        const cached = cache.get(cacheKey)
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+            return NextResponse.json(cached.data, {
+                headers: {
+                    'X-Cache': 'HIT',
+                    'X-Cache-Age': String(Date.now() - cached.timestamp),
+                    'Cache-Control': 'no-store, no-cache, must-revalidate',
+                },
+            })
+        }
+
+        const client = await pool.connect()
 
         // Build WHERE clause conditions
         const conditions = [`r."vaultAddress" = $1`]
@@ -103,7 +122,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
                 : undefined,
         }))
 
-        return NextResponse.json({
+        const response: RebalanceResponse = {
             success: true,
             data: formattedRebalances,
             pagination: {
@@ -113,6 +132,27 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
                 hasMore: offset + limit < totalCount,
                 requestedLimit,
                 actualLimit: limit,
+            },
+        }
+
+        // Store in cache
+        cache.set(cacheKey, {
+            data: response,
+            timestamp: Date.now(),
+        })
+
+        // Clean up old cache entries (keep max 100 entries)
+        if (cache.size > 100) {
+            const firstKey = cache.keys().next().value
+            if (firstKey) cache.delete(firstKey)
+        }
+
+        client.release()
+
+        return NextResponse.json(response, {
+            headers: {
+                'X-Cache': 'MISS',
+                'Cache-Control': 'no-store, no-cache, must-revalidate',
             },
         })
     } catch (error) {
@@ -124,7 +164,5 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
             },
             { status: 500 },
         )
-    } finally {
-        client.release()
     }
 }

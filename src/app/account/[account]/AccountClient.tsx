@@ -29,13 +29,13 @@ const DeltaTrackingChart = dynamic(
             // Fallback if the module fails to load
             return {
                 default: () => (
-                    <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[550px]">Chart unavailable</div>
+                    <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[500px]">Chart unavailable</div>
                 ),
             }
         }),
     {
         ssr: false,
-        loading: () => <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[550px]">Loading chart...</div>,
+        loading: () => <div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[500px]">Loading chart...</div>,
     },
 )
 
@@ -121,7 +121,7 @@ export default function AccountClient() {
             },
             deltas: { perpsHYPE: 0, spotHYPE: 0, totalHYPE: 0 },
             perpAggregates: { totalMargin: 0, totalNotional: 0, totalPnl: 0, avgLeverage: 0 },
-            apr: { currentFundingAPR: null, fundingAPR24h: null, fundingAPR7d: null, fundingAPR30d: null },
+            apr: { avgFundingAPR24h: null, avgFundingAPR7d: null, avgFundingAPR30d: null },
         },
         portfolio: {
             totalUSD: 0,

@@ -68,6 +68,8 @@ export interface RebalanceResponse {
         limit: number
         offset: number
         hasMore: boolean
+        requestedLimit?: number
+        actualLimit?: number
     }
     error?: string
 }

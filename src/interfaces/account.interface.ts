@@ -36,7 +36,6 @@ export interface AccountSnapshot {
     // 3. Market data (not user-specific)
     marketData: {
         poolAPR?: AggregatedPoolAPR // HYPE/USDT0 pool APR data across all DEXs
-        fundingRates?: Record<string, number> // coin -> annualized APR for shorts
     }
 
     // 4. prices
@@ -111,10 +110,9 @@ export interface AccountSnapshotMetrics {
             avgLeverage: number // Average leverage across all perp positions
         }
         apr: {
-            currentFundingAPR: number | null // Current (live) weighted funding APR for perp positions
-            fundingAPR24h: number | null // 24h historical average funding APR
-            fundingAPR7d: number | null // 7d historical average funding APR
-            fundingAPR30d: number | null // 30d historical average funding APR
+            avgFundingAPR24h: number | null // 24h historical average funding APR
+            avgFundingAPR7d: number | null // 7d historical average funding APR
+            avgFundingAPR30d: number | null // 30d historical average funding APR
         }
         leverageRatio?: number // Leverage ratio (e.g., 2.5 for 2.5x)
         healthFactorPercent?: number // Health factor as percentage

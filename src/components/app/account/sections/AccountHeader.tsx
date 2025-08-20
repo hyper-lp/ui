@@ -11,6 +11,7 @@ import { AppUrls, FileIds, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import FileMapper from '@/components/common/FileMapper'
 import numeral from 'numeral'
+import type { AccountSnapshotMetrics, AccountSnapshot } from '@/interfaces/account.interface'
 
 interface AccountHeaderProps {
     accountFromUrl: string
@@ -18,50 +19,8 @@ interface AccountHeaderProps {
     nextUpdateIn: string
     isFetching: boolean
     refetch: () => void
-    metrics: {
-        portfolio?: {
-            deployedAUM?: number
-            totalUSD?: number
-            apr?: {
-                combined24h?: number | null
-                combined7d?: number | null
-                combined30d?: number | null
-            }
-        }
-        hyperEvm?: {
-            values?: {
-                lpsUSDWithFees?: number
-                balancesUSD?: number
-            }
-            apr?: {
-                weightedAvg24h?: number | null
-                weightedAvg7d?: number | null
-                weightedAvg30d?: number | null
-            }
-        }
-        hyperCore?: {
-            values?: {
-                perpsUSD?: number
-                spotUSD?: number
-                withdrawableUSDC?: number
-            }
-            apr?: {
-                fundingAPR24h?: number | null
-                fundingAPR7d?: number | null
-                fundingAPR30d?: number | null
-            }
-        }
-    }
-    timings?: {
-        hyperEvm?: {
-            lpsMs?: number
-            balancesMs?: number
-        }
-        hyperCore?: {
-            perpsMs?: number
-            spotsMs?: number
-        }
-    }
+    metrics: Partial<AccountSnapshotMetrics>
+    timings?: AccountSnapshot['timings']
 }
 
 const DEMO_ACCOUNTS = [
@@ -444,12 +403,12 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                 <span className="opacity-60">{lpAPRs.weightedAvg24h.toFixed(1)}% </span>
                                                             </div>
                                                         )}
-                                                        {fundingAPRs?.fundingAPR24h !== null && fundingAPRs?.fundingAPR24h !== undefined && (
+                                                        {fundingAPRs?.avgFundingAPR24h !== null && fundingAPRs?.avgFundingAPR24h !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {fundingAPRs.fundingAPR24h > 0 ? '+' : ''}
-                                                                    {fundingAPRs.fundingAPR24h.toFixed(1)}%
+                                                                    {fundingAPRs.avgFundingAPR24h > 0 ? '+' : ''}
+                                                                    {fundingAPRs.avgFundingAPR24h.toFixed(1)}%
                                                                 </span>
                                                             </div>
                                                         )}
@@ -492,12 +451,12 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                 <span className="opacity-60">{lpAPRs.weightedAvg7d.toFixed(1)}%</span>
                                                             </div>
                                                         )}
-                                                        {fundingAPRs?.fundingAPR7d !== null && fundingAPRs?.fundingAPR7d !== undefined && (
+                                                        {fundingAPRs?.avgFundingAPR7d !== null && fundingAPRs?.avgFundingAPR7d !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {fundingAPRs.fundingAPR7d > 0 ? '+' : ''}
-                                                                    {fundingAPRs.fundingAPR7d.toFixed(1)}%
+                                                                    {fundingAPRs.avgFundingAPR7d > 0 ? '+' : ''}
+                                                                    {fundingAPRs.avgFundingAPR7d.toFixed(1)}%
                                                                 </span>
                                                             </div>
                                                         )}
@@ -540,12 +499,12 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                 <span className="opacity-60">{lpAPRs.weightedAvg30d.toFixed(1)}%</span>
                                                             </div>
                                                         )}
-                                                        {fundingAPRs?.fundingAPR30d !== null && fundingAPRs?.fundingAPR30d !== undefined && (
+                                                        {fundingAPRs?.avgFundingAPR30d !== null && fundingAPRs?.avgFundingAPR30d !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {fundingAPRs.fundingAPR30d > 0 ? '+' : ''}
-                                                                    {fundingAPRs.fundingAPR30d.toFixed(1)}%
+                                                                    {fundingAPRs.avgFundingAPR30d > 0 ? '+' : ''}
+                                                                    {fundingAPRs.avgFundingAPR30d.toFixed(1)}%
                                                                 </span>
                                                             </div>
                                                         )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/stores/app.store'
 import type { AccountSnapshot } from '@/interfaces'
@@ -15,6 +15,23 @@ export function useAccountData(address: string) {
     const queryClient = useQueryClient()
     const { addSnapshot, setCurrentAddress, setFetchingAccount, setAccountError, isFetchingAccount, accountError, setSnapshots, setRebalanceEvents } =
         useAppStore()
+    const rebalanceIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+    // Function to fetch rebalance events
+    const fetchRebalances = useCallback(() => {
+        if (!address) return
+
+        fetch(`/api/rebalances/${address}`)
+            .then((res) => res.json())
+            .then((data) => {
+                console.log('[useAccountData] Rebalance API response:', data)
+                if (data.success && data.data) {
+                    console.log(`[useAccountData] Setting ${data.data.length} rebalance events`)
+                    setRebalanceEvents(data.data)
+                }
+            })
+            .catch((err) => console.error('Failed to fetch rebalance events:', err))
+    }, [address, setRebalanceEvents])
 
     // Set current address when it changes and fetch historical snapshots
     useEffect(() => {
@@ -32,25 +49,27 @@ export function useAccountData(address: string) {
                 })
                 .catch((err) => console.error('Failed to fetch historical snapshots:', err))
 
-            // Fetch rebalance events using address as vault address
-            fetch(`/api/rebalances/${address}`)
-                .then((res) => res.json())
-                .then((data) => {
-                    console.log('[useAccountData] Rebalance API response:', data)
-                    if (data.success && data.data) {
-                        console.log(`[useAccountData] Setting ${data.data.length} rebalance events`)
-                        setRebalanceEvents(data.data)
-                    }
-                })
-                .catch((err) => console.error('Failed to fetch rebalance events:', err))
+            // Fetch rebalance events immediately
+            fetchRebalances()
+
+            // Set up interval to fetch rebalances every 10 seconds
+            const intervalTime = 10000 // 10 seconds
+            rebalanceIntervalRef.current = setInterval(fetchRebalances, intervalTime)
+            console.log(`[useAccountData] Started rebalance refresh interval (${intervalTime}ms)`)
         }
         return () => {
+            // Clear interval when unmounting or address changes
+            if (rebalanceIntervalRef.current) {
+                clearInterval(rebalanceIntervalRef.current)
+                rebalanceIntervalRef.current = null
+                console.log('[useAccountData] Cleared rebalance refresh interval')
+            }
             // Clear when unmounting
             setCurrentAddress(null)
             setAccountError(null)
             setRebalanceEvents([])
         }
-    }, [address, setCurrentAddress, setAccountError, setSnapshots, setRebalanceEvents])
+    }, [address, setCurrentAddress, setAccountError, setSnapshots, fetchRebalances])
 
     // Main data query - only for fetching fresh data
     const {

@@ -11,7 +11,8 @@ export default function AccountPerps() {
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
     const metrics = snapshot?.metrics
     const fundingAPRs = snapshot?.metrics.hyperCore?.apr
-    const perpFundingAPR = fundingAPRs?.currentFundingAPR
+    // Use 24h funding APR for display (most recent historical average)
+    const perpFundingAPR = fundingAPRs?.avgFundingAPR24h
 
     return (
         <CollapsibleCard
@@ -23,47 +24,67 @@ export default function AccountPerps() {
                         <StyledTooltip
                             content={
                                 <div className="space-y-3">
-                                    <div className="font-semibold">Short Funding Income</div>
+                                    <div className="font-semibold">Funding APR (Annualized)</div>
 
                                     <div className="space-y-2">
-                                        <div className="flex justify-between gap-3">
-                                            <span className="text-sm font-medium opacity-60">Current 8h rate</span>
-                                            <span
-                                                className={cn(
-                                                    'text-sm font-medium',
-                                                    fundingAPRs?.currentFundingAPR && fundingAPRs.currentFundingAPR > 0
-                                                        ? 'text-success'
-                                                        : fundingAPRs?.currentFundingAPR && fundingAPRs.currentFundingAPR < 0
-                                                          ? 'text-error'
-                                                          : '',
-                                                )}
-                                            >
-                                                {fundingAPRs?.currentFundingAPR !== null && fundingAPRs?.currentFundingAPR !== undefined
-                                                    ? `${fundingAPRs.currentFundingAPR > 0 ? '+' : ''}${(fundingAPRs.currentFundingAPR / 1095).toFixed(4)}%`
-                                                    : 'N/A'}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span className="text-sm font-medium opacity-60">Annualized APR</span>
-                                            <span
-                                                className={cn(
-                                                    'text-sm font-medium',
-                                                    fundingAPRs?.currentFundingAPR && fundingAPRs.currentFundingAPR > 0
-                                                        ? 'text-success'
-                                                        : fundingAPRs?.currentFundingAPR && fundingAPRs.currentFundingAPR < 0
-                                                          ? 'text-error'
-                                                          : '',
-                                                )}
-                                            >
-                                                {fundingAPRs?.currentFundingAPR !== null && fundingAPRs?.currentFundingAPR !== undefined
-                                                    ? `${fundingAPRs.currentFundingAPR > 0 ? '+' : ''}${fundingAPRs.currentFundingAPR.toFixed(2)}%`
-                                                    : 'N/A'}
-                                            </span>
-                                        </div>
+                                        {fundingAPRs?.avgFundingAPR24h !== null && fundingAPRs?.avgFundingAPR24h !== undefined && (
+                                            <div className="flex justify-between gap-3">
+                                                <span className="text-sm font-medium opacity-60">24h avg</span>
+                                                <span
+                                                    className={cn(
+                                                        'text-sm font-medium',
+                                                        fundingAPRs.avgFundingAPR24h > 0
+                                                            ? 'text-success'
+                                                            : fundingAPRs.avgFundingAPR24h < 0
+                                                              ? 'text-error'
+                                                              : '',
+                                                    )}
+                                                >
+                                                    {fundingAPRs.avgFundingAPR24h > 0 ? '+' : ''}
+                                                    {fundingAPRs.avgFundingAPR24h.toFixed(2)}%
+                                                </span>
+                                            </div>
+                                        )}
+                                        {fundingAPRs?.avgFundingAPR7d !== null && fundingAPRs?.avgFundingAPR7d !== undefined && (
+                                            <div className="flex justify-between gap-3">
+                                                <span className="text-sm font-medium opacity-60">7d avg</span>
+                                                <span
+                                                    className={cn(
+                                                        'text-sm font-medium',
+                                                        fundingAPRs.avgFundingAPR7d > 0
+                                                            ? 'text-success'
+                                                            : fundingAPRs.avgFundingAPR7d < 0
+                                                              ? 'text-error'
+                                                              : '',
+                                                    )}
+                                                >
+                                                    {fundingAPRs.avgFundingAPR7d > 0 ? '+' : ''}
+                                                    {fundingAPRs.avgFundingAPR7d.toFixed(2)}%
+                                                </span>
+                                            </div>
+                                        )}
+                                        {fundingAPRs?.avgFundingAPR30d !== null && fundingAPRs?.avgFundingAPR30d !== undefined && (
+                                            <div className="flex justify-between gap-3">
+                                                <span className="text-sm font-medium opacity-60">30d avg</span>
+                                                <span
+                                                    className={cn(
+                                                        'text-sm font-medium',
+                                                        fundingAPRs.avgFundingAPR30d > 0
+                                                            ? 'text-success'
+                                                            : fundingAPRs.avgFundingAPR30d < 0
+                                                              ? 'text-error'
+                                                              : '',
+                                                    )}
+                                                >
+                                                    {fundingAPRs.avgFundingAPR30d > 0 ? '+' : ''}
+                                                    {fundingAPRs.avgFundingAPR30d.toFixed(2)}%
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="border-t border-default/10 pt-2">
-                                        <div className="text-xs opacity-60">Positive funding = shorts earn from longs</div>
+                                        <div className="text-xs opacity-60">Positive = shorts earn from longs</div>
                                     </div>
                                 </div>
                             }

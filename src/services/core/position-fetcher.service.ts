@@ -897,14 +897,13 @@ export class PositionFetcher {
                             const ctx = assetCtxs[index]
                             // Use funding rate from context
                             if (ctx.funding) {
-                                // Hyperliquid API returns the 8-hour funding rate as a decimal fraction
-                                // e.g., 0.000365 = 0.0365% per 8 hours
-                                const eightHourRate = parseFloat(ctx.funding)
+                                // Hyperliquid API returns the HOURLY funding rate as a decimal fraction
+                                // e.g., 0.0000460814 = 0.00460814% per hour
+                                const hourlyFunding = parseFloat(ctx.funding)
 
                                 // Convert to annualized APR percentage
-                                // Formula: f_raw × 1095 × 100
-                                // where 1095 = 3 periods/day × 365 days/year
-                                const annualizedAPR = eightHourRate * 1095 * 100
+                                // Formula: hourly_rate × 24 hours × 365 days × 100
+                                const annualizedAPR = hourlyFunding * 24 * 365 * 100
 
                                 // Store as-is (positive = longs pay shorts, negative = shorts pay longs)
                                 fundingRates[asset.name] = annualizedAPR

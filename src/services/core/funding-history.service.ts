@@ -6,11 +6,11 @@ class FundingHistoryService {
 
     /**
      * Fetch funding history for a specific asset
-     * Returns funding snapshots at 8-hour intervals
+     * Returns funding snapshots at hourly intervals
      */
     async fetchFundingHistory(asset: string, lookbackDays: number = 30): Promise<Array<{ time: number; fundingRate: number }>> {
         try {
-            // Calculate start time (milliseconds)
+            // Calculate time range (milliseconds)
             const endTime = Date.now()
             const startTime = endTime - lookbackDays * 24 * 60 * 60 * 1000
 
@@ -61,43 +61,40 @@ class FundingHistoryService {
         apr30d: number | null
     }> {
         try {
-            // Fetch 30 days of funding history
-            const history = await this.fetchFundingHistory(asset, 30)
-
-            if (history.length === 0) {
-                return { apr24h: null, apr7d: null, apr30d: null }
-            }
-
-            const now = Date.now()
-            const oneDayAgo = now - 24 * 60 * 60 * 1000
-            const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000
-
-            // Filter data for each period
-            const last24h = history.filter((h) => h.time >= oneDayAgo)
-            const last7d = history.filter((h) => h.time >= sevenDaysAgo)
-            const last30d = history
+            // Fetch data for each specific period to ensure we get the right data
+            const [history24h, history7d, history30d] = await Promise.all([
+                this.fetchFundingHistory(asset, 1), // 24 hours
+                this.fetchFundingHistory(asset, 7), // 7 days
+                this.fetchFundingHistory(asset, 30), // 30 days
+            ])
 
             // Calculate average funding rate for each period
-            // Funding rate is 8-hourly, so we need to annualize it
-            const calculateAPR = (data: typeof history) => {
-                if (data.length === 0) return null
+            // Funding rate is HOURLY, so we need to annualize it
+            const calculateAPR = (data: Array<{ time: number; fundingRate: number }>) => {
+                if (!data || data.length === 0) return null
 
-                // Average 8-hour funding rate
+                // Average hourly funding rate (already as decimal fraction)
                 const avgFundingRate = data.reduce((sum, h) => sum + h.fundingRate, 0) / data.length
 
-                // Convert 8-hour rate to annual APR
-                // 3 funding periods per day * 365 days = 1095 periods per year
-                const annualizedRate = avgFundingRate * 3 * 365
+                // Convert hourly rate to annual APR
+                // 24 hours per day * 365 days = 8760 hours per year
+                // fundingRate is already a decimal fraction, so multiply by 24 * 365 * 100 for percentage
+                const annualizedAPR = avgFundingRate * 24 * 365 * 100
 
-                // Convert to percentage and invert for shorts (negative funding = shorts earn)
-                return -annualizedRate * 100
+                return annualizedAPR
             }
 
-            return {
-                apr24h: calculateAPR(last24h),
-                apr7d: calculateAPR(last7d),
-                apr30d: calculateAPR(last30d),
+            const result = {
+                apr24h: calculateAPR(history24h),
+                apr7d: calculateAPR(history7d),
+                apr30d: calculateAPR(history30d),
             }
+
+            console.log(
+                `[Funding] ${asset} APRs - 24h: ${result.apr24h?.toFixed(2)}%, 7d: ${result.apr7d?.toFixed(2)}%, 30d: ${result.apr30d?.toFixed(2)}%`,
+            )
+
+            return result
         } catch (error) {
             console.error('Error calculating historical funding APRs:', error)
             return { apr24h: null, apr7d: null, apr30d: null }
@@ -106,10 +103,10 @@ class FundingHistoryService {
 
     /**
      * Calculate weighted average funding APRs for multiple assets
-     * @param positions - Array of positions with asset and notional value
-     * @returns Weighted average funding APRs for 24h, 7d, 30d
+     * @param positions - Array of positions with asset and margin value
+     * @returns Weighted average funding APRs for 24h, 7d, 30d (positive = shorts earn)
      */
-    async calculateWeightedFundingAPRs(positions: Array<{ asset: string; notionalValue: number }>): Promise<{
+    async calculateWeightedFundingAPRs(positions: Array<{ asset: string; marginValue: number; isShort: boolean }>): Promise<{
         apr24h: number | null
         apr7d: number | null
         apr30d: number | null
@@ -133,40 +130,52 @@ class FundingHistoryService {
             )
 
             // Calculate weighted averages
-            let totalNotional = 0
+            let totalMargin = 0
             const weightedSums = {
                 apr24h: 0,
                 apr7d: 0,
                 apr30d: 0,
             }
+            const hasData = {
+                apr24h: false,
+                apr7d: false,
+                apr30d: false,
+            }
 
             positions.forEach((position) => {
-                const notional = Math.abs(position.notionalValue)
+                const margin = Math.abs(position.marginValue)
                 const aprs = fundingAPRsByAsset.get(position.asset)
 
-                if (notional > 0 && aprs) {
-                    totalNotional += notional
+                if (margin > 0 && aprs) {
+                    totalMargin += margin
+
+                    // For shorts: positive funding = income (positive return)
+                    // For longs: positive funding = cost (negative return)
+                    const directionMultiplier = position.isShort ? 1 : -1
 
                     if (aprs.apr24h !== null) {
-                        weightedSums.apr24h += aprs.apr24h * notional
+                        weightedSums.apr24h += aprs.apr24h * directionMultiplier * margin
+                        hasData.apr24h = true
                     }
                     if (aprs.apr7d !== null) {
-                        weightedSums.apr7d += aprs.apr7d * notional
+                        weightedSums.apr7d += aprs.apr7d * directionMultiplier * margin
+                        hasData.apr7d = true
                     }
                     if (aprs.apr30d !== null) {
-                        weightedSums.apr30d += aprs.apr30d * notional
+                        weightedSums.apr30d += aprs.apr30d * directionMultiplier * margin
+                        hasData.apr30d = true
                     }
                 }
             })
 
-            if (totalNotional === 0) {
+            if (totalMargin === 0) {
                 return { apr24h: null, apr7d: null, apr30d: null }
             }
 
             return {
-                apr24h: weightedSums.apr24h / totalNotional,
-                apr7d: weightedSums.apr7d / totalNotional,
-                apr30d: weightedSums.apr30d / totalNotional,
+                apr24h: hasData.apr24h ? weightedSums.apr24h / totalMargin : null,
+                apr7d: hasData.apr7d ? weightedSums.apr7d / totalMargin : null,
+                apr30d: hasData.apr30d ? weightedSums.apr30d / totalMargin : null,
             }
         } catch (error) {
             console.error('Error calculating weighted funding APRs:', error)

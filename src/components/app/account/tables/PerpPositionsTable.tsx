@@ -79,7 +79,6 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
     const positions = snapshot?.positions?.hyperCore?.perps || []
     const withdrawableUSDC = snapshot?.metrics?.hyperCore?.values?.withdrawableUSDC || 0
-    const fundingRates = snapshot?.marketData?.fundingRates || {}
 
     if (!positions || positions.length === 0) {
         return (
@@ -120,8 +119,8 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
                                 position.entryPrice !== 0 ? (position.unrealizedPnl / (Math.abs(position.size) * position.entryPrice)) * 100 : 0
                             const leverage = position.marginUsed > 0 ? Math.abs(position.notionalValue) / position.marginUsed : 0
 
-                            // Get funding rate for this asset (annualized APR)
-                            const annualizedAPR = fundingRates[position.asset] || 0
+                            // We show aggregated funding APR in the header, not per position
+                            const annualizedAPR = 0
                             // Calculate 8-hour rate from annualized APR (3 periods per day)
                             const eightHourRate = (annualizedAPR / (365 * 3)) * 100
 

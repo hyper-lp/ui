@@ -451,8 +451,9 @@ export default function DeltaTrackingChart() {
     const [, setZoomRange] = useState<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
     const zoomRangeRef = useRef<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
 
-    // Get historical snapshots from the app store
+    // Get historical snapshots and rebalance events from the app store
     const getSnapshots = useAppStore((state) => state.getSnapshots)
+    const rebalanceEvents = useAppStore((state) => state.rebalanceEvents)
     const lastSnapshotAddedAt = useAppStore((state) => state.lastSnapshotAddedAt)
 
     // Handle dataZoom changes
@@ -1230,6 +1231,30 @@ export default function DeltaTrackingChart() {
                         focus: 'series',
                     },
                     z: 9,
+                    markLine: {
+                        silent: true,
+                        symbol: 'none',
+                        data: [
+                            // Add vertical lines for each rebalance event
+                            ...(rebalanceEvents || []).map((event) => ({
+                                xAxis: new Date(event.timestamp).getTime(),
+                                label: {
+                                    show: true,
+                                    formatter: 'R',
+                                    position: 'end' as const,
+                                    color: colors.charts.text,
+                                    fontSize: 10,
+                                    opacity: 0.6,
+                                },
+                                lineStyle: {
+                                    color: colors.charts.line,
+                                    type: 'solid' as const,
+                                    width: 1,
+                                    opacity: 0.3,
+                                },
+                            })),
+                        ],
+                    },
                     endLabel: {
                         show: true,
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1368,7 +1393,7 @@ export default function DeltaTrackingChart() {
         // finally, set the options
         setOptions(echartsOptions)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [lastSnapshotAddedAt, resolvedTheme, isInitialLoad])
+    }, [lastSnapshotAddedAt, resolvedTheme, isInitialLoad, rebalanceEvents])
 
     if (!options) {
         return (

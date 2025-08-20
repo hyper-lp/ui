@@ -5,6 +5,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { APP_METADATA, IS_DEV } from '@/config/app.config'
 import { env } from '@/env/t3-env'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
+import type { RebalanceEvent } from '@/interfaces/rebalance.interface'
 
 interface AppStore {
     // Hydration state
@@ -33,6 +34,10 @@ interface AppStore {
     currentAddress: string | null
     isFetchingAccount: boolean
     accountError: Error | null
+
+    // Rebalance events
+    rebalanceEvents: RebalanceEvent[]
+    setRebalanceEvents: (events: RebalanceEvent[]) => void
 
     // Account actions
     addSnapshot: (snapshot: AccountSnapshot) => void
@@ -84,6 +89,10 @@ export const useAppStore = create<AppStore>()(
             currentAddress: null,
             isFetchingAccount: false,
             accountError: null,
+
+            // Rebalance events
+            rebalanceEvents: [],
+            setRebalanceEvents: (events) => set({ rebalanceEvents: events }),
 
             // Account actions
             addSnapshot: (snapshot: AccountSnapshot) =>

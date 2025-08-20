@@ -13,7 +13,8 @@ import { AppUrls } from '@/enums/app.enum'
  */
 export function useAccountData(address: string) {
     const queryClient = useQueryClient()
-    const { addSnapshot, setCurrentAddress, setFetchingAccount, setAccountError, isFetchingAccount, accountError, setSnapshots } = useAppStore()
+    const { addSnapshot, setCurrentAddress, setFetchingAccount, setAccountError, isFetchingAccount, accountError, setSnapshots, setRebalanceEvents } =
+        useAppStore()
 
     // Set current address when it changes and fetch historical snapshots
     useEffect(() => {
@@ -29,13 +30,24 @@ export function useAccountData(address: string) {
                     }
                 })
                 .catch((err) => console.error('Failed to fetch historical snapshots:', err))
+
+            // Fetch rebalance events using address as vault address
+            fetch(`/api/rebalances/${address}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.success && data.data) {
+                        setRebalanceEvents(data.data)
+                    }
+                })
+                .catch((err) => console.error('Failed to fetch rebalance events:', err))
         }
         return () => {
             // Clear when unmounting
             setCurrentAddress(null)
             setAccountError(null)
+            setRebalanceEvents([])
         }
-    }, [address, setCurrentAddress, setAccountError, setSnapshots])
+    }, [address, setCurrentAddress, setAccountError, setSnapshots, setRebalanceEvents])
 
     // Main data query - only for fetching fresh data
     const {

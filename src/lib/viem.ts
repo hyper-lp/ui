@@ -4,6 +4,7 @@ import { createPublicClient, http, type PublicClient, defineChain, fallback } fr
 const HYPEREVM_RPC_URLS = [
     'https://hyperliquid-mainnet.g.alchemy.com/v2/xrhhC2wgJl6OX9lEGPrek', // Alchemy RPC, fberger account
     'https://hyperliquid-mainnet.g.alchemy.com/v2/T4Jmj7HYUBr1psFAZh415', // Alchemy RPC, katalyster account
+    'https://hyperliquid.valtitude.xyz?apiKey=5bc51b42-1575-40ae-998f-81c4ef067f6a', // Valtitude RPC
     'https://api.hyperliquid.xyz/evm', // Primary official RPC
     'https://g.w.lavanet.xyz:443/gateway/hyperliquid/rpc-http/e1a0a259d9519ff2cb043a434844d733', // Primary official RPC
     'https://rpc.hyperliquid.xyz/evm', // Alternative official RPC

@@ -29,7 +29,11 @@ export function CollapsibleCard({
                 <button onClick={() => setIsExpanded(!isExpanded)} className="flex flex-1 items-center gap-2 text-left">
                     <IconWrapper
                         id={IconIds.CHEVRON_DOWN}
-                        className={cn('size-5 transition-transform', isExpanded ? 'text-background-opposite' : 'text-default', isExpanded && 'rotate-180')}
+                        className={cn(
+                            'size-5 transition-transform',
+                            isExpanded ? 'text-background-opposite' : 'text-default',
+                            isExpanded && 'rotate-180',
+                        )}
                     />
                     {title}
                 </button>

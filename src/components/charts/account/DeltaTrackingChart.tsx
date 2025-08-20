@@ -1242,7 +1242,15 @@ export default function DeltaTrackingChart() {
                             const markLineData = (rebalanceEvents || []).map((event) => {
                                 const timestamp = new Date(event.timestamp).getTime()
                                 // Extract summary from metadata, fallback to 'Rebalance' if not available
-                                const summary = event.metadata?.summary || 'Rebalance'
+                                let summary = event.metadata?.summary || 'Rebalance'
+
+                                // Capitalize DEX names in the summary
+                                summary = summary
+                                    .replace(/\bhyperswap\b/gi, 'Hyperswap')
+                                    .replace(/\bhybra\b/gi, 'Hybra')
+                                    .replace(/\bhyperbrick\b/gi, 'HyperBrick')
+                                    .replace(/\bprjtx\b/gi, 'PRJTX')
+                                    .replace(/\bproject[\s-]?x\b/gi, 'Project X')
                                 console.log(
                                     '[DeltaTrackingChart] Adding markLine for rebalance at:',
                                     new Date(event.timestamp).toISOString(),

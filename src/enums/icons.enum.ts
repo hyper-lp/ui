@@ -74,4 +74,5 @@ export enum IconIds {
     SETTINGS = 'ic:baseline-settings',
     DOTS_HORIZONTAL = 'mdi:dots-horizontal',
     SHARE = 'ic:round-ios-share',
+    EXPAND = 'gg:arrows-expand-right',
 }

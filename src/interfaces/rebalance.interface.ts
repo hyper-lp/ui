@@ -1,64 +1,35 @@
 export interface RebalanceMetadata {
-    // Rebalance trigger information
-    trigger: 'manual' | 'auto' | 'scheduled'
-    triggerReason?: string
-
-    // Position changes
-    oldPosition: {
-        lowerTick: number
-        upperTick: number
-        liquidity: string
-        token0Amount: string
-        token1Amount: string
+    fee: number
+    error: string | null
+    reason: string
+    account: string
+    dexName: string
+    summary: string
+    toRange: [number, number]
+    txHashes: {
+        nft_burned?: string
+        fees_collected?: string
+        token0_swapped?: string
+        token1_swapped?: string
+        liquidity_decreased?: string
+        new_position_minted?: string
     }
-    newPosition: {
-        lowerTick: number
-        upperTick: number
-        liquidity: string
-        token0Amount: string
-        token1Amount: string
-    }
-
-    // Hedge adjustments
-    hedgeAdjustment: {
-        perpSizeChange: string
-        perpDirection: 'long' | 'short'
-        fundingRate: number
-    }
-
-    // Transaction details
-    transactions: {
-        txHash: string
-        type: 'removeLiquidity' | 'addLiquidity' | 'adjustHedge' | 'swap'
-        gasUsed?: string
-        gasPrice?: string
-        status: 'pending' | 'success' | 'failed'
-    }[]
-
-    // Performance metrics
-    metrics: {
-        deltaDriftBefore: number
-        deltaDriftAfter: number
-        rebalanceCost: number
-        slippage: number
-        priceImpact: number
-    }
-
-    // Market conditions at rebalance
-    marketConditions: {
-        hypePrice: number
-        usdtPrice: number
-        poolTvl: number
-        poolVolume24h: number
-        gasPrice: string
-    }
+    fromRange: [number, number]
+    monitorDex: string
+    newTokenId: number
+    oldTokenId: number
+    currentPrice: number
+    token0Symbol: string
+    token1Symbol: string
+    lpTargetRangeBps: number
+    rebalanceTriggerDeviationBps: number
 }
 
 export interface RebalanceEvent {
     id: string
     vaultId: string
     timestamp: Date
-    status: 'pending' | 'executed' | 'failed' | 'cancelled'
+    status: 'pending' | 'executed' | 'failed' | 'cancelled' | 'completed'
     poolAddress: string
     vaultAddress: string
     metadata: RebalanceMetadata

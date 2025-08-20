@@ -1,87 +1,104 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prismaKeeper } from '@/lib/prisma-keeper'
-import type { RebalanceResponse, RebalanceQueryParams, RebalanceMetadata } from '@/interfaces/rebalance.interface'
+import { Pool } from 'pg'
+import type { RebalanceResponse, RebalanceMetadata } from '@/interfaces/rebalance.interface'
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL_KEEPER,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+})
 
 export async function GET(request: NextRequest, context: { params: Promise<{ vaultAddress: string }> }): Promise<NextResponse<RebalanceResponse>> {
+    const client = await pool.connect()
+
     try {
         const params = await context.params
         const { vaultAddress } = params
         const searchParams = request.nextUrl.searchParams
 
         // Parse query parameters
-        const queryParams: RebalanceQueryParams = {
-            vaultAddress: vaultAddress.toLowerCase(),
-            status: (searchParams.get('status') as 'pending' | 'executed' | 'failed' | 'cancelled') || undefined,
-            startDate: searchParams.get('startDate') || undefined,
-            endDate: searchParams.get('endDate') || undefined,
-            limit: parseInt(searchParams.get('limit') || '50'),
-            offset: parseInt(searchParams.get('offset') || '0'),
-            orderBy: (searchParams.get('orderBy') as 'timestamp' | 'createdAt') || 'timestamp',
-            order: (searchParams.get('order') as 'asc' | 'desc') || 'desc',
+        const requestedLimit = parseInt(searchParams.get('limit') || '50')
+        const limit = Math.min(Math.max(1, requestedLimit), 500) // Clamp between 1 and 500
+        const offset = parseInt(searchParams.get('offset') || '0')
+        const status = searchParams.get('status') || null
+        const orderBy = searchParams.get('orderBy') || 'timestamp'
+        const order = (searchParams.get('order') || 'desc').toUpperCase()
+
+        // Build WHERE clause conditions
+        const conditions = [`r."vaultAddress" = $1`]
+        const values: any[] = [vaultAddress]
+        let paramCount = 1
+
+        if (status) {
+            paramCount++
+            conditions.push(`r.status = $${paramCount}`)
+            values.push(status)
         }
 
-        // Validate limit
-        if (queryParams.limit! > 100) {
-            queryParams.limit = 100
-        }
-
-        // Build where clause
-        const where: Record<string, unknown> = {
-            vaultAddress: queryParams.vaultAddress,
-        }
-
-        if (queryParams.status) {
-            where.status = queryParams.status
-        }
-
-        if (queryParams.startDate || queryParams.endDate) {
-            const timestampFilter: Record<string, Date> = {}
-            if (queryParams.startDate) {
-                timestampFilter.gte = new Date(queryParams.startDate)
-            }
-            if (queryParams.endDate) {
-                timestampFilter.lte = new Date(queryParams.endDate)
-            }
-            where.timestamp = timestampFilter
-        }
+        const whereClause = conditions.join(' AND ')
 
         // Get total count for pagination
-        const totalCount = await prismaKeeper.rebalance.count({ where })
+        const countResult = await client.query(
+            `SELECT COUNT(*) as total 
+             FROM "Rebalance" r 
+             WHERE ${whereClause}`,
+            values,
+        )
+        const totalCount = parseInt(countResult.rows[0].total)
 
-        // Fetch rebalances
-        const rebalances = await prismaKeeper.rebalance.findMany({
-            where,
-            orderBy: {
-                [queryParams.orderBy!]: queryParams.order,
-            },
-            take: queryParams.limit,
-            skip: queryParams.offset,
-            include: {
-                vault: true,
-            },
-        })
+        // Fetch rebalances with vault info
+        paramCount++
+        values.push(limit)
+        paramCount++
+        values.push(offset)
+
+        const result = await client.query(
+            `SELECT 
+                r.id,
+                r."vaultId",
+                r.timestamp,
+                r.status,
+                r."poolAddress",
+                r."vaultAddress",
+                r.metadata,
+                r."createdAt",
+                r."updatedAt",
+                v.id as vault_id,
+                v.name as vault_name,
+                v."fullName" as vault_fullname,
+                v.address as vault_address,
+                v."lastSync" as vault_lastsync,
+                v."createdAt" as vault_created,
+                v."updatedAt" as vault_updated
+             FROM "Rebalance" r
+             LEFT JOIN "Vault" v ON r."vaultId" = v.id
+             WHERE ${whereClause}
+             ORDER BY r."${orderBy}" ${order}
+             LIMIT $${paramCount - 1} OFFSET $${paramCount}`,
+            values,
+        )
 
         // Format response
-        const formattedRebalances = rebalances.map((rebalance) => ({
-            id: rebalance.id,
-            vaultId: rebalance.vaultId,
-            timestamp: rebalance.timestamp,
-            status: rebalance.status as 'pending' | 'executed' | 'failed' | 'cancelled',
-            poolAddress: rebalance.poolAddress,
-            vaultAddress: rebalance.vaultAddress,
-            metadata: rebalance.metadata as unknown as RebalanceMetadata,
-            createdAt: rebalance.createdAt,
-            updatedAt: rebalance.updatedAt,
-            vault: rebalance.vault
+        const formattedRebalances = result.rows.map((row) => ({
+            id: row.id,
+            vaultId: row.vaultId,
+            timestamp: row.timestamp,
+            status: row.status as 'pending' | 'executed' | 'failed' | 'cancelled' | 'completed',
+            poolAddress: row.poolAddress,
+            vaultAddress: row.vaultAddress,
+            metadata: row.metadata as RebalanceMetadata,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt,
+            vault: row.vault_id
                 ? {
-                      id: rebalance.vault.id,
-                      name: rebalance.vault.name,
-                      symbol: rebalance.vault.symbol,
-                      address: rebalance.vault.address,
-                      poolAddress: rebalance.vault.poolAddress,
-                      metadata: rebalance.vault.metadata as Record<string, unknown>,
-                      createdAt: rebalance.vault.createdAt,
-                      updatedAt: rebalance.vault.updatedAt,
+                      id: row.vault_id,
+                      name: row.vault_name,
+                      fullName: row.vault_fullname,
+                      address: row.vault_address,
+                      lastSync: row.vault_lastsync,
+                      createdAt: row.vault_created,
+                      updatedAt: row.vault_updated,
                   }
                 : undefined,
         }))
@@ -91,9 +108,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
             data: formattedRebalances,
             pagination: {
                 total: totalCount,
-                limit: queryParams.limit!,
-                offset: queryParams.offset!,
-                hasMore: queryParams.offset! + queryParams.limit! < totalCount,
+                limit,
+                offset,
+                hasMore: offset + limit < totalCount,
+                requestedLimit,
+                actualLimit: limit,
             },
         })
     } catch (error) {
@@ -105,5 +124,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ vau
             },
             { status: 500 },
         )
+    } finally {
+        client.release()
     }
 }

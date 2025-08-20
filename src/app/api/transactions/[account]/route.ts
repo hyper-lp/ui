@@ -17,6 +17,8 @@ interface CachedResponse {
         endBlock?: number
         total: number
         filteredCount: number
+        requestedLimit?: number
+        actualLimit?: number
     }
     message?: string
 }
@@ -36,7 +38,8 @@ export async function GET(request: Request, context: { params: Promise<{ account
 
         // Get query parameters
         const { searchParams } = new URL(request.url)
-        const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 500) // Cap at 500 for performance
+        const requestedLimit = parseInt(searchParams.get('limit') || '100')
+        const limit = Math.min(Math.max(1, requestedLimit), 1000) // Clamp between 1 and 1000
         const startBlock = searchParams.get('startblock') ? parseInt(searchParams.get('startblock')!) : undefined
         const endBlock = searchParams.get('endblock') ? parseInt(searchParams.get('endblock')!) : undefined
         const onlyHypeUsdt = searchParams.get('onlyHypeUsdt') === 'true'
@@ -101,6 +104,8 @@ export async function GET(request: Request, context: { params: Promise<{ account
                         endBlock,
                         total: 0,
                         filteredCount: 0,
+                        requestedLimit,
+                        actualLimit: limit,
                     },
                     message: env.HYPEREVM_SCAN_API_KEY ? undefined : 'Explorer API key not configured',
                 })
@@ -168,6 +173,8 @@ export async function GET(request: Request, context: { params: Promise<{ account
                     endBlock,
                     total: transactions.length,
                     filteredCount: finalTransactions.length,
+                    requestedLimit,
+                    actualLimit: limit,
                 },
             }
 

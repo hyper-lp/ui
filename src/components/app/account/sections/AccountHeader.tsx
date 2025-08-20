@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { cn } from '@/utils'
 import { formatUSD, shortenValue } from '@/utils'
 import { DAYJS_FORMATS } from '@/utils/date.util'
@@ -11,6 +11,7 @@ import { AppUrls, FileIds, IconIds } from '@/enums'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import FileMapper from '@/components/common/FileMapper'
 import numeral from 'numeral'
+import { useRouter } from 'next/navigation'
 
 interface AccountHeaderProps {
     accountFromUrl: string
@@ -87,12 +88,12 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
         <div className="mb-4 flex flex-col gap-2 px-2 lg:px-4">
             {/* Title */}
             <div className="flex w-full flex-wrap items-center gap-1">
-                <p className="text-wrap text-primary">Below is an example of a Delta Neutral LP</p>
+                <p className="text-wrap text-primary">Below is an example of a delta neutral</p>
                 {/* <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" /> */}
                 <p className="text-wrap text-primary">HYPE/USD₮0</p>
                 <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
                 <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
-                <p className="text-wrap text-primary">APRs with a dynamic short leg</p>
+                <p className="text-wrap text-primary">LP (actively rebalanced) with a dynamic short leg on HyperCore</p>
             </div>
 
             {/* Summary */}

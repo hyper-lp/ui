@@ -8,41 +8,31 @@ datasource db {
   url      = env("DATABASE_URL_KEEPER")
 }
 
-// Vault model - referenced by Rebalance
 model Vault {
-  id          String      @id
-  name        String
-  symbol      String
-  address     String      @unique @db.VarChar(42)
-  poolAddress String      @db.VarChar(42)
-  metadata    Json
-  createdAt   DateTime    @default(now()) @db.Timestamptz
-  updatedAt   DateTime    @updatedAt @db.Timestamptz
-  
-  // Relations
-  rebalances  Rebalance[]
-  
-  @@index([address])
-  @@index([poolAddress])
+  id         String      @id
+  address    String      @db.VarChar(42)
+  name       String      @db.VarChar(100)
+  fullName   String      @unique @db.VarChar(100)
+  lastSync   DateTime
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  rebalances Rebalance[]
 }
 
-// Rebalance events model
 model Rebalance {
-  id            String   @id @default(cuid())
-  vaultId       String
-  timestamp     DateTime @db.Timestamptz
-  status        String   @db.VarChar(20) // 'pending', 'executed', 'failed', 'cancelled'
-  poolAddress   String   @db.VarChar(42)
-  vaultAddress  String   @db.VarChar(42)
-  metadata      Json     // Contains detailed rebalance information
-  createdAt     DateTime @default(now()) @db.Timestamptz
-  updatedAt     DateTime @updatedAt @db.Timestamptz
-  
-  // Relations
-  vault         Vault    @relation(fields: [vaultId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  
+  id           String   @id @default(cuid())
+  vaultId      String
+  timestamp    DateTime
+  status       String   @db.VarChar(20)
+  poolAddress  String   @db.VarChar(42)
+  vaultAddress String   @db.VarChar(42)
+  metadata     Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  vault        Vault    @relation(fields: [vaultId], references: [id])
+
   @@index([poolAddress])
-  @@index([status, timestamp])
-  @@index([vaultAddress, timestamp])
-  @@index([vaultId, timestamp])
+  @@index([status, timestamp(sort: Desc)])
+  @@index([vaultAddress, timestamp(sort: Desc)])
+  @@index([vaultId, timestamp(sort: Desc)])
 }

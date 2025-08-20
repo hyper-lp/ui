@@ -9,6 +9,8 @@ interface CachedResponse {
     pagination: {
         limit: number
         total: number
+        requestedLimit?: number
+        actualLimit?: number
     }
 }
 
@@ -27,7 +29,8 @@ export async function GET(request: Request, context: { params: Promise<{ account
 
         // Get query parameters
         const { searchParams } = new URL(request.url)
-        const limit = Math.min(parseInt(searchParams.get('limit') || String(DEFAULT_TRANSACTION_LIMIT)), 100) // Cap at 100 for performance
+        const requestedLimit = parseInt(searchParams.get('limit') || String(DEFAULT_TRANSACTION_LIMIT))
+        const limit = Math.min(Math.max(1, requestedLimit), 500) // Clamp between 1 and 500
 
         // Check cache first
         const cacheKey = `${account}-${limit}`
@@ -49,6 +52,8 @@ export async function GET(request: Request, context: { params: Promise<{ account
             pagination: {
                 limit,
                 total: transactions.length,
+                requestedLimit, // Include what was requested
+                actualLimit: limit, // Include what was actually used
             },
         }
 

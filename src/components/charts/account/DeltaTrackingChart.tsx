@@ -493,6 +493,7 @@ export default function DeltaTrackingChart() {
         // 1. get stored snapshots
         let storedSnapshots = getSnapshots()
         console.log(`[DeltaTrackingChart] Re-rendering with ${storedSnapshots.length} snapshots, trigger: lastSnapshotAddedAt=${lastSnapshotAddedAt}`)
+        console.log('[DeltaTrackingChart] Main useEffect triggered, rebalanceEvents:', rebalanceEvents?.length || 0)
 
         // Show loading skeleton if no data
         if (storedSnapshots.length === 0) {
@@ -1233,28 +1234,43 @@ export default function DeltaTrackingChart() {
                     },
                     z: 9,
                     markLine: {
-                        silent: true,
+                        silent: false,
                         symbol: 'none',
-                        data: [
-                            // Add vertical lines for each rebalance event
-                            ...(rebalanceEvents || []).map((event) => ({
-                                xAxis: new Date(event.timestamp).getTime(),
-                                label: {
-                                    show: true,
-                                    formatter: 'R',
-                                    position: 'end' as const,
-                                    color: colors.charts.text,
-                                    fontSize: 10,
-                                    opacity: 0.6,
-                                },
-                                lineStyle: {
-                                    color: colors.charts.line,
-                                    type: 'solid' as const,
-                                    width: 1,
-                                    opacity: 0.3,
-                                },
-                            })),
-                        ],
+                        animation: false,
+                        data: (() => {
+                            const markLineData = (rebalanceEvents || []).map((event) => {
+                                const timestamp = new Date(event.timestamp).getTime()
+                                // Extract summary from metadata, fallback to 'Rebalance' if not available
+                                const summary = event.metadata?.summary || 'Rebalance'
+                                console.log(
+                                    '[DeltaTrackingChart] Adding markLine for rebalance at:',
+                                    new Date(event.timestamp).toISOString(),
+                                    'timestamp:',
+                                    timestamp,
+                                    'summary:',
+                                    summary,
+                                )
+                                return {
+                                    xAxis: timestamp,
+                                    label: {
+                                        show: true,
+                                        formatter: summary,
+                                        position: 'middle' as const,
+                                        color: colors.hyperEvmLp,
+                                        fontSize: 10,
+                                        rotate: 90, // Rotate text vertically
+                                    },
+                                    lineStyle: {
+                                        color: colors.hyperEvmLp, // Same color as LP series
+                                        type: 'dashed' as const,
+                                        width: 2, // Thicker line
+                                        opacity: 0.6, // Slightly transparent
+                                    },
+                                }
+                            })
+                            console.log('[DeltaTrackingChart] Total markLines:', markLineData.length)
+                            return markLineData
+                        })(),
                     },
                     endLabel: {
                         show: true,

@@ -36,7 +36,9 @@ export function useAccountData(address: string) {
             fetch(`/api/rebalances/${address}`)
                 .then((res) => res.json())
                 .then((data) => {
+                    console.log('[useAccountData] Rebalance API response:', data)
                     if (data.success && data.data) {
+                        console.log(`[useAccountData] Setting ${data.data.length} rebalance events`)
                         setRebalanceEvents(data.data)
                     }
                 })

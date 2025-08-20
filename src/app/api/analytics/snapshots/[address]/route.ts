@@ -70,7 +70,15 @@ export async function GET(request: NextRequest, context: { params: Promise<{ add
             }))
             .reverse()
 
-        return NextResponse.json({ snapshots })
+        return NextResponse.json({
+            snapshots,
+            pagination: {
+                limit,
+                requestedLimit,
+                actualLimit: limit,
+                total: snapshots.length,
+            },
+        })
     } catch (error) {
         console.error('Failed to fetch snapshots:', error)
         return NextResponse.json({ error: 'Failed to fetch snapshots' }, { status: 500 })

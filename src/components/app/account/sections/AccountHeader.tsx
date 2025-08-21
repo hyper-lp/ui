@@ -400,15 +400,15 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                         {lpAPRs?.weightedAvg24h !== null && lpAPRs?.weightedAvg24h !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">2/3 LP APR</span>
-                                                                <span className="opacity-60">{lpAPRs.weightedAvg24h.toFixed(1)}% </span>
+                                                                <span className="opacity-60">{((2/3) * lpAPRs.weightedAvg24h).toFixed(1)}% </span>
                                                             </div>
                                                         )}
                                                         {fundingAPRs?.avgFundingAPR24h !== null && fundingAPRs?.avgFundingAPR24h !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {fundingAPRs.avgFundingAPR24h > 0 ? '+' : ''}
-                                                                    {fundingAPRs.avgFundingAPR24h.toFixed(1)}%
+                                                                    {((1/3) * fundingAPRs.avgFundingAPR24h) > 0 ? '+' : ''}
+                                                                    {((1/3) * fundingAPRs.avgFundingAPR24h).toFixed(1)}%
                                                                 </span>
                                                             </div>
                                                         )}
@@ -448,15 +448,15 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                         {lpAPRs?.weightedAvg7d !== null && lpAPRs?.weightedAvg7d !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">2/3 LP APR</span>
-                                                                <span className="opacity-60">{lpAPRs.weightedAvg7d.toFixed(1)}%</span>
+                                                                <span className="opacity-60">{((2/3) * lpAPRs.weightedAvg7d).toFixed(1)}%</span>
                                                             </div>
                                                         )}
                                                         {fundingAPRs?.avgFundingAPR7d !== null && fundingAPRs?.avgFundingAPR7d !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {fundingAPRs.avgFundingAPR7d > 0 ? '+' : ''}
-                                                                    {fundingAPRs.avgFundingAPR7d.toFixed(1)}%
+                                                                    {((1/3) * fundingAPRs.avgFundingAPR7d) > 0 ? '+' : ''}
+                                                                    {((1/3) * fundingAPRs.avgFundingAPR7d).toFixed(1)}%
                                                                 </span>
                                                             </div>
                                                         )}
@@ -496,15 +496,15 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                         {lpAPRs?.weightedAvg30d !== null && lpAPRs?.weightedAvg30d !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">2/3 LP APR</span>
-                                                                <span className="opacity-60">{lpAPRs.weightedAvg30d.toFixed(1)}%</span>
+                                                                <span className="opacity-60">{((2/3) * lpAPRs.weightedAvg30d).toFixed(1)}%</span>
                                                             </div>
                                                         )}
                                                         {fundingAPRs?.avgFundingAPR30d !== null && fundingAPRs?.avgFundingAPR30d !== undefined && (
                                                             <div className="flex justify-between gap-6">
                                                                 <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {fundingAPRs.avgFundingAPR30d > 0 ? '+' : ''}
-                                                                    {fundingAPRs.avgFundingAPR30d.toFixed(1)}%
+                                                                    {((1/3) * fundingAPRs.avgFundingAPR30d) > 0 ? '+' : ''}
+                                                                    {((1/3) * fundingAPRs.avgFundingAPR30d).toFixed(1)}%
                                                                 </span>
                                                             </div>
                                                         )}

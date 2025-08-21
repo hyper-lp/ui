@@ -181,46 +181,29 @@ export async function GET(
             apr30d: null as number | null,
         }
 
-        const lpValue = usdValues.lps
-        const perpValue = perpAggregates.totalMargin // Use margin for perp weight, not notional
-        const totalValue = lpValue + perpValue
+        // Use fixed 2/3 LP and 1/3 funding weights as per strategy design
+        const LP_WEIGHT = 2/3
+        const FUNDING_WEIGHT = 1/3
 
-        if (totalValue > 0) {
-            // 24h combined APR
-            if (lpAPRs.apr24h !== null || fundingAPRs.avgAPR24h !== null) {
-                let weightedSum = 0
-                if (lpAPRs.apr24h !== null) {
-                    weightedSum += lpAPRs.apr24h * lpValue
-                }
-                if (fundingAPRs.avgAPR24h !== null) {
-                    weightedSum += fundingAPRs.avgAPR24h * perpValue
-                }
-                combinedAPRs.apr24h = weightedSum / totalValue
-            }
+        // 24h combined APR
+        if (lpAPRs.apr24h !== null || fundingAPRs.avgAPR24h !== null) {
+            const lpComponent = lpAPRs.apr24h !== null ? lpAPRs.apr24h * LP_WEIGHT : 0
+            const fundingComponent = fundingAPRs.avgAPR24h !== null ? fundingAPRs.avgAPR24h * FUNDING_WEIGHT : 0
+            combinedAPRs.apr24h = lpComponent + fundingComponent
+        }
 
-            // 7d combined APR
-            if (lpAPRs.apr7d !== null || fundingAPRs.avgAPR7d !== null) {
-                let weightedSum = 0
-                if (lpAPRs.apr7d !== null) {
-                    weightedSum += lpAPRs.apr7d * lpValue
-                }
-                if (fundingAPRs.avgAPR7d !== null) {
-                    weightedSum += fundingAPRs.avgAPR7d * perpValue
-                }
-                combinedAPRs.apr7d = weightedSum / totalValue
-            }
+        // 7d combined APR
+        if (lpAPRs.apr7d !== null || fundingAPRs.avgAPR7d !== null) {
+            const lpComponent = lpAPRs.apr7d !== null ? lpAPRs.apr7d * LP_WEIGHT : 0
+            const fundingComponent = fundingAPRs.avgAPR7d !== null ? fundingAPRs.avgAPR7d * FUNDING_WEIGHT : 0
+            combinedAPRs.apr7d = lpComponent + fundingComponent
+        }
 
-            // 30d combined APR
-            if (lpAPRs.apr30d !== null || fundingAPRs.avgAPR30d !== null) {
-                let weightedSum = 0
-                if (lpAPRs.apr30d !== null) {
-                    weightedSum += lpAPRs.apr30d * lpValue
-                }
-                if (fundingAPRs.avgAPR30d !== null) {
-                    weightedSum += fundingAPRs.avgAPR30d * perpValue
-                }
-                combinedAPRs.apr30d = weightedSum / totalValue
-            }
+        // 30d combined APR
+        if (lpAPRs.apr30d !== null || fundingAPRs.avgAPR30d !== null) {
+            const lpComponent = lpAPRs.apr30d !== null ? lpAPRs.apr30d * LP_WEIGHT : 0
+            const fundingComponent = fundingAPRs.avgAPR30d !== null ? fundingAPRs.avgAPR30d * FUNDING_WEIGHT : 0
+            combinedAPRs.apr30d = lpComponent + fundingComponent
         }
 
         // Build the account snapshot

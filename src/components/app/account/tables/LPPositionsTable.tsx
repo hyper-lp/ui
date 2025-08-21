@@ -532,8 +532,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                         onClick={() => setShowClosedPositions(!showClosedPositions)}
                         className="flex gap-3 text-xs text-default/40 transition-colors hover:text-default/60"
                     >
-                        <p className={!showClosedPositions ? 'line-through' : ''}>Hide closed</p>
-                        <p className={showClosedPositions ? 'line-through' : ''}>Show closed</p>
+                        {showClosedPositions ? <p>Click to hide closed position</p> : <p>Click to show open positions</p>}
                     </button>
                 </div>
             )}

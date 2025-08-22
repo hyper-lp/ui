@@ -9,7 +9,6 @@ import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { REFRESH_INTERVALS } from '@/config/app.config'
 import { IS_DEV } from '@/config'
 import { getDurationBetween } from '@/utils/date.util'
-import { calculateHypePrice } from '@/utils/token.util'
 
 // Section components
 import AccountHeader from '@/components/app/account/sections/AccountHeader'
@@ -18,8 +17,6 @@ import AccountLongEVM from '@/components/app/account/sections/AccountLongEVM'
 import AccountWallet from '@/components/app/account/sections/AccountWallet'
 import AccountPerps from '@/components/app/account/sections/AccountPerps'
 import AccountSpots from '@/components/app/account/sections/AccountSpots'
-import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
-import { CombinedActivity } from '@/components/app/account'
 import DeltaTrackingChart from '@/components/charts/account/DeltaTrackingChart'
 
 export default function AccountClient() {
@@ -105,16 +102,8 @@ export default function AccountClient() {
     // Extract metrics for display
     const metrics = snapshot?.metrics
 
-    // Get HYPE price for loading check
-    const hypePrice =
-        snapshot?.prices?.HYPE ||
-        calculateHypePrice({
-            lp: snapshot?.positions?.longLegs?.find((l) => l.type === 'lp')?.positions as unknown as Parameters<typeof calculateHypePrice>[0]['lp'],
-            wallet: snapshot?.positions?.idle?.balances,
-        })
-
-    // Show loading state while initial data is being fetched or if we don't have price data
-    if ((isLoading && !snapshot) || !hypePrice) {
+    // Show loading state only when truly loading initial data
+    if (isLoading && !snapshot) {
         return (
             <PageWrapper className="px-4">
                 <AccountLoading />
@@ -160,9 +149,10 @@ export default function AccountClient() {
                     txs: null,
                 }}
                 activity={
-                    <CollapsibleCard title="Activity" defaultExpanded={false} headerRight={null}>
-                        <CombinedActivity account={params.account as string} limit={50} />
-                    </CollapsibleCard>
+                    null
+                    // <CollapsibleCard title="Activity" defaultExpanded={false} headerRight={null}>
+                    //     <CombinedActivity account={params.account as string} limit={50} />
+                    // </CollapsibleCard>
                 }
             />
         </PageWrapper>

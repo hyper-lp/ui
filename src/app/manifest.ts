@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
         background_color: '#111111',
         theme_color: '#111111',
         lang: 'en',
-        categories: ['productivity', 'developer', 'tools'],
+        categories: ['finance', 'defi', 'crypto'],
         screenshots: [
             {
                 src: '/1500x500.jpeg',
@@ -24,7 +24,7 @@ export default function manifest(): MetadataRoute.Manifest {
         ],
         icons: [
             {
-                src: '/favicon.png',
+                src: '/favicon-32x32.png',
                 sizes: '32x32',
                 type: 'image/png',
                 purpose: 'any',

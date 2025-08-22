@@ -15,8 +15,8 @@ import { SideBadge } from '@/components/common/SideBadge'
 import { useAppStore } from '@/stores/app.store'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
-import { getProtocolConfig } from '@/config'
-import DexIframeModal from '@/components/modals/DexIframeModal'
+import { getProtocolByName, getProtocolConfig } from '@/config'
+import PositionIframeModal from '@/components/modals/PositionIframeModal'
 import { EmptyTablePlaceholder } from './EmptyTablePlaceholder'
 
 interface LPPositionsTableProps {
@@ -170,7 +170,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                         dex={
                                             <div className="flex items-center gap-1.5">
                                                 <FileMapper
-                                                    id={getProtocolConfig(position.dex as ProtocolType)?.fileId || ''}
+                                                    id={getProtocolByName(position.dex as ProtocolType)?.fileId || ''}
                                                     width={18}
                                                     height={18}
                                                     className="rounded"
@@ -603,11 +603,12 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
             )}
 
             {/* DEX Iframe Modal */}
-            <DexIframeModal
+            <PositionIframeModal
                 isOpen={!!selectedPosition}
                 onClose={handleCloseModal}
                 position={selectedPosition}
-                dexUrl={selectedPosition ? getProtocolConfig(selectedPosition.dex as ProtocolType)?.portfolioUrl : undefined}
+                url={selectedPosition ? getProtocolByName(selectedPosition.dex as ProtocolType)?.portfolioUrl : undefined}
+                title={selectedPosition ? `${selectedPosition.dex} Position` : undefined}
             />
         </div>
     )

@@ -48,7 +48,7 @@ export function SubSectionHeader({ title, className, apr, aprData, aprLabel = 'A
                                     )}
                                 </div>
                                 <div className="border-t border-default/10 pt-2">
-                                    <div className="text-xs opacity-60">Weighted by position value</div>
+                                    <div className="text-sm opacity-60">Weighted by position value</div>
                                 </div>
                             </div>
                         ) : (

@@ -19,6 +19,8 @@ import { PrivyProvider } from '@/providers/privy.provider'
 import { Analytics } from '@vercel/analytics/next'
 import { ChunkErrorHandler } from '@/components/common/ChunkErrorHandler'
 
+// Note: 1500x500 dimensions work well for Twitter's 3:1 aspect ratio
+// Standard OpenGraph recommends 1200x630, but Twitter handles this size well
 const image = {
     url: '/1500x500.jpeg',
     width: 1500,
@@ -77,7 +79,21 @@ export const metadata: Metadata = {
     },
 
     // Additional metadata
-    keywords: ['nextjs', 'react', 'typescript', 'tailwind', 'prisma', 'boilerplate'],
+    keywords: [
+        'hyperliquid',
+        'defi',
+        'liquidity',
+        'vault',
+        'delta-neutral',
+        'LP',
+        'yield',
+        'APR',
+        'funding',
+        'hyperswap',
+        'hyperevm',
+        'crypto',
+        'web3',
+    ],
     authors: [{ name: APP_METADATA.AUTHOR.name, url: APP_METADATA.AUTHOR.url }],
     category: 'finance',
     robots: {

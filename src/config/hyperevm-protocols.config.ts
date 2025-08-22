@@ -190,8 +190,8 @@ const HYPERBRICK_LB_CONTRACTS: LBContractAddresses = {
 const HYPERDRIVE_MARKETS: LendingMarket[] = [
     {
         address: '0x6fCD93da1E2A288AE68bb1D4f856d8D598E8B861',
-        symbol: 'HD-MKT-HYPE',
-        name: 'HyperDrive HYPE Market',
+        symbol: 'DRIVE-M01',
+        name: 'HYPE LST Market',
         decimals: 18,
         underlyingSymbol: 'HYPE',
     },
@@ -281,7 +281,7 @@ export const HYPEREVM_PROTOCOLS: Record<ProtocolType, ProtocolConfig> = {
         name: 'HyperDrive',
         logoUrl: 'https://app.hyperbeat.org/hyperfolio/hyperdrive.jpg',
         fileId: FileIds.LENDING_HYPERDRIVE,
-        portfolioUrl: 'https://hyperdrive.box',
+        portfolioUrl: 'https://app.hyperdrive.fi/earn/hype-lst-market',
         audited: true,
         docsUrl: 'https://docs.hyperdrive.box',
         type: 'lending',

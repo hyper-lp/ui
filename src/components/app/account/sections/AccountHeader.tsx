@@ -83,6 +83,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     <p className="text-wrap text-hyper-evm-lps">lending of HYPE</p>
                     <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
                     <p className="text-wrap text-hyper-evm-lps">on Hyperdrive</p>
+                    <FileMapper id={FileIds.LENDING_HYPERDRIVE} width={20} height={20} className="rounded" />
                     <p className="text-wrap text-default">with a</p>
                     <p className="text-wrap text-hyper-core-perps">dynamic short leg</p>
                 </div>

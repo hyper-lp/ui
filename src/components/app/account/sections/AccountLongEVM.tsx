@@ -7,6 +7,10 @@ import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
 import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
 import numeral from 'numeral'
+import FileMapper from '@/components/common/FileMapper'
+import { getProtocolByName } from '@/config'
+import type { ProtocolType } from '@/config/hyperevm-protocols.config'
+import type { LPPosition } from '@/interfaces'
 
 export default function AccountLongEVM() {
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
@@ -18,6 +22,25 @@ export default function AccountLongEVM() {
     // Get HyperDrive metrics
     const hyperDriveMetrics = snapshot?.metrics?.longLegs?.find((l) => l.type === 'hyperdrive')?.metrics
     const hyperDriveAPRs = hyperDriveMetrics?.weightedAPR
+
+    // Get LP positions to extract unique protocols
+    const lpPositions = (snapshot?.positions?.longLegs?.find((l) => l.type === 'lp')?.positions as unknown as LPPosition[]) || []
+
+    // Extract unique protocols from active positions (LP pools)
+    const uniqueProtocols = Array.from(
+        new Set(
+            lpPositions
+                .filter((position) => !position.isClosed)
+                .map((position) => position.dex)
+                .filter(Boolean),
+        ),
+    )
+
+    // Add HyperDrive if there are active HyperDrive positions
+    const hasActiveHyperDrive = (hyperDriveMetrics?.positionCount || 0) > 0
+    if (hasActiveHyperDrive) {
+        uniqueProtocols.push('hyperdrive')
+    }
 
     // Calculate combined metrics
     const totalValueUSD = (lpMetrics?.totalValueUSD || 0) + (hyperDriveMetrics?.totalValueUSD || 0)
@@ -58,9 +81,23 @@ export default function AccountLongEVM() {
     return (
         <CollapsibleCard
             title={
-                <h3 className={`text-lg font-semibold ${SECTION_CONFIG[SectionType.LONG_EVM].className}`}>
-                    {SECTION_CONFIG[SectionType.LONG_EVM].displayName}
-                </h3>
+                <div className="flex items-center gap-3">
+                    <h3 className={`text-lg font-semibold ${SECTION_CONFIG[SectionType.LONG_EVM].className}`}>
+                        {SECTION_CONFIG[SectionType.LONG_EVM].displayName}
+                    </h3>
+
+                    {/* Protocol logos */}
+                    {uniqueProtocols.length > 0 && (
+                        <div className="flex items-center gap-1">
+                            {uniqueProtocols.map((dex) => {
+                                const protocol = getProtocolByName(dex as ProtocolType)
+                                if (!protocol?.fileId) return null
+
+                                return <FileMapper key={dex} id={protocol.fileId} width={20} height={20} className="rounded" />
+                            })}
+                        </div>
+                    )}
+                </div>
             }
             defaultExpanded={false}
             headerRight={
@@ -69,7 +106,7 @@ export default function AccountLongEVM() {
                         <StyledTooltip
                             content={
                                 <div className="space-y-3">
-                                    <div className="font-semibold">Long APR</div>
+                                    <div className="font-semibold">APR</div>
 
                                     <div className="space-y-2">
                                         {combinedAPRs.avg24h !== null && combinedAPRs.avg24h !== undefined && (
@@ -102,13 +139,13 @@ export default function AccountLongEVM() {
                                     </div>
 
                                     <div className="border-t border-default/10 pt-2">
-                                        <div className="text-xs opacity-60">Weighted by position value</div>
+                                        <div className="text-sm opacity-60">Weighted by position value</div>
                                     </div>
                                 </div>
                             }
                         >
                             <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
-                                <p className="text-sm text-default/50">Long APR</p>
+                                <p className="text-sm text-default/50">APR</p>
                                 <p className="text-sm font-medium text-success">
                                     {combinedAPR > 0 ? '+' : ''}
                                     {combinedAPR.toFixed(1)}%
@@ -134,7 +171,7 @@ export default function AccountLongEVM() {
                 {(hyperDriveMetrics?.positionCount || 0) > 0 && (
                     <div>
                         {/* <SubSectionHeader title="HyperDrive" apr={hyperDriveAPRs?.avg24h} aprData={hyperDriveAPRs} aprLabel="APR" /> */}
-                        <h4 className="mb-2 pl-2 text-sm font-medium opacity-30">HyperDrive</h4>
+                        <h4 className="mb-2 pl-2 text-sm font-medium opacity-30">Lending Markets</h4>
                         <HyperDrivePositionsTable />
                     </div>
                 )}

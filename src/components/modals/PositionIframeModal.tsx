@@ -4,15 +4,19 @@ import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import IframeWrapper from '@/components/common/IframeWrapper'
 import type { LPPosition } from '@/interfaces'
+import type { HyperDrivePositionLeg } from '@/interfaces/position-leg.interface'
 
-interface DexIframeModalProps {
+type Position = LPPosition | HyperDrivePositionLeg
+
+interface PositionIframeModalProps {
     isOpen: boolean
     onClose: () => void
-    position: LPPosition | null
-    dexUrl?: string
+    position: Position | null
+    url?: string
+    title?: string
 }
 
-export default function DexIframeModal({ isOpen, onClose, position, dexUrl }: DexIframeModalProps) {
+export default function PositionIframeModal({ isOpen, onClose, position, url }: PositionIframeModalProps) {
     // Handle ESC key
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
@@ -62,18 +66,14 @@ export default function DexIframeModal({ isOpen, onClose, position, dexUrl }: De
                             className="relative flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-default/10 bg-background shadow-2xl"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Header */}
+                            {/* Optional Header - Uncomment if needed */}
                             {/* <div className="flex items-center justify-between border-b border-default/10 px-6 py-4">
                                 <div className="flex flex-col gap-1">
                                     <h2 className="text-lg font-semibold">
-                                        {position.dex} Position
+                                        {getPositionTitle()}
                                     </h2>
-                                    <div className="flex items-center gap-4 text-sm text-default/60">
-                                        <span>ID: {shortenValue(position.id)}</span>
-                                        <span>•</span>
-                                        <span>Value: {formatUSD(position.valueUSD)}</span>
-                                        <span>•</span>
-                                        <span>NFT #{position.tokenId}</span>
+                                    <div className="flex items-center gap-2 text-sm text-default/60">
+                                        <span>ID: {getPositionId()}</span>
                                     </div>
                                 </div>
                                 <button
@@ -81,16 +81,29 @@ export default function DexIframeModal({ isOpen, onClose, position, dexUrl }: De
                                     className="rounded-lg p-2 text-default/50 transition-colors hover:bg-default/10 hover:text-default"
                                     aria-label="Close modal"
                                 >
-                                    <IconWrapper id={IconIds.X} className="size-5" />
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-5 w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
                                 </button>
                             </div> */}
 
                             {/* Content */}
                             <div className="flex flex-1 items-center justify-center overflow-auto p-2">
-                                {dexUrl ? (
-                                    <IframeWrapper src={dexUrl} width="w-full" height="h-[70vh]" />
+                                {url ? (
+                                    <IframeWrapper src={url} width="w-full" height="h-[70vh]" onClose={onClose} />
                                 ) : (
-                                    <p className="text-default/50">No portfolio URL available for this DEX</p>
+                                    <p className="text-default/50">No URL available for this position</p>
                                 )}
                             </div>
                         </div>

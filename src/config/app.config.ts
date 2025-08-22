@@ -35,13 +35,13 @@ export const APP_METADATA = {
         url: 'https://twitter.com/hyperlp',
     },
     STRUCTURED_DATA: {
-        applicationCategory: 'WebApplication',
+        applicationCategory: 'FinanceApplication',
         operatingSystem: 'Any',
         price: '0',
         priceCurrency: 'USD',
         about: {
-            name: 'Web Application',
-            description: 'A modern web application built with Next.js',
+            name: 'HyperLP - Delta-Neutral Vault',
+            description: 'LP fees, funding and points - all without the price swings',
         },
     },
 }

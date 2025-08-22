@@ -80,7 +80,13 @@ export class LPPositionProcessor extends BasePositionProcessor<LPPositionLeg> {
 
         // Find APR data for this pool
         const aprData = poolAPRData as {
-            pools?: Array<{ poolAddress: string; dex: string; apr?: { current?: number; avg24h?: number; avg7d?: number; avg30d?: number } }>
+            pools?: Array<{
+                poolAddress: string
+                dex: string
+                apr24h?: number
+                apr7d?: number
+                apr30d?: number
+            }>
         } | null
         const poolAPR = aprData?.pools?.find(
             (pool) => pool.poolAddress.toLowerCase() === lp.pool?.toLowerCase() && pool.dex.toLowerCase() === lp.dex.toLowerCase(),
@@ -112,13 +118,13 @@ export class LPPositionProcessor extends BasePositionProcessor<LPPositionLeg> {
             priceLower: undefined, // priceLower field doesn't exist in LPPosition
             priceUpper: undefined, // priceUpper field doesn't exist in LPPosition
 
-            // APR
-            apr: poolAPR?.apr
+            // APR - map the pool APR metrics to the expected format
+            apr: poolAPR
                 ? {
-                      current: poolAPR.apr.current || null,
-                      avg24h: poolAPR.apr.avg24h || null,
-                      avg7d: poolAPR.apr.avg7d || null,
-                      avg30d: poolAPR.apr.avg30d || null,
+                      current: poolAPR.apr24h || null, // Use 24h APR as current
+                      avg24h: poolAPR.apr24h || null,
+                      avg7d: poolAPR.apr7d || null,
+                      avg30d: poolAPR.apr30d || null,
                   }
                 : {
                       current: null,

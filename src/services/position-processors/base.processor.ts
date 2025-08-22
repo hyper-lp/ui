@@ -64,12 +64,13 @@ export abstract class BasePositionProcessor<T extends PositionLeg = PositionLeg>
         const hasAnyAPR = weightedSums.current > 0 || weightedSums.avg24h > 0 || weightedSums.avg7d > 0 || weightedSums.avg30d > 0
 
         if (!hasAnyAPR && totalValueUSD > 0) {
-            // Mock APR data for testing when positions exist but APR is missing
+            // Return 0% APR when positions exist but APR data is missing
+            // This happens when pools don't have APR data available yet
             return {
-                current: 18.5,
-                avg24h: 18.11,
-                avg7d: 84.49,
-                avg30d: 79.87,
+                current: 0,
+                avg24h: 0,
+                avg7d: 0,
+                avg30d: 0,
             }
         }
 

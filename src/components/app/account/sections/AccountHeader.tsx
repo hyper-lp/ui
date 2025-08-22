@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { cn } from '@/utils'
 import { formatUSD, shortenValue } from '@/utils'
 import { DAYJS_FORMATS } from '@/utils/date.util'
@@ -42,12 +42,14 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
     const longValueUSD = (lpMetrics?.totalValueUSD || 0) + (hyperDriveMetrics?.totalValueUSD || 0)
     const shortValueUSD = metrics?.shortLegs?.values?.perpsValueUSD || 0
 
-    // Calculate APR range directly without memoization
-    const aprs = [combinedAPRs?.combined24h, combinedAPRs?.combined7d, combinedAPRs?.combined30d].filter(
-        (apr) => apr !== null && apr !== undefined,
-    ) as number[]
+    // Calculate APR range with memoization to avoid expensive recalculations
+    const aprRange = useMemo(() => {
+        const aprs = [combinedAPRs?.combined24h, combinedAPRs?.combined7d, combinedAPRs?.combined30d].filter(
+            (apr) => apr !== null && apr !== undefined,
+        ) as number[]
 
-    const aprRange = aprs.length === 0 ? null : { min: Math.min(...aprs), max: Math.max(...aprs) }
+        return aprs.length === 0 ? null : { min: Math.min(...aprs), max: Math.max(...aprs) }
+    }, [combinedAPRs])
 
     // Close dropdown when clicking outside
     useEffect(() => {

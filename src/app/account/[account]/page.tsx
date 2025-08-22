@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ account: 
 
     return {
         title: accountName,
+        description: accountInfo?.description || 'HyperLP Account',
     }
 }
 

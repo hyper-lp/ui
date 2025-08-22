@@ -247,25 +247,22 @@ export async function GET(
                     netDeltaHYPE: portfolioMetrics.netDeltaHYPE,
                     strategyDeltaHYPE: PositionAggregator.calculateStrategyDelta(portfolioMetrics.longDeltaHYPE, portfolioMetrics.shortDeltaHYPE),
                     hedgeEfficiencyRatio: portfolioMetrics.hedgeEfficiencyRatio,
-                    apr: {
-                        // Portfolio-wide APR combining long legs and short legs based on allocation
-                        // If long APR is null but we have positions, treat it as 0% APR
-                        combined24h:
-                            totalDeployedUSD > 0
-                                ? (allocation.longPercentage / 100) * (aprSources.longAPR24h || 0) +
-                                  (allocation.shortPercentage / 100) * (aprSources.fundingAPR24h || 0)
-                                : null,
-                        combined7d:
-                            totalDeployedUSD > 0
-                                ? (allocation.longPercentage / 100) * (aprSources.longAPR7d || 0) +
-                                  (allocation.shortPercentage / 100) * (aprSources.fundingAPR7d || 0)
-                                : null,
-                        combined30d:
-                            totalDeployedUSD > 0
-                                ? (allocation.longPercentage / 100) * (aprSources.longAPR30d || 0) +
-                                  (allocation.shortPercentage / 100) * (aprSources.fundingAPR30d || 0)
-                                : null,
-                    },
+                    apr: (() => {
+                        // Pre-calculate ratios once to avoid repeated divisions
+                        const longRatio = allocation.longPercentage / 100
+                        const shortRatio = allocation.shortPercentage / 100
+
+                        return {
+                            // Portfolio-wide APR combining long legs and short legs based on allocation
+                            // If long APR is null but we have positions, treat it as 0% APR
+                            combined24h:
+                                totalDeployedUSD > 0 ? longRatio * (aprSources.longAPR24h || 0) + shortRatio * (aprSources.fundingAPR24h || 0) : null,
+                            combined7d:
+                                totalDeployedUSD > 0 ? longRatio * (aprSources.longAPR7d || 0) + shortRatio * (aprSources.fundingAPR7d || 0) : null,
+                            combined30d:
+                                totalDeployedUSD > 0 ? longRatio * (aprSources.longAPR30d || 0) + shortRatio * (aprSources.fundingAPR30d || 0) : null,
+                        }
+                    })(),
                     allocation,
                     aprSources,
                 },

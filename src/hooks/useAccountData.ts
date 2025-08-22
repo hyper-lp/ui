@@ -4,8 +4,9 @@ import { useEffect, useCallback, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '@/stores/app.store'
 import type { AccountSnapshot } from '@/interfaces'
-import { IS_DEV, REFRESH_INTERVALS } from '@/config'
+import { IS_DEV, REFRESH_INTERVALS, TIME_INTERVALS } from '@/config'
 import { AppUrls } from '@/enums/app.enum'
+import { isValidSnapshot, sanitizeSnapshot } from '@/utils/snapshot-validator.util'
 
 /**
  * Simplified hook that only handles fetching account data and updating the store.
@@ -16,6 +17,7 @@ export function useAccountData(address: string) {
     const { addSnapshot, setCurrentAddress, setFetchingAccount, setAccountError, isFetchingAccount, accountError, setSnapshots, setRebalanceEvents } =
         useAppStore()
     const rebalanceIntervalRef = useRef<NodeJS.Timeout | null>(null)
+    const historicalIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     // Function to fetch rebalance events
     const fetchRebalances = useCallback(() => {
@@ -24,52 +26,69 @@ export function useAccountData(address: string) {
         fetch(`/api/rebalances/${address}`)
             .then((res) => res.json())
             .then((data) => {
-                console.log('[useAccountData] Rebalance API response:', data)
                 if (data.success && data.data) {
-                    console.log(`[useAccountData] Setting ${data.data.length} rebalance events`)
                     setRebalanceEvents(data.data)
                 }
             })
             .catch((err) => console.error('Failed to fetch rebalance events:', err))
     }, [address, setRebalanceEvents])
 
+    // Function to fetch historical snapshots
+    const fetchHistoricalSnapshots = useCallback(() => {
+        if (!address) return
+
+        fetch(`${AppUrls.API_SNAPSHOTS}/${address}?limit=500`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.snapshots && Array.isArray(data.snapshots)) {
+                    // Validate and sanitize each snapshot before storing
+                    const validSnapshots = data.snapshots.filter(isValidSnapshot).map(sanitizeSnapshot)
+
+                    if (validSnapshots.length < data.snapshots.length) {
+                        console.warn(`[Historical Snapshots] Filtered out ${data.snapshots.length - validSnapshots.length} invalid snapshots`)
+                    }
+
+                    setSnapshots(validSnapshots)
+                }
+            })
+            .catch((err) => console.error('Failed to refresh historical snapshots:', err))
+    }, [address, setSnapshots])
+
     // Set current address when it changes and fetch historical snapshots
     useEffect(() => {
         if (address) {
             setCurrentAddress(address)
 
-            // Fetch historical snapshots from database (default 500, max 1000)
-            fetch(`${AppUrls.API_SNAPSHOTS}/${address}?limit=500`)
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.snapshots && Array.isArray(data.snapshots)) {
-                        console.log(`[useAccountData] Setting ${data.snapshots.length} historical snapshots`)
-                        setSnapshots(data.snapshots)
-                    }
-                })
-                .catch((err) => console.error('Failed to fetch historical snapshots:', err))
+            // Fetch historical snapshots immediately
+            fetchHistoricalSnapshots()
 
             // Fetch rebalance events immediately
             fetchRebalances()
 
             // Set up interval to fetch rebalances every 10 seconds
-            const intervalTime = 10000 // 10 seconds
-            rebalanceIntervalRef.current = setInterval(fetchRebalances, intervalTime)
-            console.log(`[useAccountData] Started rebalance refresh interval (${intervalTime}ms)`)
+            const rebalanceIntervalMs = TIME_INTERVALS.SECONDS_10
+            rebalanceIntervalRef.current = setInterval(fetchRebalances, rebalanceIntervalMs)
+
+            // Set up interval to refresh historical snapshots periodically
+            const historicalIntervalMs = REFRESH_INTERVALS.HISTORICAL_DATA
+            historicalIntervalRef.current = setInterval(fetchHistoricalSnapshots, historicalIntervalMs)
         }
         return () => {
-            // Clear interval when unmounting or address changes
+            // Clear intervals when unmounting or address changes
             if (rebalanceIntervalRef.current) {
                 clearInterval(rebalanceIntervalRef.current)
                 rebalanceIntervalRef.current = null
-                console.log('[useAccountData] Cleared rebalance refresh interval')
+            }
+            if (historicalIntervalRef.current) {
+                clearInterval(historicalIntervalRef.current)
+                historicalIntervalRef.current = null
             }
             // Clear when unmounting
             setCurrentAddress(null)
             setAccountError(null)
             setRebalanceEvents([])
         }
-    }, [address, setCurrentAddress, setAccountError, setSnapshots, fetchRebalances])
+    }, [address, setCurrentAddress, setAccountError, fetchHistoricalSnapshots, fetchRebalances, setRebalanceEvents])
 
     // Main data query - only for fetching fresh data
     const {
@@ -81,9 +100,7 @@ export function useAccountData(address: string) {
     } = useQuery({
         queryKey: ['account', address],
         queryFn: async (): Promise<AccountSnapshot> => {
-            // Add cache buster to force fresh fetch
-            const cacheBuster = Date.now()
-            const response = await fetch(`${AppUrls.API_SNAPSHOT}/${address}?t=${cacheBuster}`)
+            const response = await fetch(`${AppUrls.API_SNAPSHOT}/${address}`)
             if (!response.ok) {
                 if (response.status === 404) throw new Error('Account not found')
                 throw new Error('Failed to fetch account data')
@@ -108,7 +125,19 @@ export function useAccountData(address: string) {
     // Add snapshot to history on each refresh
     useEffect(() => {
         if (freshData && address) {
-            addSnapshot(freshData)
+            // Validate snapshot before adding
+            const snapshotWithAddress = {
+                ...freshData,
+                address: address,
+            }
+
+            if (isValidSnapshot(snapshotWithAddress)) {
+                // Sanitize to ensure all optional fields have safe defaults
+                const sanitized = sanitizeSnapshot(snapshotWithAddress)
+                addSnapshot(sanitized)
+            } else {
+                console.error('[useAccountData] Received invalid snapshot from API, skipping')
+            }
         }
     }, [freshData, address, addSnapshot])
 

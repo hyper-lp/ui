@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { DexTransactionResponse } from '@/interfaces/api.interface'
-import { DexProtocol, IconIds } from '@/enums'
+import { ProtocolType, IconIds } from '@/enums'
 import { DEFAULT_TRANSACTION_LIMIT, TIME_INTERVALS, REFRESH_INTERVALS } from '@/config/app.config'
 import { TransactionRowTemplate } from './tables/TableTemplates'
 import { cn } from '@/utils'
@@ -40,7 +40,7 @@ export function TransactionHistoryTableHeader() {
             dex={<p className="truncate">DEX</p>}
             nonce={<p className="truncate text-right">Nonce</p>}
             status={<p className="truncate text-center">Status</p>}
-            className="h-8 border-b border-default/10 text-xs text-default/50"
+            className="h-8 border-b border-default/10 text-sm text-default/50"
         />
     )
 }
@@ -140,12 +140,13 @@ export function TransactionHistory({ account, limit = DEFAULT_TRANSACTION_LIMIT,
         }
     }
 
-    const getDexName = (dex: DexProtocol) => {
-        const names: Record<DexProtocol, string> = {
-            [DexProtocol.HYPERSWAP]: 'Hyperswap',
-            [DexProtocol.HYBRA]: 'Hybra',
-            [DexProtocol.PRJTX]: 'Project X',
-            [DexProtocol.HYPERBRICK]: 'HyperBrick',
+    const getDexName = (dex: ProtocolType) => {
+        const names: Record<ProtocolType, string> = {
+            [ProtocolType.HYPERSWAP]: 'Hyperswap',
+            [ProtocolType.HYBRA]: 'Hybra',
+            [ProtocolType.PRJTX]: 'Project X',
+            [ProtocolType.HYPERBRICK]: 'HyperBrick',
+            [ProtocolType.HYPERDRIVE]: 'HyperDrive',
         }
         return names[dex] || '-'
     }

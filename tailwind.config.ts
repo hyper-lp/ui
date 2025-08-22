@@ -42,6 +42,14 @@ const config: Config = {
         },
     },
     plugins: [],
+    safelist: [
+        // Platform-specific text colors used in sections
+        'text-hyper-evm-lps',
+        'text-hyper-evm-balances',
+        'text-hyper-core-perps',
+        'text-hyper-core-spots',
+        'text-hyper-drive',
+    ],
 }
 
 export default config

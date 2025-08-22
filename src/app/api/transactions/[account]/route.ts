@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server'
 import { HyperEVMScanService } from '@/services/explorers/hyperevmscan.service'
 import { filterDexTransactions, groupTransactionsByDex, getTransactionStats } from '@/services/explorers/transaction-parser'
 import type { ParsedDexTransaction } from '@/interfaces'
-import { DexProtocol } from '@/enums'
+import { ProtocolType } from '@/enums'
 import { env } from '@/env/t3-env'
 
 interface CachedResponse {
     success: boolean
     account: string
     transactions: ParsedDexTransaction[]
-    groupedByDex: Record<DexProtocol, ParsedDexTransaction[]>
+    groupedByDex: Record<ProtocolType, ParsedDexTransaction[]>
     stats: ReturnType<typeof getTransactionStats>
     pagination: {
         limit: number
@@ -47,8 +47,8 @@ export async function GET(request: Request, context: { params: Promise<{ account
         // Parse DEX protocols from query
         const dexParam = searchParams.get('dexes')
         const targetDexes = dexParam
-            ? (dexParam.split(',').filter((d) => Object.values(DexProtocol).includes(d as DexProtocol)) as DexProtocol[])
-            : [DexProtocol.HYPERSWAP, DexProtocol.HYBRA, DexProtocol.PRJTX, DexProtocol.HYPERBRICK]
+            ? (dexParam.split(',').filter((d) => Object.values(ProtocolType).includes(d as ProtocolType)) as ProtocolType[])
+            : [ProtocolType.HYPERSWAP, ProtocolType.HYBRA, ProtocolType.PRJTX, ProtocolType.HYPERBRICK]
 
         // Check cache first
         const cacheKey = `${account}-${limit}-${onlyHypeUsdt}-${dexParam || 'all'}`
@@ -130,7 +130,7 @@ export async function GET(request: Request, context: { params: Promise<{ account
                         : tx.functionName?.includes('collect')
                           ? 'collect'
                           : 'unknown',
-                dex: DexProtocol.HYPERSWAP, // Default to HYPERSWAP for now
+                dex: ProtocolType.HYPERSWAP, // Default to HYPERSWAP for now
                 token0Symbol: '',
                 token1Symbol: '',
                 token0Amount: '',
@@ -152,11 +152,12 @@ export async function GET(request: Request, context: { params: Promise<{ account
                 dexTransactions.length > 0
                     ? groupTransactionsByDex(dexTransactions)
                     : ({
-                          [DexProtocol.HYPERSWAP]: [],
-                          [DexProtocol.PRJTX]: [],
-                          [DexProtocol.HYBRA]: [],
-                          [DexProtocol.HYPERBRICK]: [],
-                      } as Record<DexProtocol, ParsedDexTransaction[]>)
+                          [ProtocolType.HYPERSWAP]: [],
+                          [ProtocolType.PRJTX]: [],
+                          [ProtocolType.HYBRA]: [],
+                          [ProtocolType.HYPERBRICK]: [],
+                          [ProtocolType.HYPERDRIVE]: [],
+                      } as Record<ProtocolType, ParsedDexTransaction[]>)
 
             // Get statistics
             const stats = getTransactionStats(finalTransactions)

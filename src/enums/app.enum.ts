@@ -7,6 +7,7 @@ export enum AppUrls {
     API_TRANSACTIONS = '/api/transactions',
     API_TRADES = '/api/trades',
     API_SNAPSHOTS = '/api/analytics/snapshots',
+    API_TRACK_USER = '/api/analytics/track-user',
 
     // API routes - Pools
     API_POOLS_TVL = '/api/pools/tvl',
@@ -45,9 +46,13 @@ export enum AppFontFamilies {
     PVP_TRADE = 'pvp-trade',
 }
 
-export enum DexProtocol {
+export enum ProtocolType {
     HYPERSWAP = 'hyperswap',
     PRJTX = 'prjtx',
     HYBRA = 'hybra',
     HYPERBRICK = 'hyperbrick',
+    HYPERDRIVE = 'hyperdrive',
 }
+
+// Backwards compatibility
+export const DexProtocol = ProtocolType

@@ -2,6 +2,7 @@
 
 import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
+import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
 
 export default function AccountLoading() {
     return (
@@ -42,9 +43,13 @@ export default function AccountLoading() {
             }
             charts={<div className="flex h-[400px] w-full items-center justify-center text-sm text-default/50 md:h-[400px]">Loading chart...</div>}
             hyperEvm={{
-                lp: (
+                longEvm: (
                     <CollapsibleCard
-                        title={<h3 className="text-lg font-semibold text-hyper-evm-lps">LPs</h3>}
+                        title={
+                            <h3 className={`text-lg font-semibold ${SECTION_CONFIG[SectionType.LONG_EVM].className}`}>
+                                {SECTION_CONFIG[SectionType.LONG_EVM].displayName}
+                            </h3>
+                        }
                         defaultExpanded={false}
                         headerRight={null}
                         isLoading
@@ -52,7 +57,11 @@ export default function AccountLoading() {
                 ),
                 balances: (
                     <CollapsibleCard
-                        title={<h3 className="text-lg font-semibold text-hyper-evm-balances">Wallet</h3>}
+                        title={
+                            <h3 className={`text-lg font-semibold ${SECTION_CONFIG[SectionType.WALLET].className}`}>
+                                {SECTION_CONFIG[SectionType.WALLET].displayName}
+                            </h3>
+                        }
                         defaultExpanded={false}
                         headerRight={null}
                         isLoading
@@ -63,7 +72,11 @@ export default function AccountLoading() {
             hyperCore={{
                 short: (
                     <CollapsibleCard
-                        title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perps</h3>}
+                        title={
+                            <h3 className={`text-lg font-semibold ${SECTION_CONFIG[SectionType.PERPS].className}`}>
+                                {SECTION_CONFIG[SectionType.PERPS].displayName}
+                            </h3>
+                        }
                         defaultExpanded={false}
                         headerRight={null}
                         isLoading
@@ -71,7 +84,11 @@ export default function AccountLoading() {
                 ),
                 spot: (
                     <CollapsibleCard
-                        title={<h3 className="text-lg font-semibold text-hyper-core-spots">Spot</h3>}
+                        title={
+                            <h3 className={`text-lg font-semibold ${SECTION_CONFIG[SectionType.SPOTS].className}`}>
+                                {SECTION_CONFIG[SectionType.SPOTS].displayName}
+                            </h3>
+                        }
                         defaultExpanded={false}
                         headerRight={null}
                         isLoading

@@ -14,9 +14,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid snapshot data' }, { status: 400 })
         }
 
+        // Validate required fields exist
+        if (!snapshot.address || !snapshot.metrics?.portfolio) {
+            return NextResponse.json({ error: 'Missing required fields: address or metrics.portfolio' }, { status: 400 })
+        }
+
+        // Validate address format
+        if (!/^0x[a-fA-F0-9]{40}$/i.test(snapshot.address)) {
+            return NextResponse.json({ error: 'Invalid Ethereum address format' }, { status: 400 })
+        }
+
         // Store snapshot in database
-        // The address comes from evmAddress since that's the main account identifier
-        const address = snapshot.evmAddress.toLowerCase()
+        const address = snapshot.address.toLowerCase()
 
         await client.query(
             `INSERT INTO "AccountSnapshot" 
@@ -28,21 +37,21 @@ export async function POST(request: NextRequest) {
             [
                 address,
                 new Date(snapshot.timestamp),
-                snapshot.evmAddress.toLowerCase(),
-                snapshot.coreAddress.toLowerCase(),
+                snapshot.address?.toLowerCase() || address.toLowerCase(),
+                snapshot.address?.toLowerCase() || address.toLowerCase(),
                 snapshot.schemaVersion || SCHEMA_VERSION.CURRENT,
                 JSON.stringify(snapshot),
-                snapshot.metrics.portfolio.totalUSD,
-                snapshot.metrics.portfolio.deployedAUM,
+                snapshot.metrics.portfolio.totalValueUSD,
+                snapshot.metrics.portfolio.deployedValueUSD,
                 snapshot.metrics.portfolio.netDeltaHYPE,
-                snapshot.metrics.portfolio.strategyDelta,
-                snapshot.metrics.hyperEvm.deltas.lpsHYPE,
-                snapshot.metrics.hyperEvm.deltas.balancesHYPE,
-                snapshot.metrics.hyperCore.deltas.perpsHYPE,
-                snapshot.metrics.hyperCore.deltas.spotHYPE,
-                snapshot.metrics.hyperCore.values.perpsNotionalUSD,
-                snapshot.metrics.hyperCore.values.perpsPnlUSD,
-                snapshot.metrics.hyperCore.values.withdrawableUSDC,
+                snapshot.metrics.portfolio.strategyDeltaHYPE,
+                snapshot.metrics.longLegs?.find((l) => l.type === 'lp')?.metrics?.totalDeltaHYPE || 0,
+                snapshot.metrics.idle?.deltas?.balancesDeltaHYPE || 0,
+                snapshot.metrics.shortLegs?.deltas?.perpsDeltaHYPE || 0,
+                snapshot.metrics.idle?.deltas?.spotDeltaHYPE || 0,
+                snapshot.metrics.shortLegs?.values?.perpsNotionalUSD || 0,
+                snapshot.metrics.shortLegs?.values?.perpsPnlUSD || 0,
+                snapshot.metrics.shortLegs?.values?.withdrawableUSDC || 0,
                 snapshot.prices?.HYPE || 0,
             ],
         )

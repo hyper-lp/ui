@@ -24,20 +24,46 @@ export const LPRowTemplate = (props: {
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center gap-1 px-2 text-sm', props.className)}>
-            <div className="w-[70px] pl-2">{props.dex}</div>
-            <div className="w-[70px]">{props.poolAddress}</div>
-            <div className="w-[55px]">{props.feeTier}</div>
-            <div className="w-[65px]">{props.status}</div>
-            <div className="flex w-[80px] items-center justify-center text-center">{props.value}</div>
-            <div className="w-[60px] text-center">{props.hype}</div>
-            <div className="w-[60px] text-center">{props.usdt}</div>
-            <div className="w-[70px] text-center">{props.split}</div>
-            <div className="w-[50px] text-center">{props.tvl}</div>
-            <div className="w-[60px] text-center">{props.apr24h}</div>
-            <div className="w-[60px] text-center">{props.apr7d}</div>
-            <div className="w-[65px] text-center">{props.apr30d}</div>
-            <div className="w-[80px] text-center">{props.positionId}</div>
+        <div role="row" className={cn('flex items-center gap-1 px-2 text-sm', props.className)}>
+            <div role="cell" className="w-[70px] pl-2">
+                {props.dex}
+            </div>
+            <div role="cell" className="w-[70px]">
+                {props.poolAddress}
+            </div>
+            <div role="cell" className="w-[55px]">
+                {props.feeTier}
+            </div>
+            <div role="cell" className="w-[65px]">
+                {props.status}
+            </div>
+            <div role="cell" className="flex w-[80px] items-center justify-center text-center">
+                {props.value}
+            </div>
+            <div role="cell" className="w-[60px] text-center">
+                {props.hype}
+            </div>
+            <div role="cell" className="w-[60px] text-center">
+                {props.usdt}
+            </div>
+            <div role="cell" className="w-[70px] text-center">
+                {props.split}
+            </div>
+            <div role="cell" className="w-[50px] text-center">
+                {props.tvl}
+            </div>
+            <div role="cell" className="w-[60px] text-center">
+                {props.apr24h}
+            </div>
+            <div role="cell" className="w-[60px] text-center">
+                {props.apr7d}
+            </div>
+            <div role="cell" className="w-[65px] text-center">
+                {props.apr30d}
+            </div>
+            <div role="cell" className="w-[80px] text-center">
+                {props.positionId}
+            </div>
             {/* <div className="w-[80px] text-right">{props.nftId}</div> */}
         </div>
     )
@@ -55,11 +81,19 @@ export const WalletRowTemplate = (props: {
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center text-sm', props.className)}>
-            <div className="w-[140px] px-2">{props.token}</div>
-            <div className="w-[100px] px-2 text-right">{props.price}</div>
-            <div className="w-[120px] px-2 text-right">{props.balance}</div>
-            <div className="w-[100px] px-2 text-right">{props.value}</div>
+        <div role="row" className={cn('flex items-center text-sm', props.className)}>
+            <div role="cell" className="w-[140px] px-2">
+                {props.token}
+            </div>
+            <div role="cell" className="w-[100px] px-2 text-right">
+                {props.price}
+            </div>
+            <div role="cell" className="w-[120px] px-2 text-right">
+                {props.balance}
+            </div>
+            <div role="cell" className="w-[100px] px-2 text-right">
+                {props.value}
+            </div>
             {/* <div className="w-[200px] px-2 text-[10px] text-default/50">{props.address}</div> */}
         </div>
     )
@@ -82,17 +116,37 @@ export const PerpRowTemplate = (props: {
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center text-sm', props.className)}>
-            <div className="w-[120px] px-2">{props.asset}</div>
-            <div className="w-[60px] px-2">{props.side}</div>
-            <div className="w-[90px] px-2 text-right">{props.size}</div>
-            <div className="w-[90px] px-2 text-right">{props.notional}</div>
-            <div className="w-[80px] px-2 text-right">{props.entry}</div>
-            <div className="w-[80px] px-2 text-right">{props.mark}</div>
-            <div className="w-[120px] px-2 text-right">{props.pnl}</div>
-            <div className="w-[100px] px-2 text-right">{props.funding}</div>
-            <div className="w-[80px] px-2 text-right">{props.margin}</div>
-            <div className="w-[60px] px-2 text-right">{props.leverage}</div>
+        <div role="row" className={cn('flex items-center text-sm', props.className)}>
+            <div role="cell" className="w-[120px] px-2">
+                {props.asset}
+            </div>
+            <div role="cell" className="w-[60px] px-2">
+                {props.side}
+            </div>
+            <div role="cell" className="w-[90px] px-2 text-right">
+                {props.size}
+            </div>
+            <div role="cell" className="w-[90px] px-2 text-right">
+                {props.notional}
+            </div>
+            <div role="cell" className="w-[80px] px-2 text-right">
+                {props.entry}
+            </div>
+            <div role="cell" className="w-[80px] px-2 text-right">
+                {props.mark}
+            </div>
+            <div role="cell" className="w-[120px] px-2 text-right">
+                {props.pnl}
+            </div>
+            <div role="cell" className="w-[100px] px-2 text-right">
+                {props.funding}
+            </div>
+            <div role="cell" className="w-[80px] px-2 text-right">
+                {props.margin}
+            </div>
+            <div role="cell" className="w-[60px] px-2 text-right">
+                {props.leverage}
+            </div>
         </div>
     )
 }
@@ -102,11 +156,21 @@ export const PerpRowTemplate = (props: {
  */
 export const SpotRowTemplate = (props: { asset: ReactNode; balance: ReactNode; value: ReactNode; price?: ReactNode; className?: string }) => {
     return (
-        <div className={cn('flex items-center text-sm', props.className)}>
-            <div className="w-[140px] px-2">{props.asset}</div>
-            {props.price !== undefined && <div className="w-[100px] px-2 text-right">{props.price}</div>}
-            <div className="w-[120px] px-2 text-right">{props.balance}</div>
-            <div className="w-[100px] px-2 text-right">{props.value}</div>
+        <div role="row" className={cn('flex items-center text-sm', props.className)}>
+            <div role="cell" className="w-[140px] px-2">
+                {props.asset}
+            </div>
+            {props.price !== undefined && (
+                <div role="cell" className="w-[100px] px-2 text-right">
+                    {props.price}
+                </div>
+            )}
+            <div role="cell" className="w-[120px] px-2 text-right">
+                {props.balance}
+            </div>
+            <div role="cell" className="w-[100px] px-2 text-right">
+                {props.value}
+            </div>
         </div>
     )
 }
@@ -125,14 +189,28 @@ export const TransactionRowTemplate = (props: {
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center text-sm', props.className)}>
-            <div className="w-[100px] px-2">{props.time}</div>
-            <div className="w-[120px] px-2">{props.hash}</div>
-            <div className="w-[120px] px-2">{props.type}</div>
-            <div className="w-[140px] px-2">{props.tokens}</div>
-            <div className="w-[100px] px-2">{props.dex}</div>
-            <div className="w-[60px] px-2 text-right">{props.nonce}</div>
-            <div className="w-[60px] px-2 text-center">{props.status}</div>
+        <div role="row" className={cn('flex items-center text-sm', props.className)}>
+            <div role="cell" className="w-[100px] px-2">
+                {props.time}
+            </div>
+            <div role="cell" className="w-[120px] px-2">
+                {props.hash}
+            </div>
+            <div role="cell" className="w-[120px] px-2">
+                {props.type}
+            </div>
+            <div role="cell" className="w-[140px] px-2">
+                {props.tokens}
+            </div>
+            <div role="cell" className="w-[100px] px-2">
+                {props.dex}
+            </div>
+            <div role="cell" className="w-[60px] px-2 text-right">
+                {props.nonce}
+            </div>
+            <div role="cell" className="w-[60px] px-2 text-center">
+                {props.status}
+            </div>
         </div>
     )
 }
@@ -153,16 +231,34 @@ export const HyperCoreTradeRowTemplate = (props: {
     className?: string
 }) => {
     return (
-        <div className={cn('flex items-center text-sm', props.className)}>
-            <div className="w-[100px] px-2">{props.time}</div>
-            <div className="w-[120px] px-2">{props.hash}</div>
-            <div className="w-[80px] px-2">{props.type}</div>
-            <div className="w-[80px] px-2">{props.coin}</div>
-            <div className="w-[70px] px-2">{props.side}</div>
-            <div className="w-[100px] px-2 text-right">{props.size}</div>
-            <div className="w-[90px] px-2 text-right">{props.price}</div>
-            <div className="w-[100px] px-2 text-right">{props.value}</div>
-            <div className="w-[100px] px-2 text-right">{props.pnl}</div>
+        <div role="row" className={cn('flex items-center text-sm', props.className)}>
+            <div role="cell" className="w-[100px] px-2">
+                {props.time}
+            </div>
+            <div role="cell" className="w-[120px] px-2">
+                {props.hash}
+            </div>
+            <div role="cell" className="w-[80px] px-2">
+                {props.type}
+            </div>
+            <div role="cell" className="w-[80px] px-2">
+                {props.coin}
+            </div>
+            <div role="cell" className="w-[70px] px-2">
+                {props.side}
+            </div>
+            <div role="cell" className="w-[100px] px-2 text-right">
+                {props.size}
+            </div>
+            <div role="cell" className="w-[90px] px-2 text-right">
+                {props.price}
+            </div>
+            <div role="cell" className="w-[100px] px-2 text-right">
+                {props.value}
+            </div>
+            <div role="cell" className="w-[100px] px-2 text-right">
+                {props.pnl}
+            </div>
         </div>
     )
 }

@@ -1,4 +1,4 @@
-import type { DexProtocol } from '@/enums'
+import type { ProtocolType } from '@/enums'
 
 /**
  * Raw transaction data from blockchain explorer
@@ -56,7 +56,7 @@ export interface HyperEVMScanResponse {
  */
 export interface ParsedDexTransaction {
     type: 'swap' | 'addLiquidity' | 'removeLiquidity' | 'mint' | 'burn' | 'collect' | 'unknown'
-    dex: DexProtocol
+    dex: ProtocolType
     pool?: string
     token0?: string
     token1?: string
@@ -83,7 +83,7 @@ export interface ParsedDexTransaction {
  */
 export interface TransactionFilter {
     address: string
-    dexProtocols?: DexProtocol[]
+    dexProtocols?: ProtocolType[]
     tokenPair?: {
         token0: string
         token1: string
@@ -119,7 +119,7 @@ export interface TokenPair {
  */
 export interface ExplorerPoolInfo {
     address: string
-    dex: DexProtocol
+    dex: ProtocolType
     token0: string
     token1: string
     fee?: number

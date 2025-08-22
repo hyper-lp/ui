@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import React, { useEffect, useRef, memo, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type * as echarts from 'echarts'
 import { cn } from '@/utils'
 
@@ -31,6 +31,7 @@ interface InterfaceEchartWrapperProps {
     onPointClick?: (params: unknown) => void
     onDataZoomChange?: (start: number, end: number, axis?: 'x' | 'y') => void
     onRestore?: () => void
+    onLegendSelectChanged?: (selected: Record<string, boolean>) => void
 
     onMouseOver?: (params: any) => void
     onMouseOut?: () => void
@@ -130,6 +131,14 @@ function EchartWrapperOptimized(props: InterfaceEchartWrapperProps) {
             myChart.current.on('dataZoomReset', props.onRestore)
         }
 
+        // Handle legend selection changes
+        if (props.onLegendSelectChanged) {
+            myChart.current.off('legendselectchanged')
+            myChart.current.on('legendselectchanged', (params: any) => {
+                props.onLegendSelectChanged?.(params.selected)
+            })
+        }
+
         // Add both window resize and ResizeObserver for better responsiveness
         window.addEventListener('resize', handleChartResize)
 
@@ -164,4 +173,4 @@ function EchartWrapperOptimized(props: InterfaceEchartWrapperProps) {
     return <div ref={chartRef} className={cn('h-full w-full', props.className)} />
 }
 
-export default memo(EchartWrapperOptimized)
+export default EchartWrapperOptimized

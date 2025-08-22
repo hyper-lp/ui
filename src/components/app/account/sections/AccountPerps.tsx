@@ -6,17 +6,22 @@ import numeral from 'numeral'
 import { useAppStore } from '@/stores/app.store'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { cn } from '@/utils'
+import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
 
 export default function AccountPerps() {
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
     const metrics = snapshot?.metrics
-    const fundingAPRs = snapshot?.metrics.hyperCore?.apr
+    const fundingAPRs = snapshot?.metrics?.shortLegs?.apr
     // Use 24h funding APR for display (most recent historical average)
     const perpFundingAPR = fundingAPRs?.avgFundingAPR24h
 
     return (
         <CollapsibleCard
-            title={<h3 className="text-lg font-semibold text-hyper-core-perps">Perps</h3>}
+            title={
+                <h3 className={`text-lg font-semibold ${SECTION_CONFIG[SectionType.PERPS].className}`}>
+                    {SECTION_CONFIG[SectionType.PERPS].displayName}
+                </h3>
+            }
             defaultExpanded={false}
             headerRight={
                 <div className="flex items-center gap-6">
@@ -41,7 +46,7 @@ export default function AccountPerps() {
                                                     )}
                                                 >
                                                     {fundingAPRs.avgFundingAPR24h > 0 ? '+' : ''}
-                                                    {fundingAPRs.avgFundingAPR24h.toFixed(2)}%
+                                                    {fundingAPRs.avgFundingAPR24h.toFixed(1)}%
                                                 </span>
                                             </div>
                                         )}
@@ -59,7 +64,7 @@ export default function AccountPerps() {
                                                     )}
                                                 >
                                                     {fundingAPRs.avgFundingAPR7d > 0 ? '+' : ''}
-                                                    {fundingAPRs.avgFundingAPR7d.toFixed(2)}%
+                                                    {fundingAPRs.avgFundingAPR7d.toFixed(1)}%
                                                 </span>
                                             </div>
                                         )}
@@ -77,7 +82,7 @@ export default function AccountPerps() {
                                                     )}
                                                 >
                                                     {fundingAPRs.avgFundingAPR30d > 0 ? '+' : ''}
-                                                    {fundingAPRs.avgFundingAPR30d.toFixed(2)}%
+                                                    {fundingAPRs.avgFundingAPR30d.toFixed(1)}%
                                                 </span>
                                             </div>
                                         )}
@@ -104,15 +109,10 @@ export default function AccountPerps() {
                         </StyledTooltip>
                     )}
                     <p>
-                        {numeral(
-                            (metrics?.hyperCore?.values?.perpsNotionalUSDPlusPnlUsd || 0) + (metrics?.hyperCore?.values?.withdrawableUSDC || 0),
-                        ).format('0,0$')}
+                        {numeral((metrics?.shortLegs?.values?.perpsValueUSD || 0) + (metrics?.shortLegs?.values?.withdrawableUSDC || 0)).format(
+                            '0,0$',
+                        )}
                     </p>
-                    {/* <div className="flex w-20 items-center justify-end gap-1">
-                                        <HypeDeltaTooltip delta={metrics.hyperCore?.deltas?.perpsHYPE || 0} hypePrice={hypePrice} decimals={1} />
-                                        <HypeIcon size={20} />
-                                        <p className="text-default/50">Δ</p>
-                                    </div> */}
                 </div>
             }
         >

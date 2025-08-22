@@ -29,15 +29,18 @@ export enum FileIds {
     HL_SYMBOL_WHITE = '/brands/hl-2/HlSymbolWhite.svg',
 
     // brands - dexs
-    DEX_HYBRA = '/brands/dexs/hybra.jpg',
-    DEX_HYPERBRICK = '/brands/dexs/hyperbrick.svg',
-    DEX_HYPERSWAP = '/brands/dexs/hyperswap.jpg',
-    DEX_PROJETX = '/brands/dexs/project-x.jpg',
+    DEX_HYBRA = '/brands/protocols/hybra.jpg',
+    DEX_HYPERBRICK = '/brands/protocols/hyperbrick.svg',
+    DEX_HYPERSWAP = '/brands/protocols/hyperswap.jpg',
+    DEX_PROJETX = '/brands/protocols/project-x.jpg',
+    LENDING_HYPERDRIVE = '/brands/protocols/hyperdrive.png',
 
     // tokens
     TOKEN_HYPE = '/tokens/HYPE.jpg',
     TOKEN_USDT0 = '/tokens/USDT0.png',
     TOKEN_USDC = '/tokens/USDC.png',
+    TOKEN_ETH = '/tokens/ETH.png',
+    TOKEN_BTC = '/tokens/BTC.png',
 
     // team
     TEAM_FBERGER = '/team/fberger_hypio.png',

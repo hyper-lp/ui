@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { cn } from '@/utils'
 import { formatUSD, shortenValue } from '@/utils'
 import { DAYJS_FORMATS } from '@/utils/date.util'
@@ -12,6 +12,8 @@ import LinkWrapper from '@/components/common/LinkWrapper'
 import FileMapper from '@/components/common/FileMapper'
 import numeral from 'numeral'
 import type { AccountSnapshotMetrics, AccountSnapshot } from '@/interfaces/account.interface'
+import { DEMO_ACCOUNTS } from '@/config/app.config'
+import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
 
 interface AccountHeaderProps {
     accountFromUrl: string
@@ -23,45 +25,29 @@ interface AccountHeaderProps {
     timings?: AccountSnapshot['timings']
 }
 
-const DEMO_ACCOUNTS = [
-    {
-        address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
-        name: 'Alpha',
-        description: 'Demo - Project X 500-250',
-    },
-    {
-        address: '0x8466D5b78CaFc01fC1264D2D724751b70211D979',
-        name: 'Bravo',
-        description: 'Demo - Hyperswap 500-250',
-    },
-    {
-        address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
-        name: 'Charlie',
-        description: 'Demo - Hyperswap 1000-500',
-    },
-]
-
 export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpdateIn, isFetching, refetch, metrics, timings }: AccountHeaderProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    // Calculate APR range from all time periods
+    // Get precomputed portfolio metrics
     const combinedAPRs = metrics?.portfolio?.apr
-    const lpAPRs = metrics?.hyperEvm?.apr
-    const fundingAPRs = metrics?.hyperCore?.apr
+    const allocation = metrics?.portfolio?.allocation
+    const aprSources = metrics?.portfolio?.aprSources
 
-    const aprRange = useMemo(() => {
-        const aprs = [combinedAPRs?.combined24h, combinedAPRs?.combined7d, combinedAPRs?.combined30d].filter(
-            (apr) => apr !== null && apr !== undefined,
-        ) as number[]
+    // Get metrics for the breakdown tooltip
+    const lpMetrics = metrics?.longLegs?.find((l) => l.type === 'lp')?.metrics
+    const hyperDriveMetrics = metrics?.longLegs?.find((l) => l.type === 'hyperdrive')?.metrics
 
-        if (aprs.length === 0) return null
+    // Calculate long and short values for allocation display
+    const longValueUSD = (lpMetrics?.totalValueUSD || 0) + (hyperDriveMetrics?.totalValueUSD || 0)
+    const shortValueUSD = metrics?.shortLegs?.values?.perpsValueUSD || 0
 
-        const min = Math.min(...aprs)
-        const max = Math.max(...aprs)
+    // Calculate APR range directly without memoization
+    const aprs = [combinedAPRs?.combined24h, combinedAPRs?.combined7d, combinedAPRs?.combined30d].filter(
+        (apr) => apr !== null && apr !== undefined,
+    ) as number[]
 
-        return { min, max }
-    }, [combinedAPRs])
+    const aprRange = aprs.length === 0 ? null : { min: Math.min(...aprs), max: Math.max(...aprs) }
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -78,16 +64,27 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
     return (
         <div className="mb-4 flex flex-col gap-2 px-2 lg:px-4">
             {/* Title */}
-            <div className="flex w-full flex-wrap items-center gap-1">
-                <p className="text-wrap text-default">Below is an example of a delta neutral</p>
-                {/* <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" /> */}
-                <p className="text-wrap text-hyper-evm-lps">HYPE/USD₮0</p>
-                <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
-                <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
-                <p className="text-wrap text-hyper-evm-lps">LP (actively rebalanced)</p>
-                <p className="text-wrap text-default">with a</p>
-                <p className="text-wrap text-hyper-core-perps">dynamic short leg</p>
-            </div>
+            {DEMO_ACCOUNTS.find((a) => a.address.toLowerCase() === accountFromUrl.toLowerCase())?.hasLP === true ? (
+                <div className="flex w-full flex-wrap items-center gap-1">
+                    <p className="text-wrap text-default">Below is an example of a delta neutral</p>
+                    {/* <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" /> */}
+                    <p className="text-wrap text-hyper-evm-lps">HYPE/USD₮0</p>
+                    <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
+                    <FileMapper id={FileIds.TOKEN_USDT0} width={20} height={20} className="-ml-2 rounded-full" />
+                    <p className="text-wrap text-hyper-evm-lps">LP (actively rebalanced)</p>
+                    <p className="text-wrap text-default">with a</p>
+                    <p className="text-wrap text-hyper-core-perps">dynamic short leg</p>
+                </div>
+            ) : DEMO_ACCOUNTS.find((a) => a.address.toLowerCase() === accountFromUrl.toLowerCase())?.hasHyperDrive === true ? (
+                <div className="flex w-full flex-wrap items-center gap-1">
+                    <p className="text-wrap text-default">Below is an example of a delta neutral</p>
+                    <p className="text-wrap text-hyper-evm-lps">lending of HYPE</p>
+                    <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
+                    <p className="text-wrap text-hyper-evm-lps">on Hyperdrive</p>
+                    <p className="text-wrap text-default">with a</p>
+                    <p className="text-wrap text-hyper-core-perps">dynamic short leg</p>
+                </div>
+            ) : null}
 
             {/* Summary */}
             <div className="flex w-full flex-col gap-6 lg:flex-row lg:justify-between">
@@ -187,8 +184,12 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                             <div>{DAYJS_FORMATS.dateLong(lastRefreshTime || 0)}</div>
                                             <p className="mt-2">API calls timing (we use RPCs)</p>
                                             <div className="text-default/60">
-                                                LPs {timings?.hyperEvm?.lpsMs || 0}ms • Wallet {timings?.hyperEvm?.balancesMs || 0}ms • Perps{' '}
-                                                {timings?.hyperCore?.perpsMs || 0}ms • Spot {timings?.hyperCore?.spotsMs || 0}ms
+                                                {SECTION_CONFIG[SectionType.LONG_EVM].displayName}{' '}
+                                                {(timings?.longLegs?.find((t) => t.type === 'lp')?.fetchTimeMs || 0) +
+                                                    (timings?.longLegs?.find((t) => t.type === 'hyperdrive')?.fetchTimeMs || 0)}
+                                                ms • {SECTION_CONFIG[SectionType.WALLET].displayName} {timings?.idle?.balancesMs || 0}ms •{' '}
+                                                {SECTION_CONFIG[SectionType.PERPS].displayName} {timings?.shortLegs?.perpsMs || 0}ms •{' '}
+                                                {SECTION_CONFIG[SectionType.SPOTS].displayName} {timings?.idle?.spotsMs || 0}ms
                                             </div>
                                         </div>
                                     }
@@ -221,17 +222,21 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                     <div className="mb-2 font-semibold">Breakdown</div>
                                     <div className="flex justify-between font-medium">
                                         <span>+ Deployed AUM</span>
-                                        <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
+                                        <span>{formatUSD(metrics?.portfolio?.deployedValueUSD ?? 0)}</span>
                                     </div>
                                     <div className="space-y-0 opacity-60">
                                         <div className="ml-3">
                                             <div className="flex justify-between gap-6">
-                                                <span className="">• LPs</span>
-                                                <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSDWithFees || 0)}</span>
+                                                <span className="">• {SECTION_CONFIG[SectionType.LONG_EVM].subSections?.lps}</span>
+                                                <span>{formatUSD(lpMetrics?.totalValueUSD || 0)}</span>
                                             </div>
                                             <div className="flex justify-between gap-6">
-                                                <span className="">• Perpetuals</span>
-                                                <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
+                                                <span className="">• {SECTION_CONFIG[SectionType.LONG_EVM].subSections?.hyperdrive}</span>
+                                                <span>{formatUSD(hyperDriveMetrics?.totalValueUSD || 0)}</span>
+                                            </div>
+                                            <div className="flex justify-between gap-6">
+                                                <span className="">• {SECTION_CONFIG[SectionType.PERPS].displayName}</span>
+                                                <span>{formatUSD(metrics?.shortLegs?.values?.perpsValueUSD || 0)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -241,25 +246,25 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                             <div className="">+ Idle/dust capital</div>
                                             <span>
                                                 {numeral(
-                                                    (metrics.hyperEvm?.values?.balancesUSD || 0) +
-                                                        (metrics.hyperCore?.values?.spotUSD || 0) +
-                                                        (metrics.hyperCore?.values?.withdrawableUSDC || 0),
+                                                    (metrics?.idle?.values?.balancesValueUSD || 0) +
+                                                        (metrics?.idle?.values?.spotValueUSD || 0) +
+                                                        (metrics?.shortLegs?.values?.withdrawableUSDC || 0),
                                                 ).format('0,0a$')}
                                             </span>
                                         </div>
 
                                         <div className="ml-3 opacity-60">
                                             <div className="flex justify-between gap-6">
-                                                <span className="">• Wallet balances</span>
-                                                <span>{numeral(metrics.hyperEvm?.values?.balancesUSD || 0).format('0,0a$')}</span>
+                                                <span className="">• {SECTION_CONFIG[SectionType.WALLET].displayName} balances</span>
+                                                <span>{numeral(metrics?.idle?.values?.balancesValueUSD || 0).format('0,0a$')}</span>
                                             </div>
                                             <div className="flex justify-between gap-6">
-                                                <span className="">• Spot balances</span>
-                                                <span>{numeral(metrics.hyperCore?.values?.spotUSD || 0).format('0,0a$')}</span>
+                                                <span className="">• {SECTION_CONFIG[SectionType.SPOTS].displayName} balances</span>
+                                                <span>{numeral(metrics?.idle?.values?.spotValueUSD || 0).format('0,0a$')}</span>
                                             </div>
                                             <div className="flex justify-between gap-6">
                                                 <span className="">• Withdrawable USDC</span>
-                                                <span>{numeral(metrics.hyperCore?.values?.withdrawableUSDC || 0).format('0,0a$')}</span>
+                                                <span>{numeral(metrics?.shortLegs?.values?.withdrawableUSDC || 0).format('0,0a$')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -267,52 +272,15 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                     <div className="mt-3 border-t border-default/20 pt-4">
                                         <div className="flex justify-between font-semibold">
                                             <span>= HyperLP balance</span>
-                                            <span>{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
+                                            <span>{formatUSD(metrics?.portfolio?.totalValueUSD ?? 0)}</span>
                                         </div>
                                     </div>
                                 </div>
                             }
                         >
-                            <span className="cursor-help text-xl font-semibold">{formatUSD(metrics.portfolio?.totalUSD || 0)}</span>
+                            <span className="cursor-help text-xl font-semibold">{formatUSD(metrics?.portfolio?.totalValueUSD || 0)}</span>
                         </StyledTooltip>
                     </div>
-
-                    {/* Active funds */}
-                    {/* <div className="h-10 border-l border-dashed border-default/20" /> */}
-                    {/* <div className="flex flex-col items-center lg:items-end">
-                        <span className="text-base tracking-wider text-default/50">HyperLP balance</span>
-                        <StyledTooltip
-                            content={
-                                <div className="space-y-3">
-                                    <div className="font-semibold">Deployed AUM on this strategy</div>
-
-                                    <div className="space-y-0">
-                                        <div className="opacity-75">Capital actively deployed</div>
-
-                                        <div className="ml-3">
-                                            <div className="flex justify-between gap-6">
-                                                <span className="opacity-60">LPs</span>
-                                                <span>{formatUSD(metrics.hyperEvm?.values?.lpsUSDWithFees || 0)}</span>
-                                            </div>
-                                            <div className="flex justify-between gap-6">
-                                                <span className="opacity-60">Perpetual positions</span>
-                                                <span>{formatUSD(metrics.hyperCore?.values?.perpsUSD || 0)}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-between font-medium">
-                                        <span>= Total deployed AUM</span>
-                                        <span>{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
-                                    </div>
-
-                                    <div className="mb-1 opacity-60">Excludes idle/dust capital (wallet & spot)</div>
-                                </div>
-                            }
-                        >
-                            <span className="text-xl font-semibold">{formatUSD(metrics.portfolio?.deployedAUM || 0)}</span>
-                        </StyledTooltip>
-                    </div> */}
 
                     {/* Net P&L */}
                     <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" />
@@ -356,16 +324,21 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         <>
                             <div className="h-10 border-l border-dashed border-default/20" />
                             <div className="flex flex-col items-center lg:items-end">
-                                {/* <span className="text-base tracking-wider text-default/50">Est. Gross Delta-Neutral APR</span> */}
                                 <span className="text-base tracking-wider text-default/50">Estimated Gross APR</span>
                                 <StyledTooltip
                                     content={
                                         <div className="space-y-3">
                                             <div className="space-y-1 pb-2">
-                                                <div className="flex items-center gap-1 text-sm font-medium">
-                                                    <span>Gross Delta-Neutral APR on LPs + Perps</span>
-                                                </div>
-                                                <div className="text-sm">= (2/3 × LP APR) + (1/3 × Funding APR)</div>
+                                                <div className="text-sm font-semibold">Gross Delta-Neutral APR on deployed AUM</div>
+                                                {allocation && (
+                                                    <>
+                                                        <div className="text-sm opacity-70">
+                                                            Allocation: {numeral(longValueUSD).format('0,0$')} Yield leg (
+                                                            {allocation.longPercentage.toFixed(0)}%) + {numeral(shortValueUSD).format('0,0$')} Perps (
+                                                            {allocation.shortPercentage.toFixed(0)}%)
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
 
                                             {/* 24h APR */}
@@ -392,26 +365,45 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     ) === combinedAPRs.combined24h,
                                                             })}
                                                         >
-                                                            {combinedAPRs.combined24h > 0 ? '+' : ''}
-                                                            {combinedAPRs.combined24h.toFixed(0)}% before IL
+                                                            {numeral(combinedAPRs.combined24h).divide(100).format('+0,0%')} *
                                                         </span>
                                                     </div>
                                                     <div className="ml-3">
-                                                        {lpAPRs?.weightedAvg24h !== null && lpAPRs?.weightedAvg24h !== undefined && (
+                                                        {aprSources?.longAPR24h !== null && aprSources?.longAPR24h !== undefined && allocation && (
                                                             <div className="flex justify-between gap-6">
-                                                                <span className="opacity-60">2/3 LP APR</span>
-                                                                <span className="opacity-60">{((2/3) * lpAPRs.weightedAvg24h).toFixed(1)}% </span>
-                                                            </div>
-                                                        )}
-                                                        {fundingAPRs?.avgFundingAPR24h !== null && fundingAPRs?.avgFundingAPR24h !== undefined && (
-                                                            <div className="flex justify-between gap-6">
-                                                                <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {((1/3) * fundingAPRs.avgFundingAPR24h) > 0 ? '+' : ''}
-                                                                    {((1/3) * fundingAPRs.avgFundingAPR24h).toFixed(1)}%
+                                                                    {numeral(allocation.longPercentage).divide(100).format('0,0.0%')} * Yield leg{' '}
+                                                                    {aprSources.longAPR24h.toFixed(1)}%
+                                                                </span>
+                                                                <span className="opacity-60">
+                                                                    {/* {((allocation.longPercentage / 100) * aprSources.longAPR24h).toFixed(1)}% */}
+                                                                    {numeral(allocation.longPercentage)
+                                                                        .divide(100)
+                                                                        .multiply(aprSources.longAPR24h)
+                                                                        .divide(100)
+                                                                        .format('+0,0%')}
                                                                 </span>
                                                             </div>
                                                         )}
+                                                        {aprSources?.fundingAPR24h !== null &&
+                                                            aprSources?.fundingAPR24h !== undefined &&
+                                                            allocation && (
+                                                                <div className="flex justify-between gap-6">
+                                                                    <span className="opacity-60">
+                                                                        {numeral(allocation.shortPercentage).divide(100).format('0,0.0%')} * Short leg{' '}
+                                                                        {aprSources.fundingAPR24h.toFixed(1)}%
+                                                                    </span>
+                                                                    <span className="opacity-60">
+                                                                        {/* {(allocation.shortPercentage / 100) * aprSources.fundingAPR24h > 0 ? '+' : ''} */}
+                                                                        {/* {((allocation.shortPercentage / 100) * aprSources.fundingAPR24h).toFixed(1)}% */}
+                                                                        {numeral(allocation.shortPercentage)
+                                                                            .divide(100)
+                                                                            .multiply(aprSources.fundingAPR24h)
+                                                                            .divide(100)
+                                                                            .format('+0,0%')}
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                     </div>
                                                 </div>
                                             )}
@@ -440,26 +432,45 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     ) === combinedAPRs.combined7d,
                                                             })}
                                                         >
-                                                            {combinedAPRs.combined7d > 0 ? '+' : ''}
-                                                            {combinedAPRs.combined7d.toFixed(0)}% before IL
+                                                            {numeral(combinedAPRs.combined7d).divide(100).format('+0,0%')} *
                                                         </span>
                                                     </div>
                                                     <div className="ml-3 space-y-0.5">
-                                                        {lpAPRs?.weightedAvg7d !== null && lpAPRs?.weightedAvg7d !== undefined && (
+                                                        {aprSources?.longAPR7d !== null && aprSources?.longAPR7d !== undefined && allocation && (
                                                             <div className="flex justify-between gap-6">
-                                                                <span className="opacity-60">2/3 LP APR</span>
-                                                                <span className="opacity-60">{((2/3) * lpAPRs.weightedAvg7d).toFixed(1)}%</span>
-                                                            </div>
-                                                        )}
-                                                        {fundingAPRs?.avgFundingAPR7d !== null && fundingAPRs?.avgFundingAPR7d !== undefined && (
-                                                            <div className="flex justify-between gap-6">
-                                                                <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {((1/3) * fundingAPRs.avgFundingAPR7d) > 0 ? '+' : ''}
-                                                                    {((1/3) * fundingAPRs.avgFundingAPR7d).toFixed(1)}%
+                                                                    {numeral(allocation.longPercentage).divide(100).format('0,0.0%')} * Yield leg{' '}
+                                                                    {aprSources.longAPR7d.toFixed(1)}%
+                                                                </span>
+                                                                <span className="opacity-60">
+                                                                    {/* {((allocation.longPercentage / 100) * aprSources.longAPR7d).toFixed(1)}% */}
+                                                                    {numeral(allocation.longPercentage)
+                                                                        .divide(100)
+                                                                        .multiply(aprSources.longAPR7d)
+                                                                        .divide(100)
+                                                                        .format('+0,0%')}
                                                                 </span>
                                                             </div>
                                                         )}
+                                                        {aprSources?.fundingAPR7d !== null &&
+                                                            aprSources?.fundingAPR7d !== undefined &&
+                                                            allocation && (
+                                                                <div className="flex justify-between gap-6">
+                                                                    <span className="opacity-60">
+                                                                        {numeral(allocation.shortPercentage).divide(100).format('0,0.0%')} * Short leg{' '}
+                                                                        {aprSources.fundingAPR7d.toFixed(1)}%
+                                                                    </span>
+                                                                    <span className="opacity-60">
+                                                                        {/* {(allocation.shortPercentage / 100) * aprSources.fundingAPR7d > 0 ? '+' : ''} */}
+                                                                        {/* {((allocation.shortPercentage / 100) * aprSources.fundingAPR7d).toFixed(1)}% */}
+                                                                        {numeral(allocation.shortPercentage)
+                                                                            .divide(100)
+                                                                            .multiply(aprSources.fundingAPR7d)
+                                                                            .divide(100)
+                                                                            .format('+0,0%')}
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                     </div>
                                                 </div>
                                             )}
@@ -488,29 +499,50 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     ) === combinedAPRs.combined30d,
                                                             })}
                                                         >
-                                                            {combinedAPRs.combined30d > 0 ? '+' : ''}
-                                                            {combinedAPRs.combined30d.toFixed(0)}% before IL
+                                                            {numeral(combinedAPRs.combined30d).divide(100).format('+0,0%')} *
                                                         </span>
                                                     </div>
                                                     <div className="ml-3 space-y-0.5">
-                                                        {lpAPRs?.weightedAvg30d !== null && lpAPRs?.weightedAvg30d !== undefined && (
+                                                        {aprSources?.longAPR30d !== null && aprSources?.longAPR30d !== undefined && allocation && (
                                                             <div className="flex justify-between gap-6">
-                                                                <span className="opacity-60">2/3 LP APR</span>
-                                                                <span className="opacity-60">{((2/3) * lpAPRs.weightedAvg30d).toFixed(1)}%</span>
-                                                            </div>
-                                                        )}
-                                                        {fundingAPRs?.avgFundingAPR30d !== null && fundingAPRs?.avgFundingAPR30d !== undefined && (
-                                                            <div className="flex justify-between gap-6">
-                                                                <span className="opacity-60">1/3 Funding APR</span>
                                                                 <span className="opacity-60">
-                                                                    {((1/3) * fundingAPRs.avgFundingAPR30d) > 0 ? '+' : ''}
-                                                                    {((1/3) * fundingAPRs.avgFundingAPR30d).toFixed(1)}%
+                                                                    {numeral(allocation.longPercentage).divide(100).format('0,0.0%')} * Yield leg{' '}
+                                                                    {aprSources.longAPR30d.toFixed(1)}%
+                                                                </span>
+                                                                <span className="opacity-60">
+                                                                    {/* {((allocation.longPercentage / 100) * aprSources.longAPR30d).toFixed(1)}% */}
+                                                                    {numeral(allocation.longPercentage)
+                                                                        .divide(100)
+                                                                        .multiply(aprSources.longAPR30d)
+                                                                        .divide(100)
+                                                                        .format('+0,0%')}
                                                                 </span>
                                                             </div>
                                                         )}
+                                                        {aprSources?.fundingAPR30d !== null &&
+                                                            aprSources?.fundingAPR30d !== undefined &&
+                                                            allocation && (
+                                                                <div className="flex justify-between gap-6">
+                                                                    <span className="opacity-60">
+                                                                        {numeral(allocation.shortPercentage).divide(100).format('0,0.0%')} * Short leg{' '}
+                                                                        {aprSources.fundingAPR30d.toFixed(1)}%
+                                                                    </span>
+                                                                    <span className="opacity-60">
+                                                                        {/* {(allocation.shortPercentage / 100) * aprSources.fundingAPR30d > 0 ? '+' : ''} */}
+                                                                        {/* {((allocation.shortPercentage / 100) * aprSources.fundingAPR30d).toFixed(1)}% */}
+                                                                        {numeral(allocation.shortPercentage)
+                                                                            .divide(100)
+                                                                            .multiply(aprSources.fundingAPR30d)
+                                                                            .divide(100)
+                                                                            .format('+0,0%')}
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                     </div>
                                                 </div>
                                             )}
+
+                                            <p>* Before operating costs (EVM gas, Core fees, etc.)</p>
                                         </div>
                                     }
                                 >

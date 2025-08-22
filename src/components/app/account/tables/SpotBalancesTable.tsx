@@ -13,9 +13,9 @@ import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
 import { RoundedAmount } from '@/components/common/RoundedAmount'
+import { EmptyTablePlaceholder } from './EmptyTablePlaceholder'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
-import { IS_DEV } from '@/config/app.config'
 
 interface SpotBalancesTableProps {
     className?: string
@@ -24,10 +24,26 @@ interface SpotBalancesTableProps {
 export function SpotBalancesTableHeader() {
     return (
         <SpotRowTemplate
-            asset={<p className="truncate">Asset</p>}
-            balance={<p className="truncate text-right">Balance</p>}
-            value={<p className="truncate text-right">Value $</p>}
-            price={<p className="truncate text-right">Price</p>}
+            asset={
+                <span role="columnheader" className="truncate">
+                    Asset
+                </span>
+            }
+            balance={
+                <span role="columnheader" className="truncate text-right">
+                    Balance
+                </span>
+            }
+            value={
+                <span role="columnheader" className="truncate text-right">
+                    Value $
+                </span>
+            }
+            price={
+                <span role="columnheader" className="truncate text-right">
+                    Price
+                </span>
+            }
             className="h-8 border-b border-default/10 text-sm text-default/50"
         />
     )
@@ -38,10 +54,10 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
 
     // Get balances directly from the store
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
-    const balances = snapshot?.positions?.hyperCore?.spots || []
+    const balances = snapshot?.positions?.idle?.spots || []
 
     if (!balances || balances.length === 0) {
-        return <div className={cn('py-8 text-center text-default/50', className)}>No spot balances</div>
+        return <EmptyTablePlaceholder message="No spot balances" className={className} />
     }
 
     const toggleRow = (id: string) => {
@@ -59,10 +75,10 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
     const sortedBalances = [...balances].sort((a, b) => b.valueUSD - a.valueUSD)
 
     return (
-        <div className={cn('overflow-x-auto', className)}>
+        <div role="table" className={cn('overflow-x-auto', className)}>
             <div className="min-w-max">
                 <SpotBalancesTableHeader />
-                <div className="divide-y divide-default/5">
+                <div role="rowgroup" className="divide-y divide-default/5">
                     {sortedBalances.map((balance) => {
                         const isExpanded = expandedRows.has(balance.id)
                         const balanceNum = typeof balance.balance === 'string' ? parseFloat(balance.balance) : balance.balance
@@ -75,12 +91,6 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                     <SpotRowTemplate
                                         asset={
                                             <div className="flex items-center gap-1.5">
-                                                {IS_DEV && (
-                                                    <IconWrapper
-                                                        id={isExpanded ? IconIds.CHEVRON_DOWN : IconIds.CHEVRON_RIGHT}
-                                                        className="size-3 text-default/40"
-                                                    />
-                                                )}
                                                 {getHyperCoreAssetBySymbol(balance.asset)?.fileId && (
                                                     <FileMapper
                                                         id={getHyperCoreAssetBySymbol(balance.asset)!.fileId}
@@ -157,7 +167,7 @@ export function SpotBalancesTable({ className }: SpotBalancesTableProps) {
                                                 <span className="text-default/30">-</span>
                                             )
                                         }
-                                        className="h-10 transition-colors hover:bg-default/5"
+                                        className="h-10 text-xs transition-colors hover:bg-default/5"
                                     />
                                 </div>
 

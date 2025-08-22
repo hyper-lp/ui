@@ -4,7 +4,7 @@
 
 import type { ParsedDexTransaction } from './explorer.interface'
 import type { HyperCoreTransaction } from '@/services/explorers/hypercore.service'
-import type { DexProtocol } from '@/enums'
+import type { ProtocolType } from '@/enums'
 
 // Generic transaction response for HyperEVM
 export interface DexTransactionResponse {
@@ -13,7 +13,7 @@ export interface DexTransactionResponse {
     stats: {
         total: number
         byType: Record<string, number>
-        byDex: Record<DexProtocol, number>
+        byDex: Record<ProtocolType, number>
         successful: number
         failed: number
     }

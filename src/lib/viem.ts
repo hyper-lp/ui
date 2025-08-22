@@ -5,13 +5,13 @@ const HYPEREVM_RPC_URLS = [
     'https://hyperliquid-mainnet.g.alchemy.com/v2/xrhhC2wgJl6OX9lEGPrek', // Alchemy RPC, fberger account
     'https://hyperliquid-mainnet.g.alchemy.com/v2/T4Jmj7HYUBr1psFAZh415', // Alchemy RPC, katalyster account
     'https://hyperliquid.valtitude.xyz?apiKey=5bc51b42-1575-40ae-998f-81c4ef067f6a', // Valtitude RPC
-    'https://api.hyperliquid.xyz/evm', // Primary official RPC
-    'https://g.w.lavanet.xyz:443/gateway/hyperliquid/rpc-http/e1a0a259d9519ff2cb043a434844d733', // Primary official RPC
-    'https://rpc.hyperliquid.xyz/evm', // Alternative official RPC
-    'https://rpc.hyperlend.finance', // HyperLend RPC fallback
-    'https://hyperliquid-json-rpc.stakely.io', // Stakely RPC fallback
-    'https://hyperliquid.drpc.org', // DRPC RPC fallback
     'https://rpc.hypurrscan.io', // Hypurrscan RPC fallback
+    'https://rpc.hyperliquid.xyz/evm', // Alternative official RPC
+    'https://api.hyperliquid.xyz/evm', // Primary official RPC
+    'https://hyperliquid-json-rpc.stakely.io', // Stakely RPC fallback
+    'https://g.w.lavanet.xyz:443/gateway/hyperliquid/rpc-http/e1a0a259d9519ff2cb043a434844d733', // Primary official RPC
+    'https://rpc.hyperlend.finance', // HyperLend RPC fallback
+    'https://hyperliquid.drpc.org', // DRPC RPC fallback
 ]
 
 export const HYPEREVM_CHAIN_ID = 999
@@ -51,8 +51,9 @@ export function getViemClient(chainId: number = HYPEREVM_CHAIN_ID): PublicClient
                 retryCount: 2,
                 retryDelay: 200, // Reduced from 1000ms - fail fast with multiple RPCs
                 timeout: 10000,
+                // Only log requests in development if explicitly enabled
                 onFetchRequest: (request) => {
-                    if (process.env.NODE_ENV === 'development') {
+                    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_RPC === 'true') {
                         console.log(`🌐 RPC Request to ${url}:`, request.method)
                     }
                 },
@@ -80,10 +81,10 @@ export function getViemClient(chainId: number = HYPEREVM_CHAIN_ID): PublicClient
             }),
         })
 
-        // Log which RPC is being used
-        if (process.env.NODE_ENV === 'development') {
-            console.log('🔗 Initialized Viem client with RPC fallbacks:', HYPEREVM_RPC_URLS)
-        }
+        // Log initialization (simplified)
+        // if (process.env.NODE_ENV === 'development') {
+        //     console.log('🔗 Initialized Viem client with fallback RPCs')
+        // }
     }
 
     return client

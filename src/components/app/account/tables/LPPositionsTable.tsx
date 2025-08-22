@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { FileIds, IconIds } from '@/enums'
+import type { ProtocolType } from '@/config/hyperevm-protocols.config'
 import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
 import type { LPPosition } from '@/interfaces'
@@ -14,8 +15,9 @@ import { SideBadge } from '@/components/common/SideBadge'
 import { useAppStore } from '@/stores/app.store'
 import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
-import { getDexConfig } from '@/config'
+import { getProtocolConfig } from '@/config'
 import DexIframeModal from '@/components/modals/DexIframeModal'
+import { EmptyTablePlaceholder } from './EmptyTablePlaceholder'
 
 interface LPPositionsTableProps {
     className?: string
@@ -24,26 +26,78 @@ interface LPPositionsTableProps {
 export function LPPositionsTableHeader() {
     return (
         <LPRowTemplate
-            dex={<p className="truncate">DEX</p>}
-            feeTier={<p className="truncate">Fee</p>}
-            status={<p className="truncate font-medium">Status</p>}
-            poolAddress={<p className="truncate">Pool</p>}
-            nftId={<p className="truncate">NFT ID</p>}
+            dex={
+                <span role="columnheader" className="truncate">
+                    DEX
+                </span>
+            }
+            feeTier={
+                <span role="columnheader" className="truncate">
+                    Fee
+                </span>
+            }
+            status={
+                <span role="columnheader" className="truncate font-medium">
+                    Status
+                </span>
+            }
+            poolAddress={
+                <span role="columnheader" className="truncate">
+                    Pool
+                </span>
+            }
+            nftId={
+                <span role="columnheader" className="truncate">
+                    NFT ID
+                </span>
+            }
             hype={
-                <div className="mx-auto flex items-center justify-center gap-1">
+                <div role="columnheader" className="mx-auto flex items-center justify-center gap-1">
                     <FileMapper id={FileIds.TOKEN_HYPE} width={16} height={16} className="rounded-full" />
-                    <p className="truncate text-sm">Δ</p>
+                    <span className="truncate text-sm">Δ</span>
                 </div>
             }
-            usdt={<FileMapper id={FileIds.TOKEN_USDT0} width={18} height={18} className="mx-auto rounded-full" />}
-            value={<p className="truncate">Value $</p>}
-            split={<p className="truncate">Split</p>}
-            tvl={<p className="truncate">TVL $</p>}
-            apr24h={<p className="truncate">24h APR</p>}
-            apr7d={<p className="truncate">7d APR</p>}
-            apr30d={<p className="truncate">30d APR</p>}
-            positionId={<p className="truncate">Position ID</p>}
-            className="h-8 border-b border-default/10 text-sm text-default/50"
+            usdt={
+                <span role="columnheader">
+                    <FileMapper id={FileIds.TOKEN_USDT0} width={18} height={18} className="mx-auto rounded-full" />
+                </span>
+            }
+            value={
+                <span role="columnheader" className="truncate">
+                    Value $
+                </span>
+            }
+            split={
+                <span role="columnheader" className="truncate">
+                    Split
+                </span>
+            }
+            tvl={
+                <span role="columnheader" className="truncate">
+                    TVL $
+                </span>
+            }
+            apr24h={
+                <span role="columnheader" className="truncate">
+                    24h APR
+                </span>
+            }
+            apr7d={
+                <span role="columnheader" className="truncate">
+                    7d APR
+                </span>
+            }
+            apr30d={
+                <span role="columnheader" className="truncate">
+                    30d APR
+                </span>
+            }
+            positionId={
+                <span role="columnheader" className="truncate">
+                    Position ID
+                </span>
+            }
+            className="h-8 border-b border-default/10 text-xs text-default/50"
         />
     )
 }
@@ -54,7 +108,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
     // Get positions and APR data directly from the store
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
-    const positions = snapshot?.positions?.hyperEvm?.lps || []
+    const positions = (snapshot?.positions?.longLegs?.find((l) => l.type === 'lp')?.positions as unknown as LPPosition[]) || []
     const poolAPRData = snapshot?.marketData?.poolAPR
 
     // Helper to find matching APR for a position
@@ -72,7 +126,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
     }
 
     if (!positions || positions.length === 0) {
-        return <div className={cn('py-8 text-center text-default/50', className)}>No liquidity positions</div>
+        return <EmptyTablePlaceholder message="No liquidity positions" className={className} />
     }
 
     const handlePositionClick = (position: LPPosition) => {
@@ -84,10 +138,10 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
     }
 
     return (
-        <div className={cn('overflow-x-auto', className)}>
+        <div role="table" className={cn('overflow-x-auto', className)}>
             <div className="min-w-max">
                 <LPPositionsTableHeader />
-                <div className="divide-y divide-default/5">
+                <div role="rowgroup" className="divide-y divide-default/5">
                     {positions
                         // Filter based on showClosedPositions state
                         .filter((position) => showClosedPositions || !position.isClosed)
@@ -110,12 +164,13 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                     key={position.id}
                                     onClick={() => handlePositionClick(position)}
                                     className="cursor-pointer transition-colors hover:bg-default/5"
+                                    role="presentation"
                                 >
                                     <LPRowTemplate
                                         dex={
                                             <div className="flex items-center gap-1.5">
                                                 <FileMapper
-                                                    id={getDexConfig(position.dex)?.fileId || ''}
+                                                    id={getProtocolConfig(position.dex as ProtocolType)?.fileId || ''}
                                                     width={18}
                                                     height={18}
                                                     className="rounded"
@@ -133,7 +188,10 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     </div>
                                                 }
                                             >
-                                                <LinkWrapper href={getDexConfig(position.dex)?.portfolioUrl || ''} target="_blank">
+                                                <LinkWrapper
+                                                    href={getProtocolConfig(position.dex as ProtocolType)?.portfolioUrl || ''}
+                                                    target="_blank"
+                                                >
                                                     <p className="truncate">{position.id}</p>
                                                 </LinkWrapper>
                                             </StyledTooltip>
@@ -267,7 +325,10 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                     </div>
                                                 }
                                             >
-                                                <LinkWrapper href={getDexConfig(position.dex)?.portfolioUrl || ''} target="_blank">
+                                                <LinkWrapper
+                                                    href={getProtocolConfig(position.dex as ProtocolType)?.portfolioUrl || ''}
+                                                    target="_blank"
+                                                >
                                                     <p className="truncate">{shortenValue(position.pool || '')}</p>
                                                 </LinkWrapper>
                                             </StyledTooltip>
@@ -517,7 +578,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                                                 <span className="text-default/30">-</span>
                                             )
                                         })()}
-                                        className="h-10"
+                                        className="h-10 text-sm transition-colors hover:bg-default/5"
                                     />
                                 </div>
                             )
@@ -530,9 +591,13 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                 <div className="mt-3 flex px-3 pb-2">
                     <button
                         onClick={() => setShowClosedPositions(!showClosedPositions)}
-                        className="flex gap-3 text-xs text-default/40 transition-colors hover:text-default/60"
+                        className="flex gap-3 text-xs text-default/40 transition-colors hover:text-primary"
                     >
-                        {showClosedPositions ? <p>Click to hide closed position</p> : <p>Click to show open positions</p>}
+                        {showClosedPositions ? (
+                            <p>Click to hide {positions.filter((p) => p.isClosed).length} closed positions</p>
+                        ) : (
+                            <p>Click to show {positions.filter((p) => p.isClosed).length} closed positions</p>
+                        )}
                     </button>
                 </div>
             )}
@@ -542,7 +607,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                 isOpen={!!selectedPosition}
                 onClose={handleCloseModal}
                 position={selectedPosition}
-                dexUrl={selectedPosition ? getDexConfig(selectedPosition.dex)?.portfolioUrl : undefined}
+                dexUrl={selectedPosition ? getProtocolConfig(selectedPosition.dex as ProtocolType)?.portfolioUrl : undefined}
             />
         </div>
     )

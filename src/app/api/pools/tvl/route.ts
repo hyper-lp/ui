@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
-import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
+import { getDexProtocols } from '@/config/hyperevm-protocols.config'
 import { getPoolAddress, fetchPoolState } from '@/services/core/uniswap-pool.service'
 import { getTokenPrice } from '@/services/core/token-prices.service'
 import type { Address } from 'viem'
@@ -100,8 +100,8 @@ export async function GET() {
         const dexTVLs: DexTVL[] = []
 
         // Iterate through each DEX
-        for (const [dexKey, dexConfig] of Object.entries(HYPEREVM_DEXS)) {
-            if (!dexConfig.contracts?.factory || !dexConfig.isUniswapV3Fork) {
+        for (const dexConfig of getDexProtocols()) {
+            if (!dexConfig.dexConfig?.contracts?.factory || !dexConfig.dexConfig?.isUniswapV3Fork) {
                 continue // Skip non-V3 or unconfigured DEXs
             }
 
@@ -115,7 +115,7 @@ export async function GET() {
                         WHYPE_ADDRESS,
                         USDT0_ADDRESS,
                         fee,
-                        dexConfig.contracts.factory,
+                        dexConfig.dexConfig.contracts.factory,
                         undefined, // Will use default Uniswap V3 init code hash
                     )
 
@@ -136,7 +136,7 @@ export async function GET() {
                     const { token0Balance, token1Balance, tvlUSD } = await calculatePoolTVL(poolAddress, poolState, prices)
 
                     pools.push({
-                        dex: dexKey,
+                        dex: dexConfig.protocol,
                         poolAddress,
                         fee,
                         feeLabel: `${(fee / 10000).toFixed(2)}%`,
@@ -160,7 +160,7 @@ export async function GET() {
 
             if (pools.length > 0) {
                 dexTVLs.push({
-                    dex: dexKey,
+                    dex: dexConfig.protocol,
                     totalTVL,
                     pools: pools.sort((a, b) => b.tvlUSD - a.tvlUSD), // Sort by TVL descending
                 })

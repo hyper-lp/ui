@@ -52,13 +52,13 @@ export interface HyperEvmBalance {
 export interface PerpPosition {
     id: string
     asset: string
-    size: number
-    entryPrice: number
-    markPrice: number
-    marginUsed: number
-    unrealizedPnl: number
-    fundingPaid: number
-    notionalValue: number
+    sizeUnits: number
+    entryPriceUSD: number
+    markPriceUSD: number
+    marginUsedUSD: number
+    unrealizedPnlUSD: number
+    fundingPaidUSD: number
+    notionalValueUSD: number
 }
 
 export interface PoolState {

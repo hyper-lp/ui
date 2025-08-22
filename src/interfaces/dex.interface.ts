@@ -1,12 +1,12 @@
 import type { Address } from 'viem'
-import { DexProtocol } from '@/enums'
+import { ProtocolType } from '@/enums'
 
-export { DexProtocol }
+export { ProtocolType as DexProtocol }
 
 // Renamed to avoid conflict with positions.interface.ts
 export interface DexLPPosition {
     id: string
-    dex: DexProtocol
+    dex: ProtocolType
     poolAddress: Address
     tokenId?: string
     positionManagerAddress?: Address
@@ -14,7 +14,7 @@ export interface DexLPPosition {
 
 export interface LPMetrics {
     positionId: string
-    dex: DexProtocol
+    dex: ProtocolType
     timestamp: Date
     totalValueUSD: number
     unclaimedFeesUSD: number

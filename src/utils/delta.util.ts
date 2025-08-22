@@ -41,7 +41,7 @@ export function calculateSpotDelta(spotBalances: SpotBalance[] = []): number {
  * Calculate perp delta from positions (in HYPE units)
  */
 export function calculatePerpDelta(perpPositions: PerpPosition[] = []): number {
-    return perpPositions.filter((p) => p.asset === 'HYPE').reduce((sum, p) => sum + p.size, 0) // size is already in HYPE units, negative means short
+    return perpPositions.filter((p) => p.asset === 'HYPE').reduce((sum, p) => sum + p.sizeUnits, 0) // sizeUnits is already in HYPE units, negative means short
 }
 
 /**

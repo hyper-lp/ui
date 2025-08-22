@@ -6,6 +6,7 @@ import { APP_METADATA, IS_DEV } from '@/config/app.config'
 import { env } from '@/env/t3-env'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { RebalanceEvent } from '@/interfaces/rebalance.interface'
+import { isValidSnapshot, sanitizeSnapshot } from '@/utils/snapshot-validator.util'
 
 interface AppStore {
     // Hydration state
@@ -97,13 +98,21 @@ export const useAppStore = create<AppStore>()(
             // Account actions
             addSnapshot: (snapshot: AccountSnapshot) =>
                 set((state) => {
-                    const address = snapshot.evmAddress.toLowerCase()
+                    // Validate snapshot before adding
+                    if (!isValidSnapshot(snapshot)) {
+                        console.warn('[addSnapshot] Invalid snapshot structure, skipping')
+                        return state
+                    }
+
+                    // Sanitize to ensure safe defaults
+                    const sanitized = sanitizeSnapshot(snapshot)
+                    const address = sanitized.address.toLowerCase()
                     const currentSnapshots = state.addressSnapshots[address] || []
 
                     // Check if this snapshot already exists (by timestamp)
-                    const exists = currentSnapshots.some((s) => s.timestamp === snapshot.timestamp)
+                    const exists = currentSnapshots.some((s) => s.timestamp === sanitized.timestamp)
                     if (exists) {
-                        console.log(`[addSnapshot] Snapshot already exists for timestamp ${snapshot.timestamp}, skipping`)
+                        console.log(`[addSnapshot] Snapshot already exists for timestamp ${sanitized.timestamp}, skipping`)
                         return state // Don't update if snapshot already exists
                     }
 
@@ -127,8 +136,8 @@ export const useAppStore = create<AppStore>()(
                         })
                     }
 
-                    // Add the new snapshot and keep the last maxSnapshots
-                    const updatedSnapshots = [...currentSnapshots, snapshot]
+                    // Add the new sanitized snapshot and keep the last maxSnapshots
+                    const updatedSnapshots = [...currentSnapshots, sanitized]
                     // Only slice if we exceed maxSnapshots
                     const finalSnapshots =
                         updatedSnapshots.length > state.maxSnapshots ? updatedSnapshots.slice(-state.maxSnapshots) : updatedSnapshots
@@ -151,10 +160,18 @@ export const useAppStore = create<AppStore>()(
                 const state = get()
                 const address = state.currentAddress?.toLowerCase()
                 if (!address) return
+
+                // Validate and sanitize all snapshots
+                const validSnapshots = snapshots.filter(isValidSnapshot).map(sanitizeSnapshot)
+
+                if (validSnapshots.length < snapshots.length) {
+                    console.warn(`[setSnapshots] Filtered out ${snapshots.length - validSnapshots.length} invalid snapshots`)
+                }
+
                 set((s) => ({
                     addressSnapshots: {
                         ...s.addressSnapshots,
-                        [address]: snapshots,
+                        [address]: validSnapshots,
                     },
                     lastSnapshotAddedAt: Date.now(),
                 }))

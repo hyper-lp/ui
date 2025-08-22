@@ -9,6 +9,7 @@ import FileMapper from '@/components/common/FileMapper'
 import { useTheme } from 'next-themes'
 import { AppThemes } from '@/enums'
 import { IS_DEV } from '@/config'
+import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
 
 export function ErrorBoundaryTemplate(props: { error: string }) {
     return (
@@ -23,7 +24,7 @@ export default function AccountTemplate(props: {
     header: ReactNode
 
     hyperEvm: {
-        lp: ReactNode
+        longEvm: ReactNode
         balances: ReactNode
         txs: ReactNode
     }
@@ -54,13 +55,19 @@ export default function AccountTemplate(props: {
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_MINT : FileIds.HYPER_EVM_DARK}
                             width={200}
-                            height={32}
+                            height={28}
                             scaleByHeight
                             className="ml-4 rounded-none"
                         />
                         <div className="flex flex-col gap-2 p-2">
-                            {/* HYPE LPs */}
-                            <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm LPs" />}>{props.hyperEvm.lp}</ErrorBoundary>
+                            {/* Yield leg EVM Positions (LP + HyperDrive) */}
+                            <ErrorBoundary
+                                fallback={
+                                    <ErrorBoundaryTemplate error={`Error loading ${SECTION_CONFIG[SectionType.LONG_EVM].displayName} positions`} />
+                                }
+                            >
+                                {props.hyperEvm.longEvm}
+                            </ErrorBoundary>
 
                             {/* Balances */}
                             <ErrorBoundary fallback={<ErrorBoundaryTemplate error="Error loading HyperEvm balances" />}>
@@ -74,7 +81,7 @@ export default function AccountTemplate(props: {
                         <FileMapper
                             id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_MINT : FileIds.HYPER_CORE_DARK}
                             width={200}
-                            height={32}
+                            height={28}
                             scaleByHeight
                             className="ml-4 rounded-none"
                         />

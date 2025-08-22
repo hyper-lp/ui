@@ -1,6 +1,6 @@
 import { encodeFunctionData, decodeFunctionResult, type Address } from 'viem'
 import { getViemClient, HYPEREVM_CHAIN_ID } from '@/lib/viem'
-import { getAllPositionManagers, getDexByPositionManager, HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
+import { getAllPositionManagers, getDexByPositionManager, HYPEREVM_PROTOCOLS } from '@/config/hyperevm-protocols.config'
 import { NONFUNGIBLE_POSITION_MANAGER_ABI, UNISWAP_V3_POOL_ABI, UNISWAP_V3_FACTORY_ABI } from '@/contracts/uniswap-v3-abis'
 import { MULTICALL3_ABI, MULTICALL3_ADDRESS } from '@/contracts/multicall-abi'
 import { calculateTokenAmounts } from '@/utils/uniswap-v3.util'
@@ -268,8 +268,8 @@ export class PositionFetcher {
 
             // Get the correct factory for this DEX
             const dex = getDexByPositionManager(positionCalls[i].pmAddress) || positionCalls[i].protocol
-            const dexConfig = HYPEREVM_DEXS[dex as keyof typeof HYPEREVM_DEXS]
-            const factoryAddress = dexConfig?.factoryAddress || '0xB1c0fa0B789320044A6F623cFe5eBda9562602E3' // Default to Hyperswap
+            const dexConfig = HYPEREVM_PROTOCOLS[dex as keyof typeof HYPEREVM_PROTOCOLS]
+            const factoryAddress = dexConfig?.dexConfig?.factoryAddress || '0xB1c0fa0B789320044A6F623cFe5eBda9562602E3' // Default to Hyperswap
 
             // Try to get pool address from factory first
             let poolAddress: string
@@ -848,13 +848,13 @@ export class PositionFetcher {
                         return {
                             id: `${account}-perp-${coin}`,
                             asset: coin,
-                            size: szi,
-                            entryPrice: entryPx,
-                            markPrice: markPx,
-                            notionalValue,
-                            unrealizedPnl,
-                            fundingPaid,
-                            marginUsed,
+                            sizeUnits: szi,
+                            entryPriceUSD: entryPx,
+                            markPriceUSD: markPx,
+                            notionalValueUSD: notionalValue,
+                            unrealizedPnlUSD: unrealizedPnl,
+                            fundingPaidUSD: fundingPaid,
+                            marginUsedUSD: marginUsed,
                         }
                     },
                 )

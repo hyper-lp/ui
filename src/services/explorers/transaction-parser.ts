@@ -1,6 +1,5 @@
 import type { ExplorerTransaction, ParsedDexTransaction } from '@/interfaces'
-import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
-import { DexProtocol } from '@/enums'
+import { HYPEREVM_PROTOCOLS, ProtocolType } from '@/config/hyperevm-protocols.config'
 import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 // Common function signatures for DEX interactions
@@ -53,7 +52,7 @@ const HYPE_ADDRESSES = [
  */
 export function parseDexTransaction(
     tx: ExplorerTransaction,
-    targetDexes?: DexProtocol[],
+    targetDexes?: ProtocolType[],
     targetTokens?: { token0: string; token1: string },
 ): ParsedDexTransaction | null {
     // Get function signature (first 10 characters of input data)
@@ -85,23 +84,23 @@ export function parseDexTransaction(
     if (!to) return null
 
     // Find which DEX this transaction belongs to
-    let dex: DexProtocol | null = null
-    for (const [protocol, config] of Object.entries(HYPEREVM_DEXS)) {
+    let dex: ProtocolType | null = null
+    for (const [protocol, config] of Object.entries(HYPEREVM_PROTOCOLS)) {
         const addresses = [
-            config.factoryAddress,
-            config.positionManagerAddress,
-            config.routerAddress,
-            config.contracts?.swapRouter,
-            config.contracts?.swapRouter02,
-            config.contracts?.positionManager,
-            config.lbContracts?.router,
-            config.lbContracts?.factory,
+            config.dexConfig?.factoryAddress,
+            config.dexConfig?.positionManagerAddress,
+            config.dexConfig?.routerAddress,
+            config.dexConfig?.contracts?.swapRouter,
+            config.dexConfig?.contracts?.swapRouter02,
+            config.dexConfig?.contracts?.positionManager,
+            config.dexConfig?.lbContracts?.router,
+            config.dexConfig?.lbContracts?.factory,
         ]
             .filter(Boolean)
             .map((a) => a?.toLowerCase())
 
         if (addresses.includes(to)) {
-            dex = protocol as DexProtocol
+            dex = protocol as ProtocolType
             break
         }
     }
@@ -156,7 +155,7 @@ export function parseDexTransaction(
 export function filterDexTransactions(
     transactions: ExplorerTransaction[],
     options?: {
-        dexProtocols?: DexProtocol[]
+        dexProtocols?: ProtocolType[]
         tokenPair?: { token0: string; token1: string }
         onlyHypeUsdt?: boolean
     },
@@ -208,17 +207,18 @@ export function filterDexTransactions(
 /**
  * Group parsed transactions by DEX
  */
-export function groupTransactionsByDex(transactions: ParsedDexTransaction[]): Record<DexProtocol, ParsedDexTransaction[]> {
-    const grouped: Partial<Record<DexProtocol, ParsedDexTransaction[]>> = {}
+export function groupTransactionsByDex(transactions: ParsedDexTransaction[]): Record<ProtocolType, ParsedDexTransaction[]> {
+    const grouped: Partial<Record<ProtocolType, ParsedDexTransaction[]>> = {}
 
     for (const tx of transactions) {
-        if (!grouped[tx.dex]) {
-            grouped[tx.dex] = []
+        const dex = tx.dex as ProtocolType
+        if (!grouped[dex]) {
+            grouped[dex] = []
         }
-        grouped[tx.dex]!.push(tx)
+        grouped[dex]!.push(tx)
     }
 
-    return grouped as Record<DexProtocol, ParsedDexTransaction[]>
+    return grouped as Record<ProtocolType, ParsedDexTransaction[]>
 }
 
 /**
@@ -236,14 +236,15 @@ export function getTransactionStats(transactions: ParsedDexTransaction[]) {
             burn: 0,
             unknown: 0,
         },
-        byDex: {} as Record<DexProtocol, number>,
+        byDex: {} as Record<ProtocolType, number>,
         successful: 0,
         failed: 0,
     }
 
     for (const tx of transactions) {
+        const dex = tx.dex as ProtocolType
         stats.byType[tx.type]++
-        stats.byDex[tx.dex] = (stats.byDex[tx.dex] || 0) + 1
+        stats.byDex[dex] = (stats.byDex[dex] || 0) + 1
         if (tx.status === 'success') {
             stats.successful++
         } else {

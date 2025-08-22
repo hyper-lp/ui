@@ -21,7 +21,7 @@ export {
 
 export const SITE_NAME = 'HyperLP'
 export const IS_DEV = process.env.NODE_ENV === 'development'
-export const SITE_DOMAIN = env.NEXT_PUBLIC_APP_URL
+export const SITE_DOMAIN = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 export const SITE_URL = SITE_DOMAIN.replace('www.', '')
 export const APP_METADATA = {
     SITE_NAME,
@@ -57,3 +57,38 @@ export const APP_PAGES: InterfaceAppLink[] = [
         path: AppUrls.HOME,
     },
 ] as const
+
+/**
+ * DEMO ACCOUNTS
+ */
+
+export const DEMO_ACCOUNTS = [
+    {
+        address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
+        name: 'Alpha',
+        description: 'Demo - Project X 500-250',
+        hasLP: true,
+        hasHyperDrive: false,
+    },
+    {
+        address: '0x8466D5b78CaFc01fC1264D2D724751b70211D979',
+        name: 'Bravo',
+        description: 'Demo - Hyperswap 500-250',
+        hasLP: true,
+        hasHyperDrive: false,
+    },
+    {
+        address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
+        name: 'Charlie',
+        description: 'Demo - Hyperswap 1000-500',
+        hasLP: true,
+        hasHyperDrive: false,
+    },
+    {
+        address: '0x15bB17E4D2F7ACcca7c9610133c27e9eAB9EC815',
+        name: 'Gamma',
+        description: 'Demo - HyperDrive',
+        hasLP: false,
+        hasHyperDrive: true,
+    },
+]

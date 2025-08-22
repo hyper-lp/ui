@@ -1,5 +1,4 @@
-import { DexProtocol } from '@/enums'
-import { HYPEREVM_DEXS } from '@/config/hyperevm-dexs.config'
+import { ProtocolType, HYPEREVM_PROTOCOLS } from '@/config/hyperevm-protocols.config'
 import type {
     PoolAPRData,
     AggregatedPoolAPR,
@@ -14,7 +13,7 @@ import type {
  * Service for fetching and calculating pool APR from DEX subgraphs
  */
 class PoolAPRService {
-    private readonly V3_DEXS = [DexProtocol.HYPERSWAP, DexProtocol.PRJTX, DexProtocol.HYBRA]
+    private readonly V3_DEXS = [ProtocolType.HYPERSWAP, ProtocolType.PRJTX, ProtocolType.HYBRA]
 
     /**
      * Calculate fee APR
@@ -186,19 +185,19 @@ class PoolAPRService {
     /**
      * Fetch pools from a single DEX
      */
-    private async fetchDexPools(dex: DexProtocol): Promise<PoolAPRData[]> {
-        const config = HYPEREVM_DEXS[dex]
-        if (!config?.subgraphUrl) return []
+    private async fetchDexPools(dex: ProtocolType): Promise<PoolAPRData[]> {
+        const config = HYPEREVM_PROTOCOLS[dex]
+        if (!config?.dexConfig?.subgraphUrl) return []
 
         const query = this.getPoolsQuery()
-        const data = await this.fetchFromSubgraph<PoolsQueryResponse>(config.subgraphUrl, query)
+        const data = await this.fetchFromSubgraph<PoolsQueryResponse>(config.dexConfig.subgraphUrl, query)
 
         if (!data?.pools) return []
 
         const poolsWithAPR: PoolAPRData[] = []
 
         for (const pool of data.pools) {
-            const metrics = await this.calculatePoolMetrics(pool, config.subgraphUrl)
+            const metrics = await this.calculatePoolMetrics(pool, config.dexConfig?.subgraphUrl || '')
 
             poolsWithAPR.push({
                 dex,
@@ -276,8 +275,8 @@ class PoolAPRService {
 
         // Fetch from all V3 DEXs in parallel, filtering by pool addresses
         const promises = this.V3_DEXS.map(async (dex) => {
-            const dexConfig = HYPEREVM_DEXS[dex]
-            if (!dexConfig?.subgraphUrl) return []
+            const dexConfig = HYPEREVM_PROTOCOLS[dex]
+            if (!dexConfig?.dexConfig?.subgraphUrl) return []
 
             // Modified query to filter by pool addresses
             const query = `
@@ -301,13 +300,13 @@ class PoolAPRService {
                 }
             `
 
-            const data = await this.fetchFromSubgraph<PoolsQueryResponse>(dexConfig.subgraphUrl, query)
+            const data = await this.fetchFromSubgraph<PoolsQueryResponse>(dexConfig.dexConfig?.subgraphUrl || '', query)
             if (!data?.pools) return []
 
             // Calculate APR for each pool
             return Promise.all(
                 data.pools.map(async (pool) => {
-                    const metrics = await this.calculatePoolMetrics(pool, dexConfig.subgraphUrl)
+                    const metrics = await this.calculatePoolMetrics(pool, dexConfig.dexConfig?.subgraphUrl || '')
                     return {
                         dex,
                         poolAddress: pool.id,

@@ -51,6 +51,7 @@ export const REFRESH_INTERVALS = {
     PROD: TIME_INTERVALS.SECONDS_30, // 30 seconds for production
     CACHE_GC: TIME_INTERVALS.MINUTES_5, // Query cache garbage collection
     RATE_LIMIT: TIME_INTERVALS.MINUTES_5, // Rate limit window
+    HISTORICAL_DATA: TIME_INTERVALS.MINUTES_5, // Refresh historical snapshots every 5 minutes
 } as const
 
 // Cache Configuration
@@ -63,6 +64,7 @@ export const CACHE_DURATION = {
 
 // Contract Addresses
 export const MULTICALL3_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
+export const ACCOUNT_LENS_ADDRESS = '0x42D3aF2812E79e051cCbA7aE1C757839Edfb3113'
 
 // API Configuration
 export const API_TIMEOUT = TIME_INTERVALS.SECONDS_30

@@ -76,6 +76,65 @@ const nextConfig: NextConfig = {
         // Use git commit hash as build ID for consistent chunk naming
         return execSync('git rev-parse HEAD').toString().trim().substring(0, 8)
     },
+    webpack: (config, { isServer }) => {
+        if (!isServer) {
+            // Optimize client-side bundles
+            config.optimization = {
+                ...config.optimization,
+                splitChunks: {
+                    chunks: 'all',
+                    cacheGroups: {
+                        default: false,
+                        vendors: false,
+                        // Split vendor libraries
+                        framework: {
+                            name: 'framework',
+                            chunks: 'all',
+                            test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-sync-external-store)[\\/]/,
+                            priority: 40,
+                            enforce: true,
+                        },
+                        lib: {
+                            test(module: any) {
+                                return module.size() > 160000 &&
+                                    /node_modules[\\/]/.test(module.identifier())
+                            },
+                            name(module: any) {
+                                const hash = require('crypto').createHash('sha1')
+                                hash.update(module.identifier())
+                                return hash.digest('hex').substring(0, 8)
+                            },
+                            priority: 30,
+                            minChunks: 1,
+                            reuseExistingChunk: true,
+                        },
+                        commons: {
+                            name: 'commons',
+                            chunks: 'all',
+                            minChunks: 2,
+                            priority: 20,
+                        },
+                        shared: {
+                            name(module: any, chunks: any) {
+                                const hash = require('crypto').createHash('sha1')
+                                hash.update(chunks.reduce((acc: string, chunk: any) => acc + chunk.name, ''))
+                                return hash.digest('hex').substring(0, 8)
+                            },
+                            priority: 10,
+                            minChunks: 2,
+                            reuseExistingChunk: true,
+                        },
+                    },
+                },
+                // Use faster hashing algorithm for development
+                moduleIds: 'deterministic',
+                runtimeChunk: {
+                    name: 'runtime',
+                },
+            }
+        }
+        return config
+    },
 }
 
 export default nextConfig

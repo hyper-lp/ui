@@ -23,11 +23,10 @@ const HyperDriveRowTemplate = (props: {
     protocol: React.ReactNode
     market: React.ReactNode
     deposited: React.ReactNode
-    shares: React.ReactNode
     value: React.ReactNode
-    apr: React.ReactNode
-    deltaHype: React.ReactNode
-    positionId: React.ReactNode
+    apr24h: React.ReactNode
+    apr7d: React.ReactNode
+    apr30d: React.ReactNode
     className?: string
 }) => {
     return (
@@ -41,21 +40,18 @@ const HyperDriveRowTemplate = (props: {
             <div role="cell" className="w-[70px] text-right">
                 {props.deposited}
             </div>
-            {/* <div role="cell" className="w-[60px] text-right">
-                {props.shares}
-            </div> */}
-            <div role="cell" className="w-[60px] text-right">
+            <div role="cell" className="w-[70px] text-right">
                 {props.value}
             </div>
-            <div role="cell" className="w-[70px] text-center">
-                {props.apr}
+            <div role="cell" className="w-[60px] text-center">
+                {props.apr24h}
             </div>
-            {/* <div role="cell" className="w-[80px] text-right">
-                {props.deltaHype}
+            <div role="cell" className="w-[60px] text-center">
+                {props.apr7d}
             </div>
-            <div role="cell" className="w-[100px] text-center">
-                {props.positionId}
-            </div> */}
+            <div role="cell" className="w-[60px] text-center">
+                {props.apr30d}
+            </div>
         </div>
     )
 }
@@ -78,29 +74,24 @@ export function HyperDrivePositionsTableHeader() {
                     Deposited
                 </span>
             }
-            shares={
-                <span role="columnheader" className="truncate">
-                    Shares
-                </span>
-            }
             value={
                 <span role="columnheader" className="truncate">
                     Value $
                 </span>
             }
-            apr={
+            apr24h={
                 <span role="columnheader" className="truncate">
-                    APR
+                    Current
                 </span>
             }
-            deltaHype={
+            apr7d={
                 <span role="columnheader" className="truncate">
-                    Δ HYPE
+                    7d APY
                 </span>
             }
-            positionId={
+            apr30d={
                 <span role="columnheader" className="truncate">
-                    Position ID
+                    30d APY
                 </span>
             }
             className="h-8 border-b border-default/10 text-xs text-default/50"
@@ -193,7 +184,7 @@ export function HyperDrivePositionsTable({ className }: HyperDrivePositionsTable
                                                         </div>
                                                     </div>
                                                     <div className="border-t border-default/10 pt-2">
-                                                        <div className="text-xs opacity-60">Your share of the lending pool</div>
+                                                        <div className="opacity-60">Your share of the lending pool</div>
                                                     </div>
                                                 </div>
                                             }
@@ -213,119 +204,65 @@ export function HyperDrivePositionsTable({ className }: HyperDrivePositionsTable
                                             <span className="font-medium hover:underline">{formatUSD(position.valueUSD)}</span>
                                         </StyledTooltip>
                                     }
-                                    apr={
+                                    apr24h={
                                         <StyledTooltip
                                             content={
                                                 <div className="space-y-3">
-                                                    <div className="font-semibold">Lending APR</div>
+                                                    <div className="font-semibold">Current Supply Rate</div>
                                                     <div className="space-y-2">
-                                                        {position.apr?.current !== undefined && (
-                                                            <div className="flex justify-between gap-3">
-                                                                <span className="text-sm font-medium opacity-60">Current</span>
-                                                                <span className="text-sm font-medium text-success">
-                                                                    {(position.apr.current ?? 0) > 0 ? '+' : ''}
-                                                                    {(position.apr.current ?? 0).toFixed(2)}%
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                        {/* {position.apr?.avg7d !== undefined && (
-                                                            <div className="flex justify-between gap-3">
-                                                                <span className="text-sm font-medium opacity-60">7d avg</span>
-                                                                <span className="text-sm font-medium text-success">
-                                                                    {(position.apr.avg7d ?? 0) > 0 ? '+' : ''}
-                                                                    {(position.apr.avg7d ?? 0).toFixed(2)}%
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                        {position.apr?.avg30d !== undefined && (
-                                                            <div className="flex justify-between gap-3">
-                                                                <span className="text-sm font-medium opacity-60">30d avg</span>
-                                                                <span className="text-sm font-medium text-success">
-                                                                    {(position.apr.avg30d ?? 0) > 0 ? '+' : ''}
-                                                                    {(position.apr.avg30d ?? 0).toFixed(2)}%
-                                                                </span>
-                                                            </div>
-                                                        )} */}
+                                                        <div className="flex justify-between gap-3">
+                                                            <span className="text-sm font-medium opacity-60">Latest</span>
+                                                            <span className="text-sm font-medium text-success">
+                                                                {(position.apr?.avg24h ?? 0) > 0 ? '+' : ''}
+                                                                {(position.apr?.avg24h ?? 0).toFixed(3)}%
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="border-t border-default/10 pt-2">
+                                                        <div className="opacity-60">Based on recent market data</div>
                                                     </div>
                                                 </div>
                                             }
                                         >
                                             <p className="cursor-help font-medium text-success hover:underline">
-                                                {position.apr?.current ? `${position.apr.current.toFixed(1)}%` : '-'}
+                                                {position.apr?.avg24h ? `${position.apr.avg24h.toFixed(2)}%` : '-'}
                                             </p>
                                         </StyledTooltip>
                                     }
-                                    deltaHype={
-                                        <StyledTooltip
-                                            content={
-                                                <div className="space-y-3">
-                                                    <div className="font-semibold">HYPE Exposure</div>
-                                                    <div className="space-y-2">
-                                                        <div className="flex items-center gap-1">
-                                                            <FileMapper id={FileIds.TOKEN_HYPE} width={16} height={16} className="rounded-full" />
-                                                            <p className="text-sm font-medium">
-                                                                {formatNumber(Math.abs(position.deltaHYPE), 4)} HYPE
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-sm">
-                                                            <span
-                                                                className={cn(
-                                                                    'font-medium',
-                                                                    position.deltaHYPE > 0
-                                                                        ? 'text-success'
-                                                                        : position.deltaHYPE < 0
-                                                                          ? 'text-danger'
-                                                                          : 'text-default/50',
-                                                                )}
-                                                            >
-                                                                {position.deltaHYPE > 0
-                                                                    ? 'Long exposure'
-                                                                    : position.deltaHYPE < 0
-                                                                      ? 'Short exposure'
-                                                                      : 'Delta neutral'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="border-t border-default/10 pt-2">
-                                                        <div className="text-xs opacity-60">Net HYPE exposure after hedging</div>
-                                                    </div>
-                                                </div>
-                                            }
-                                        >
-                                            <p
-                                                className={cn(
-                                                    'cursor-help font-medium hover:underline',
-                                                    position.deltaHYPE > 0
-                                                        ? 'text-success'
-                                                        : position.deltaHYPE < 0
-                                                          ? 'text-danger'
-                                                          : 'text-default/50',
-                                                )}
-                                            >
-                                                {position.deltaHYPE !== 0 ? (
-                                                    <>
-                                                        {position.deltaHYPE > 0 ? '+' : ''}
-                                                        {formatNumber(position.deltaHYPE, 2)}
-                                                    </>
-                                                ) : (
-                                                    '-'
-                                                )}
-                                            </p>
-                                        </StyledTooltip>
-                                    }
-                                    positionId={
+                                    apr7d={
                                         <StyledTooltip
                                             content={
                                                 <div className="space-y-2">
-                                                    <p className="text-sm font-medium opacity-60">Position ID</p>
-                                                    <p className="text-sm font-medium">{position.id}</p>
-                                                    <p className="text-sm opacity-60">Click to view on HyperDrive</p>
+                                                    <p className="text-sm font-medium opacity-60">7-day average APY</p>
+                                                    <p className="text-sm font-medium">
+                                                        {(position.apr?.avg7d ?? 0) > 0 ? '+' : ''}
+                                                        {(position.apr?.avg7d ?? 0).toFixed(3)}%
+                                                    </p>
+                                                    <p className="opacity-60">Compounded annual yield</p>
                                                 </div>
                                             }
                                         >
-                                            <LinkWrapper href="https://hyperdrive.hypertest.xyz/" target="_blank">
-                                                <p className="truncate hover:underline">{shortenValue(position.id)}</p>
-                                            </LinkWrapper>
+                                            <p className="cursor-help font-medium hover:underline">
+                                                {position.apr?.avg7d ? `${position.apr.avg7d.toFixed(2)}%` : '-'}
+                                            </p>
+                                        </StyledTooltip>
+                                    }
+                                    apr30d={
+                                        <StyledTooltip
+                                            content={
+                                                <div className="space-y-2">
+                                                    <p className="text-sm font-medium opacity-60">30-day average APY</p>
+                                                    <p className="text-sm font-medium">
+                                                        {(position.apr?.avg30d ?? 0) > 0 ? '+' : ''}
+                                                        {(position.apr?.avg30d ?? 0).toFixed(3)}%
+                                                    </p>
+                                                    <p className="opacity-60">Compounded annual yield</p>
+                                                </div>
+                                            }
+                                        >
+                                            <p className="cursor-help font-medium hover:underline">
+                                                {position.apr?.avg30d ? `${position.apr.avg30d.toFixed(2)}%` : '-'}
+                                            </p>
                                         </StyledTooltip>
                                     }
                                     className="h-10 text-sm transition-colors hover:bg-default/5"

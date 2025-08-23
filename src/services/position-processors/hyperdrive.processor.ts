@@ -9,6 +9,7 @@ import { priceAggregator } from '@/services/price/price-aggregator.service'
 import { getViemClient } from '@/lib/viem'
 import { type Address, formatEther } from 'viem'
 import { getProtocolConfig, ProtocolType } from '@/config/hyperevm-protocols.config'
+import { fetchHyperDriveAPR } from '@/services/hyperdrive.service'
 
 // Get HyperDrive markets from centralized protocol config
 const HYPERDRIVE_MARKETS = getProtocolConfig(ProtocolType.HYPERDRIVE).lendingConfig?.markets || []
@@ -107,6 +108,24 @@ export class HyperDrivePositionProcessor extends BasePositionProcessor<HyperDriv
                     const hypePrice = (await priceAggregator.getTokenPrice('HYPE')) || 0
                     const valueUSD = underlyingAssetsNumber * hypePrice
 
+                    // Fetch real APR data from HyperDrive API
+                    const aprData = await fetchHyperDriveAPR(market.address)
+                    
+                    // API now returns percentages directly (e.g., 7.5 for 7.5%)
+                    const aprMetrics = aprData 
+                        ? {
+                            current: aprData.apr28d || aprData.apr7d || aprData.current,
+                            avg24h: aprData.current,
+                            avg7d: aprData.apy7d, // Use APY for display to match HyperDrive website
+                            avg30d: aprData.apy28d, // Use APY for display to match HyperDrive website
+                        }
+                        : {
+                            current: 0,
+                            avg24h: 0,
+                            avg7d: 0,
+                            avg30d: 0,
+                        }
+
                     // For HyperDrive, assets = underlying, no liabilities for lending positions
                     const position: HyperDrivePositionLeg = {
                         type: 'hyperdrive',
@@ -132,13 +151,8 @@ export class HyperDrivePositionProcessor extends BasePositionProcessor<HyperDriv
                         maxLTV: 0,
                         liquidationLTV: 0,
 
-                        // APR metrics - using estimates for now
-                        apr: {
-                            current: 3.5, // ~3.5% APR based on historical data
-                            avg24h: 3.5,
-                            avg7d: 3.5,
-                            avg30d: 3.5,
-                        },
+                        // APR metrics - now using real data from API
+                        apr: aprMetrics,
 
                         lastUpdated: Date.now(),
                     }
@@ -183,13 +197,4 @@ export class HyperDrivePositionProcessor extends BasePositionProcessor<HyperDriv
         }
     }
 
-    /**
-     * Calculate estimated APR based on market data
-     * In production, this would fetch from HyperDrive API
-     */
-    private calculateEstimatedAPR(): number {
-        // Default APR for HyperDrive markets
-        // Based on historical data showing ~0.2-0.5% 28d APR
-        return 3.5 // 3.5% annualized
-    }
 }

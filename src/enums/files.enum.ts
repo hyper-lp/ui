@@ -34,6 +34,7 @@ export enum FileIds {
     DEX_HYPERSWAP = '/brands/protocols/hyperswap.jpg',
     DEX_PROJETX = '/brands/protocols/project-x.jpg',
     LENDING_HYPERDRIVE = '/brands/protocols/hyperdrive.png',
+    SWAP_LIQUIDSWAP = '/brands/protocols/liquidswap.png',
 
     // tokens
     TOKEN_HYPE = '/tokens/HYPE.jpg',

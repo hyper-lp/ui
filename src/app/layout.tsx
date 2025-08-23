@@ -140,18 +140,11 @@ export default async function RootLayout({
     }
 
     return (
-        <html lang="en" suppressHydrationWarning className="h-screen w-screen bg-background text-default">
+        <html lang="en" suppressHydrationWarning className="bg-background text-default">
             <head>
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
             </head>
-            <body
-                className={cn(
-                    PVP_TRADE_FONT.className,
-                    LATO_FONT.className,
-                    TEODOR_LIGHT_FONT.variable,
-                    'min-h-screen w-full overflow-x-auto overflow-y-auto text-base',
-                )}
-            >
+            <body className={cn(PVP_TRADE_FONT.className, LATO_FONT.className, TEODOR_LIGHT_FONT.variable, 'min-h-screen w-full text-base')}>
                 <PWAProvider>
                     <Providers>
                         <main className="flex min-h-screen flex-col">

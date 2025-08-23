@@ -893,12 +893,12 @@ export default function DeltaTrackingChart() {
                                 color: netDeltaColor,
                             },
                         },
-                        {
-                            name: ChartSeries.NetDelta,
-                            textStyle: {
-                                color: netDeltaColor,
-                            },
-                        },
+                        // {
+                        //     name: ChartSeries.NetDelta,
+                        //     textStyle: {
+                        //         color: netDeltaColor,
+                        //     },
+                        // },
                     ],
                     top: 10,
                     selected: legendSelectionRef.current || {
@@ -909,7 +909,7 @@ export default function DeltaTrackingChart() {
                         [ChartSeries.HyperCorePerps]: true,
                         [ChartSeries.HyperCoreSpots]: false,
                         [ChartSeries.StrategyDelta]: true,
-                        [ChartSeries.NetDelta]: false,
+                        // [ChartSeries.NetDelta]: false,
                     },
                     icon: 'roundRect',
                     itemWidth: 14,
@@ -1248,46 +1248,46 @@ export default function DeltaTrackingChart() {
                             borderRadius: 4,
                         },
                     },
-                    {
-                        name: ChartSeries.NetDelta,
-                        type: 'line',
-                        data: netDeltasUSD,
-                        smooth: false,
-                        symbol: 'circle',
-                        symbolSize: 6,
-                        showSymbol: true,
-                        lineStyle: {
-                            color: netDeltaColor,
-                            width: 2,
-                            type: 'solid',
-                            opacity: 0.5,
-                        },
-                        itemStyle: {
-                            color: netDeltaColor,
-                            opacity: 0.5,
-                        },
-                        emphasis: {
-                            focus: 'series',
-                        },
-                        z: 8,
-                        endLabel: {
-                            show: true,
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            formatter: (params: any) => {
-                                const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                                // Hide label if value is very close to 0
-                                if (Math.abs(value) < 1) return ''
-                                const formattedValue = numeral(value).format('+0,0a$')
-                                return `${ChartSeries.NetDelta} ${formattedValue}`
-                            },
-                            color: netDeltaColor,
-                            fontSize: 12,
-                            offset: [5, 0],
-                            backgroundColor: netDeltaColor + '15',
-                            padding: [2, 4],
-                            borderRadius: 4,
-                        },
-                    },
+                    // {
+                    //     name: ChartSeries.NetDelta,
+                    //     type: 'line',
+                    //     data: netDeltasUSD,
+                    //     smooth: false,
+                    //     symbol: 'circle',
+                    //     symbolSize: 6,
+                    //     showSymbol: true,
+                    //     lineStyle: {
+                    //         color: netDeltaColor,
+                    //         width: 2,
+                    //         type: 'solid',
+                    //         opacity: 0.5,
+                    //     },
+                    //     itemStyle: {
+                    //         color: netDeltaColor,
+                    //         opacity: 0.5,
+                    //     },
+                    //     emphasis: {
+                    //         focus: 'series',
+                    //     },
+                    //     z: 8,
+                    //     endLabel: {
+                    //         show: true,
+                    //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    //         formatter: (params: any) => {
+                    //             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                    //             // Hide label if value is very close to 0
+                    //             if (Math.abs(value) < 1) return ''
+                    //             const formattedValue = numeral(value).format('+0,0a$')
+                    //             return `${ChartSeries.NetDelta} ${formattedValue}`
+                    //         },
+                    //         color: netDeltaColor,
+                    //         fontSize: 12,
+                    //         offset: [5, 0],
+                    //         backgroundColor: netDeltaColor + '15',
+                    //         padding: [2, 4],
+                    //         borderRadius: 4,
+                    //     },
+                    // },
                     {
                         name: ChartSeries.StrategyDelta,
                         type: 'line',

@@ -17,6 +17,7 @@ import numeral from 'numeral'
 import LinkWrapper from '@/components/common/LinkWrapper'
 import { getProtocolByName, getProtocolConfig } from '@/config'
 import PositionIframeModal from '@/components/modals/PositionIframeModal'
+import RebalanceModal from '@/components/modals/RebalanceModal'
 import { EmptyTablePlaceholder } from './EmptyTablePlaceholder'
 
 interface LPPositionsTableProps {
@@ -105,6 +106,7 @@ export function LPPositionsTableHeader() {
 export function LPPositionsTable({ className }: LPPositionsTableProps) {
     const [selectedPosition, setSelectedPosition] = useState<LPPosition | null>(null)
     const [showClosedPositions, setShowClosedPositions] = useState(false)
+    const [showRebalanceModal, setShowRebalanceModal] = useState(false)
 
     // Get positions and APR data directly from the store
     const snapshot = useAppStore((state) => state.getLatestSnapshot())
@@ -135,6 +137,14 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
     const handleCloseModal = () => {
         setSelectedPosition(null)
+    }
+
+    const handleShowRebalances = () => {
+        setShowRebalanceModal(true)
+    }
+
+    const handleCloseRebalanceModal = () => {
+        setShowRebalanceModal(false)
     }
 
     return (
@@ -586,18 +596,28 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                 </div>
             </div>
 
-            {/* Show/Hide Closed Positions Toggle */}
-            {positions.some((p) => p.isClosed) && (
-                <div className="mt-3 flex px-3 pb-2">
-                    <button
-                        onClick={() => setShowClosedPositions(!showClosedPositions)}
-                        className="flex gap-3 text-xs text-default/40 transition-colors hover:text-primary"
-                    >
-                        {showClosedPositions ? (
-                            <p>Click to hide {positions.filter((p) => p.isClosed).length} closed positions</p>
-                        ) : (
-                            <p>Click to show {positions.filter((p) => p.isClosed).length} closed positions</p>
-                        )}
+            {/* Footer with action buttons */}
+            {positions.length > 0 && (
+                <div className="mt-3 flex justify-between px-3 pb-2">
+                    {/* Show/Hide Closed Positions Toggle */}
+                    {positions.some((p) => p.isClosed) ? (
+                        <button
+                            onClick={() => setShowClosedPositions(!showClosedPositions)}
+                            className="flex gap-3 text-xs text-default/40 transition-colors hover:text-primary"
+                        >
+                            {showClosedPositions ? (
+                                <p>Click to hide {positions.filter((p) => p.isClosed).length} closed positions</p>
+                            ) : (
+                                <p>Click to show {positions.filter((p) => p.isClosed).length} closed positions</p>
+                            )}
+                        </button>
+                    ) : (
+                        <div></div>
+                    )}
+
+                    {/* Rebalance Transactions Button */}
+                    <button onClick={handleShowRebalances} className="flex gap-3 text-xs text-default/40 transition-colors hover:text-primary">
+                        <p>Click to see rebalance txs</p>
                     </button>
                 </div>
             )}
@@ -610,6 +630,9 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                 url={selectedPosition ? getProtocolByName(selectedPosition.dex as ProtocolType)?.portfolioUrl : undefined}
                 title={selectedPosition ? `${selectedPosition.dex} Position` : undefined}
             />
+
+            {/* Rebalance Modal */}
+            <RebalanceModal isOpen={showRebalanceModal} onClose={handleCloseRebalanceModal} vaultAddress={snapshot?.address} />
         </div>
     )
 }

@@ -1,3 +1,11 @@
+export interface RebalanceTransaction {
+    hash: string
+    step: number
+    status: string
+    action_name: string
+    swap_method: string | null
+}
+
 export interface RebalanceMetadata {
     fee: number
     error: string | null
@@ -6,6 +14,7 @@ export interface RebalanceMetadata {
     dexName: string
     summary: string
     toRange: [number, number]
+    txs?: RebalanceTransaction[]
     txHashes: {
         nft_burned?: string
         fees_collected?: string

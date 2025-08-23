@@ -80,7 +80,7 @@ export const DEMO_ACCOUNTS = [
     {
         address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
         name: 'Charlie',
-        description: 'Demo - Delta neutral LP on Hyperswap (actively rebalanced)',
+        description: 'Demo - Delta neutral LP on Project X (actively rebalanced)',
         hasLP: true,
         hasHyperDrive: false,
     },

@@ -10,6 +10,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import ThemeSwitcher from '../common/ThemeSwitcher'
 import { SHOW_WAITLIST } from '@/config/app.config'
 import HeaderLogo from './HeaderLogo'
+import UseCasesDropdown from './UseCasesDropdown'
 
 export default function HeaderDesktop(props: { className?: string }) {
     const { authenticated, ready } = usePrivy()
@@ -66,7 +67,18 @@ export default function HeaderDesktop(props: { className?: string }) {
                     </AnimatePresence>
                 </motion.div>
             )}
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}>
+
+            {/* Right side items */}
+            <motion.div
+                className="flex items-start gap-8"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.25, ease: 'easeOut' }}
+            >
+                {/* Use Cases Dropdown */}
+                <UseCasesDropdown />
+
+                {/* Theme Switcher */}
                 <ThemeSwitcher />
             </motion.div>
         </motion.header>

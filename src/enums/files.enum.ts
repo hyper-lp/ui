@@ -36,6 +36,11 @@ export enum FileIds {
     LENDING_HYPERDRIVE = '/brands/protocols/hyperdrive.png',
     SWAP_LIQUIDSWAP = '/brands/protocols/liquidswap.png',
 
+    // usecases - banners
+    BANNER_HYPERSWAP = '/brands/protocols/banners/hyperswap-banner.png',
+    BANNER_PROJETX = '/brands/protocols/banners/project-x-banner.png',
+    BANNER_HYPERDRIVE = '/brands/protocols/banners/hyperdrive-banner.png',
+
     // tokens
     TOKEN_HYPE = '/tokens/HYPE.jpg',
     TOKEN_USDT0 = '/tokens/USDT0.png',

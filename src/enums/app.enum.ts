@@ -1,6 +1,7 @@
 export enum AppUrls {
     // App pages
     HOME = '/',
+    ACCOUNT = '/account',
 
     // API routes - Account data
     API_SNAPSHOT = '/api/snapshot',

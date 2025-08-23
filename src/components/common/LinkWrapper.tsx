@@ -5,6 +5,7 @@ export default function LinkWrapper({
     href,
     disabled,
     passHref,
+    style,
     ...props
 }: {
     href?: string
@@ -14,6 +15,7 @@ export default function LinkWrapper({
     className?: string
     rel?: string
     target?: string
+    style?: React.CSSProperties
 }) {
     if (!href || disabled)
         return (
@@ -23,7 +25,7 @@ export default function LinkWrapper({
         )
 
     return (
-        <Link href={href} passHref={passHref} {...props}>
+        <Link href={href} passHref={passHref} style={style} {...props}>
             {children}
         </Link>
     )

@@ -25,7 +25,13 @@ const nextConfig: NextConfig = {
             },
         },
     },
+    // Disable caching in development
+    onDemandEntries: {
+        maxInactiveAge: 1,
+        pagesBufferLength: 1,
+    },
     async headers() {
+        const isDev = process.env.NODE_ENV === 'development'
         return [
             {
                 source: '/(.*)',
@@ -42,6 +48,11 @@ const nextConfig: NextConfig = {
                         key: 'Referrer-Policy',
                         value: 'strict-origin-when-cross-origin',
                     },
+                    // Disable caching in development
+                    ...(isDev ? [{
+                        key: 'Cache-Control',
+                        value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+                    }] : []),
                 ],
             },
             {

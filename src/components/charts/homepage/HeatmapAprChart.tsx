@@ -189,7 +189,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
                 backgroundColor: colors.charts.tooltipBackground,
                 borderRadius: 12,
                 appendToBody: true,
-                extraCssText: 'box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px);',
+                extraCssText: 'box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px); z-index: 9999 !important;',
                 padding: [12, 16],
                 transitionDuration: 1, // No fade animation
                 textStyle: {
@@ -389,7 +389,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
             <div className={cn('relative mx-auto w-full', className)}>
                 <EchartWrapper
                     options={options}
-                    className="mx-auto h-full max-h-[300px] min-h-[450px] w-full min-w-[300px] max-w-[900px] md:max-h-[600px] md:min-h-[500px]"
+                    className="relative mx-auto h-full max-h-[300px] min-h-[450px] w-full min-w-[300px] max-w-[900px] md:max-h-[600px] md:min-h-[500px]"
                 />
             </div>
         </ErrorBoundary>

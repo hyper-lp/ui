@@ -121,7 +121,7 @@ export const MODAL_ANIMATION_CONFIG = {
 export const MODAL_BACKDROP_CLASSES = 'fixed inset-0 z-50 bg-default/40 backdrop-blur-sm'
 export const MODAL_CONTAINER_CLASSES = 'fixed inset-0 z-50 flex items-center justify-center p-4'
 export const MODAL_CONTENT_CLASSES =
-    'relative flex max-h-[95vh] w-full flex-col overflow-hidden rounded-2xl border border-default/10 bg-background shadow-2xl'
+    'relative flex max-h-[70vh] w-full flex-col overflow-hidden rounded-2xl border border-default/10 bg-background shadow-2xl'
 export const MODAL_HEADER_CLASSES = 'flex items-center justify-between border-b border-default/10 px-6 py-4'
 export const MODAL_CLOSE_BUTTON_CLASSES = 'rounded-lg p-2 text-default/50 transition-colors hover:bg-default/10 hover:text-default'
 

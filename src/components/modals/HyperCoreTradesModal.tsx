@@ -133,16 +133,16 @@ export default function HyperCoreTradesModal({ isOpen, onClose, address }: Hyper
                     <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2">
-                                <span className="text-default/60">Total trades:</span>
+                                <span className="text-default/60">Total trades</span>
                                 <span className="font-medium">{sortedTrades.length}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-default/60">Total fees:</span>
+                                <span className="text-default/60">Total fees</span>
                                 <span className="font-medium">{formatUSD(stats.totalFees)}</span>
                             </div>
                             {stats.hasPnL && (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-default/60">Total PnL:</span>
+                                    <span className="text-default/60">Total PnL</span>
                                     <span className={cn('font-medium', getPnLColorClass(stats.totalPnL))}>{formatUSD(stats.totalPnL)}</span>
                                 </div>
                             )}

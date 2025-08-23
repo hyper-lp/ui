@@ -81,7 +81,7 @@ export default function RebalanceModal({ isOpen, onClose, vaultAddress }: Rebala
                         onClick={onClose}
                     >
                         <div
-                            className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-default/10 bg-background shadow-2xl"
+                            className="relative flex max-h-[70vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-default/10 bg-background shadow-2xl"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}

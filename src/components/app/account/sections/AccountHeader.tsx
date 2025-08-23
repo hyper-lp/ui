@@ -106,9 +106,9 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                     id={IconIds.CHEVRON_DOWN}
                                     className={cn('size-4 text-default/50 transition-transform', isDropdownOpen && 'rotate-180')}
                                 />
-                                <span className="hidden xl:flex">Vault = {accountFromUrl}</span>
-                                <span className="hidden md:flex xl:hidden">Vault = {shortenValue(accountFromUrl, 8)}</span>
-                                <span className="flex md:hidden">{shortenValue(accountFromUrl, 4)}</span>
+                                <span className="hidden truncate xl:flex">Vault = {accountFromUrl}</span>
+                                <span className="hidden truncate md:flex xl:hidden">Vault = {shortenValue(accountFromUrl, 8)}</span>
+                                <span className="flex truncate md:hidden">{shortenValue(accountFromUrl, 4)}</span>
                             </button>
 
                             {isDropdownOpen && (
@@ -224,7 +224,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     {/* HyperLP balance */}
                     {/* <div className="flex flex-col items-center lg:items-end"> */}
                     <SectionCard padding="px-4 py-2" className="flex flex-col items-center lg:items-end">
-                        <span className="text-base tracking-wider text-default/50">HyperLP balance</span>
+                        <span className="truncate text-base tracking-wider text-default/50">HyperLP balance</span>
                         <StyledTooltip
                             content={
                                 <div className="flex flex-col">
@@ -294,7 +294,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     {/* Net P&L */}
                     {/* <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" /> */}
                     <SectionCard padding="px-4 py-2" className="hidden flex-col items-center md:flex lg:items-end">
-                        <span className="text-base tracking-wider text-default/50">Net P&L</span>
+                        <span className="truncate text-base tracking-wider text-default/50">Net P&L</span>
                         <StyledTooltip
                             content={
                                 <div className="flex max-w-[380px] flex-col gap-2">
@@ -324,7 +324,9 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                 </div>
                             }
                         >
-                            <span className="cursor-help text-lg font-semibold text-default/30 hover:text-primary hover:underline">Coming soon</span>
+                            <span className="cursor-help truncate text-lg font-semibold text-default/30 hover:text-primary hover:underline">
+                                Coming soon
+                            </span>
                         </StyledTooltip>
                     </SectionCard>
 

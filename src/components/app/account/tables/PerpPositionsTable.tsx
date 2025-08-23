@@ -161,12 +161,7 @@ export function PerpPositionsTable({ className }: PerpPositionsTableProps) {
         <div className={className}>
             <WithdrawableUSDCTable withdrawableUSDC={withdrawableUSDC} />
 
-            {withdrawableUSDC > 0 && (
-                <SubSectionHeader
-                    title={SECTION_CONFIG[SectionType.PERPS].subSections?.shortPositions || 'Short Positions'}
-                    className="text-default/30"
-                />
-            )}
+            {withdrawableUSDC > 0 && <SubSectionHeader title={SECTION_CONFIG[SectionType.PERPS].subSections?.shortPositions || 'Short Positions'} />}
             <div role="table" className="overflow-x-auto">
                 <div className="min-w-max">
                     <PerpPositionsTableHeader />

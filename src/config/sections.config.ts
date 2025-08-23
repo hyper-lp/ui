@@ -35,8 +35,8 @@ export const SECTION_CONFIG: Record<SectionType, SectionConfig> = {
         platform: Platform.HYPER_EVM,
         description: 'Combined LP and HyperDrive Positions',
         subSections: {
-            lps: 'Liquidity Pool Positions',
-            hyperdrive: 'HyperDrive Lending',
+            lps: 'LPs',
+            hyperdrive: 'Lending',
         },
     },
     [SectionType.LP]: {
@@ -44,7 +44,7 @@ export const SECTION_CONFIG: Record<SectionType, SectionConfig> = {
         chartSeriesName: 'LPs Δ',
         className: 'text-hyper-evm-lps',
         platform: Platform.HYPER_EVM,
-        description: 'Liquidity Pool Positions',
+        description: 'LPs',
         isSubSection: true,
         parentSection: SectionType.LONG_EVM,
     },

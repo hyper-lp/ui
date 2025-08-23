@@ -19,7 +19,7 @@ export default function manifest(): MetadataRoute.Manifest {
                 sizes: '1500x500',
                 type: 'image/jpeg',
                 form_factor: 'wide',
-                label: 'HyperLP - Delta-neutral LP vault on Hyperliquid',
+                label: `${APP_METADATA.SITE_NAME} - ${APP_METADATA.SITE_DESCRIPTION}`,
             },
         ],
         icons: [

@@ -27,7 +27,7 @@ export const APP_METADATA = {
     SITE_NAME,
     SHORT_NAME: 'HyperLP',
     SITE_DOMAIN,
-    SITE_DESCRIPTION: 'LP fees, funding and points - all without the price swings',
+    SITE_DESCRIPTION: 'Composable delta-neutral LP',
     SITE_URL: SITE_URL,
     AUTHOR: {
         name: 'HyperLP',
@@ -40,8 +40,8 @@ export const APP_METADATA = {
         price: '0',
         priceCurrency: 'USD',
         about: {
-            name: 'HyperLP - Delta-Neutral Vault',
-            description: 'LP fees, funding and points - all without the price swings',
+            name: 'HyperLP',
+            description: 'Composable delta-neutral LP',
         },
     },
 }

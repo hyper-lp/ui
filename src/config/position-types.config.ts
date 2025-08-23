@@ -33,23 +33,3 @@ export const POSITION_CONFIGS: PositionTypeConfig[] = [
     //     icon: '🔒',
     // },
 ]
-
-/**
- * Get enabled position types
- */
-export function getEnabledPositionTypes(): PositionTypeConfig[] {
-    return POSITION_CONFIGS.filter((config) => config.enabled)
-}
-
-/**
- * Get total weight of enabled position types
- */
-export function getTotalWeight(): number {
-    return getEnabledPositionTypes().reduce((sum, config) => sum + config.weight, 0)
-}
-
-/**
- * Funding weight (for perps/short leg)
- * This is the complement of the long leg weights
- */
-export const FUNDING_WEIGHT = 1 / 3 // 1/3 of deployed capital for perps

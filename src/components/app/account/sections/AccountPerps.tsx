@@ -95,7 +95,7 @@ export default function AccountPerps() {
                             }
                         >
                             <div className="flex items-center gap-1 rounded bg-default/5 px-2 py-1">
-                                <p className="text-sm text-default/50">Funding APR</p>
+                                <p className="text-sm text-default/50">Funding</p>
                                 <p
                                     className={cn(
                                         'text-sm font-medium',

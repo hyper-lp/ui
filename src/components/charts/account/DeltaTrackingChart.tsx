@@ -53,6 +53,9 @@ export default function DeltaTrackingChart() {
     const { resolvedTheme } = useTheme()
     const colors = getThemeColors(resolvedTheme)
 
+    // Store legend selection state to persist between refreshes
+    const legendSelectionRef = useRef<Record<string, boolean> | null>(null)
+
     // Create loading skeleton options dynamically based on theme
     const createLoadingOptions = useCallback((): EChartsOption => {
         const netDeltaColor = colors.charts.text || '#ffffff'
@@ -498,7 +501,6 @@ export default function DeltaTrackingChart() {
 
     // Store legend selection state to persist between refreshes
     const [, setLegendSelection] = useState<Record<string, boolean> | null>(null)
-    const legendSelectionRef = useRef<Record<string, boolean> | null>(null)
 
     // Get historical snapshots and rebalance events from the app store
     const getSnapshots = useAppStore((state) => state.getSnapshots)
@@ -619,6 +621,12 @@ export default function DeltaTrackingChart() {
                 console.warn('[DeltaTrackingChart] No valid snapshots after filtering')
                 setOptions(createLoadingOptions())
                 return
+            }
+
+            if (validSnapshots.length !== storedSnapshots.length) {
+                console.log(
+                    `[DeltaTrackingChart] Filtered ${storedSnapshots.length - validSnapshots.length} invalid snapshots, ${validSnapshots.length} remain`,
+                )
             }
 
             validSnapshots.forEach((snapshot) => {
@@ -885,12 +893,12 @@ export default function DeltaTrackingChart() {
                                 color: netDeltaColor,
                             },
                         },
-                        // {
-                        //     name: ChartSeries.NetDelta,
-                        //     textStyle: {
-                        //         color: netDeltaColor,
-                        //     },
-                        // },
+                        {
+                            name: ChartSeries.NetDelta,
+                            textStyle: {
+                                color: netDeltaColor,
+                            },
+                        },
                     ],
                     top: 10,
                     selected: legendSelectionRef.current || {
@@ -901,7 +909,7 @@ export default function DeltaTrackingChart() {
                         [ChartSeries.HyperCorePerps]: true,
                         [ChartSeries.HyperCoreSpots]: false,
                         [ChartSeries.StrategyDelta]: true,
-                        // [ChartSeries.NetDelta]: false,
+                        [ChartSeries.NetDelta]: false,
                     },
                     icon: 'roundRect',
                     itemWidth: 14,
@@ -1240,81 +1248,46 @@ export default function DeltaTrackingChart() {
                             borderRadius: 4,
                         },
                     },
-                    // {
-                    //     name: ChartSeries.NetDelta,
-                    //     type: 'line',
-                    //     data: netDeltasUSD,
-                    //     smooth: false,
-                    //     symbol: 'circle',
-                    //     symbolSize: 6,
-                    //     showSymbol: true,
-                    //     lineStyle: {
-                    //         color: netDeltaColor,
-                    //         width: 2,
-                    //         type: 'dashed',
-                    //     },
-                    //     itemStyle: {
-                    //         color: netDeltaColor,
-                    //     },
-                    //     areaStyle: {
-                    //         opacity: 0.2,
-                    //         color: {
-                    //             type: 'linear',
-                    //             x: 0,
-                    //             y: 0,
-                    //             x2: 0,
-                    //             y2: 1,
-                    //             colorStops: [
-                    //                 {
-                    //                     offset: 0,
-                    //                     color: netDeltaColor + '40', // 25% opacity
-                    //                 },
-                    //                 {
-                    //                     offset: 1,
-                    //                     color: netDeltaColor + '00', // 0% opacity
-                    //                 },
-                    //             ],
-                    //         },
-                    //     },
-                    //     emphasis: {
-                    //         focus: 'series',
-                    //     },
-                    //     z: 10,
-                    //     markLine: {
-                    //         silent: true,
-                    //         symbol: 'none',
-                    //         data: [
-                    //             {
-                    //                 yAxis: 0,
-                    //                 label: {
-                    //                     show: false,
-                    //                 },
-                    //                 lineStyle: {
-                    //                     color: colors.charts.axis,
-                    //                     type: 'dashed',
-                    //                     width: 1,
-                    //                 },
-                    //             },
-                    //         ],
-                    //     },
-                    //     endLabel: {
-                    //         show: true,
-                    //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    //         formatter: (params: any) => {
-                    //             const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
-                    //             // Hide label if value is very close to 0
-                    //             if (Math.abs(value) < 1) return ''
-                    //             const formattedValue = numeral(value).format('+0,0a$')
-                    //             return `${ChartSeries.NetDelta} ${formattedValue}`
-                    //         },
-                    //         color: netDeltaColor,
-                    //         fontSize: 12,
-                    //         offset: [5, 0],
-                    //         backgroundColor: netDeltaColor + '15',
-                    //         padding: [2, 4],
-                    //         borderRadius: 4,
-                    //     },
-                    // },
+                    {
+                        name: ChartSeries.NetDelta,
+                        type: 'line',
+                        data: netDeltasUSD,
+                        smooth: false,
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        showSymbol: true,
+                        lineStyle: {
+                            color: netDeltaColor,
+                            width: 2,
+                            type: 'solid',
+                            opacity: 0.5,
+                        },
+                        itemStyle: {
+                            color: netDeltaColor,
+                            opacity: 0.5,
+                        },
+                        emphasis: {
+                            focus: 'series',
+                        },
+                        z: 8,
+                        endLabel: {
+                            show: true,
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            formatter: (params: any) => {
+                                const value = Array.isArray(params.value) ? params.value[1] : params.value || 0
+                                // Hide label if value is very close to 0
+                                if (Math.abs(value) < 1) return ''
+                                const formattedValue = numeral(value).format('+0,0a$')
+                                return `${ChartSeries.NetDelta} ${formattedValue}`
+                            },
+                            color: netDeltaColor,
+                            fontSize: 12,
+                            offset: [5, 0],
+                            backgroundColor: netDeltaColor + '15',
+                            padding: [2, 4],
+                            borderRadius: 4,
+                        },
+                    },
                     {
                         name: ChartSeries.StrategyDelta,
                         type: 'line',
@@ -1372,14 +1345,14 @@ export default function DeltaTrackingChart() {
                                         .replace(/\bhyperbrick\b/gi, 'HyperBrick')
                                         .replace(/\bprjtx\b/gi, 'PRJTX')
                                         .replace(/\bproject[\s-]?x\b/gi, 'Project X')
-                                    console.log(
-                                        '[DeltaTrackingChart] Adding markLine for rebalance at:',
-                                        new Date(event.timestamp).toISOString(),
-                                        'timestamp:',
-                                        timestamp,
-                                        'summary:',
-                                        summary,
-                                    )
+                                    // console.log(
+                                    //     '[DeltaTrackingChart] Adding markLine for rebalance at:',
+                                    //     new Date(event.timestamp).toISOString(),
+                                    //     'timestamp:',
+                                    //     timestamp,
+                                    //     'summary:',
+                                    //     summary,
+                                    // )
                                     return {
                                         xAxis: timestamp,
                                         label: {

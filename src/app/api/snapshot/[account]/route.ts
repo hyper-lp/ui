@@ -182,7 +182,7 @@ export async function GET(
                       // This is a simplified version - in production, you'd want to extract this properly
                       const { poolAPRService } = await import('@/services/dex/pool-apr.service')
                       const poolAddresses = [
-                          ...new Set((lpResult.result.positions as LPPositionLeg[]).map((p) => p.poolAddress).filter(Boolean)),
+                          ...new Set((lpResult.result.positions as any[]).map((p) => p.pool || p.poolAddress).filter(Boolean)),
                       ] as string[]
                       return poolAddresses.length > 0 ? await poolAPRService.fetchPoolAPRByAddresses(poolAddresses) : undefined
                   })()

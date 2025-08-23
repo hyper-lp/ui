@@ -93,7 +93,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
             {/* Summary */}
             <div className="flex flex-col gap-3 lg:w-full lg:flex-row lg:justify-between">
                 {/* Address */}
-                <SectionCard padding="px-3 py-2" className="flex w-fit flex-col justify-around lg:grow">
+                <SectionCard padding="px-4 py-2" className="flex w-fit flex-col justify-around lg:grow">
                     {/* row */}
                     <div className="flex items-center gap-2 text-sm">
                         {/* Address Dropdown */}
@@ -106,8 +106,8 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                     id={IconIds.CHEVRON_DOWN}
                                     className={cn('size-4 text-default/50 transition-transform', isDropdownOpen && 'rotate-180')}
                                 />
-                                <span className="hidden 2xl:flex">Vault = {accountFromUrl}</span>
-                                <span className="hidden md:flex 2xl:hidden">Vault = {shortenValue(accountFromUrl, 8)}</span>
+                                <span className="hidden xl:flex">Vault = {accountFromUrl}</span>
+                                <span className="hidden md:flex xl:hidden">Vault = {shortenValue(accountFromUrl, 8)}</span>
                                 <span className="flex md:hidden">{shortenValue(accountFromUrl, 4)}</span>
                             </button>
 
@@ -223,7 +223,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                 <div className="flex w-full items-center gap-3 lg:w-max">
                     {/* HyperLP balance */}
                     {/* <div className="flex flex-col items-center lg:items-end"> */}
-                    <SectionCard className="flex flex-col items-center lg:items-end">
+                    <SectionCard padding="px-4 py-2" className="flex flex-col items-center lg:items-end">
                         <span className="text-base tracking-wider text-default/50">HyperLP balance</span>
                         <StyledTooltip
                             content={
@@ -293,7 +293,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
 
                     {/* Net P&L */}
                     {/* <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" /> */}
-                    <SectionCard className="hidden flex-col items-center md:flex lg:items-end">
+                    <SectionCard padding="px-4 py-2" className="hidden flex-col items-center md:flex lg:items-end">
                         <span className="text-base tracking-wider text-default/50">Net P&L</span>
                         <StyledTooltip
                             content={
@@ -332,7 +332,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         <>
                             {/* <div className="h-10 border-l border-dashed border-default/20" /> */}
                             {/* <div className="flex flex-col items-center lg:items-end"> */}
-                            <SectionCard className="flex flex-col items-center lg:items-end">
+                            <SectionCard padding="px-4 py-2" className="flex flex-col items-center lg:items-end">
                                 <span className="text-base tracking-wider text-default/50">Estimated Gross APR</span>
                                 <StyledTooltip
                                     content={

@@ -10,7 +10,6 @@ import type { AccountSnapshot } from '@/interfaces/account.interface'
 import { SCHEMA_VERSION } from '@/constants/schema.constants'
 import { processAllPositions } from '@/services/position-processors/base.processor'
 import { POSITION_CONFIGS } from '@/config/position-types.config'
-import type { LPPositionLeg } from '@/interfaces/position-leg.interface'
 import { AppUrls } from '@/enums/app.enum'
 import { SITE_DOMAIN } from '@/config/app.config'
 
@@ -182,7 +181,11 @@ export async function GET(
                       // This is a simplified version - in production, you'd want to extract this properly
                       const { poolAPRService } = await import('@/services/dex/pool-apr.service')
                       const poolAddresses = [
-                          ...new Set((lpResult.result.positions as any[]).map((p) => p.pool || p.poolAddress).filter(Boolean)),
+                          ...new Set(
+                              (lpResult.result.positions as Array<{ pool?: string; poolAddress?: string }>)
+                                  .map((p) => p.pool || p.poolAddress)
+                                  .filter(Boolean),
+                          ),
                       ] as string[]
                       return poolAddresses.length > 0 ? await poolAPRService.fetchPoolAPRByAddresses(poolAddresses) : undefined
                   })()

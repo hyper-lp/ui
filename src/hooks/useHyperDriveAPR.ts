@@ -3,19 +3,15 @@ import { fetchHyperDriveAPR, getAllHyperDriveAPRs } from '@/services/hyperdrive.
 import type { HyperDriveCurrentAPR } from '@/types/hyperdrive.types'
 
 /**
- * React Query hook to fetch APR data for a specific HyperDrive market
- * @param marketAddress The market address to fetch APR for
+ * React Query hook to fetch APR data for HyperDrive market
  * @param enabled Whether the query should run
  * @returns Query result with APR data
  */
-export function useHyperDriveAPR(marketAddress?: string, enabled = true) {
+export function useHyperDriveAPR(enabled = true) {
     return useQuery<HyperDriveCurrentAPR | null>({
-        queryKey: ['hyperdrive', 'apr', marketAddress],
-        queryFn: () => {
-            if (!marketAddress) return null
-            return fetchHyperDriveAPR(marketAddress)
-        },
-        enabled: enabled && !!marketAddress,
+        queryKey: ['hyperdrive', 'apr'],
+        queryFn: fetchHyperDriveAPR,
+        enabled,
         staleTime: 5 * 60 * 1000, // 5 minutes
         gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
         refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes

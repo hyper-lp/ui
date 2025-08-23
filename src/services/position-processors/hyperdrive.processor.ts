@@ -109,22 +109,22 @@ export class HyperDrivePositionProcessor extends BasePositionProcessor<HyperDriv
                     const valueUSD = underlyingAssetsNumber * hypePrice
 
                     // Fetch real APR data from HyperDrive API
-                    const aprData = await fetchHyperDriveAPR(market.address)
-                    
+                    const aprData = await fetchHyperDriveAPR()
+
                     // API now returns percentages directly (e.g., 7.5 for 7.5%)
-                    const aprMetrics = aprData 
+                    const aprMetrics = aprData
                         ? {
-                            current: aprData.apr28d || aprData.apr7d || aprData.current,
-                            avg24h: aprData.current,
-                            avg7d: aprData.apy7d, // Use APY for display to match HyperDrive website
-                            avg30d: aprData.apy28d, // Use APY for display to match HyperDrive website
-                        }
+                              current: aprData.apr28d || aprData.apr7d || aprData.current,
+                              avg24h: aprData.current,
+                              avg7d: aprData.apy7d, // Use APY for display to match HyperDrive website
+                              avg30d: aprData.apy28d, // Use APY for display to match HyperDrive website
+                          }
                         : {
-                            current: 0,
-                            avg24h: 0,
-                            avg7d: 0,
-                            avg30d: 0,
-                        }
+                              current: 0,
+                              avg24h: 0,
+                              avg7d: 0,
+                              avg30d: 0,
+                          }
 
                     // For HyperDrive, assets = underlying, no liabilities for lending positions
                     const position: HyperDrivePositionLeg = {
@@ -196,5 +196,4 @@ export class HyperDrivePositionProcessor extends BasePositionProcessor<HyperDriv
             }
         }
     }
-
 }

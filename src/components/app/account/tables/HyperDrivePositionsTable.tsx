@@ -4,13 +4,12 @@ import { FileIds, IconIds, ProtocolType } from '@/enums'
 import FileMapper from '@/components/common/FileMapper'
 import IconWrapper from '@/components/icons/IconWrapper'
 import type { HyperDrivePositionLeg } from '@/interfaces/position-leg.interface'
-import { formatUSD, formatNumber, shortenValue } from '@/utils/format.util'
+import { formatUSD, formatNumber } from '@/utils/format.util'
 import { cn } from '@/utils'
 import StyledTooltip from '@/components/common/StyledTooltip'
 import { useAppStore } from '@/stores/app.store'
 import { EmptyTablePlaceholder } from './EmptyTablePlaceholder'
 import numeral from 'numeral'
-import LinkWrapper from '@/components/common/LinkWrapper'
 import { getProtocolByName } from '@/config'
 import PositionIframeModal from '@/components/modals/PositionIframeModal'
 
@@ -168,28 +167,6 @@ export function HyperDrivePositionsTable({ className }: HyperDrivePositionsTable
                                                 <p className="cursor-help font-medium hover:underline">{formatNumber(position.assetsUnits, 2)}</p>
                                                 <FileMapper id={FileIds.TOKEN_HYPE} width={16} height={16} className="rounded-full" />
                                             </div>
-                                        </StyledTooltip>
-                                    }
-                                    shares={
-                                        <StyledTooltip
-                                            content={
-                                                <div className="space-y-3">
-                                                    <div className="font-semibold">Share Tokens</div>
-                                                    <div className="space-y-2">
-                                                        <p className="text-sm font-medium">
-                                                            {numeral(position.sharesUnits).format('0,0.[0000]')} HD-MKT-HYPE
-                                                        </p>
-                                                        <div className="text-sm opacity-60">
-                                                            Share/Asset Ratio: {(position.sharesUnits / position.assetsUnits).toFixed(4)}
-                                                        </div>
-                                                    </div>
-                                                    <div className="border-t border-default/10 pt-2">
-                                                        <div className="opacity-60">Your share of the lending pool</div>
-                                                    </div>
-                                                </div>
-                                            }
-                                        >
-                                            <p className="cursor-help hover:underline">{formatNumber(position.sharesUnits, 2)}</p>
                                         </StyledTooltip>
                                     }
                                     value={

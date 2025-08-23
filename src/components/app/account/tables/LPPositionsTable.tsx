@@ -603,12 +603,18 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                     {positions.some((p) => p.isClosed) ? (
                         <button
                             onClick={() => setShowClosedPositions(!showClosedPositions)}
-                            className="flex gap-3 text-xs text-default/40 transition-colors hover:text-primary"
+                            className="flex items-center gap-1 text-xs text-default/40 transition-colors hover:text-primary"
                         >
                             {showClosedPositions ? (
-                                <p>Click to hide {positions.filter((p) => p.isClosed).length} closed positions</p>
+                                <>
+                                    <p>Click to hide {positions.filter((p) => p.isClosed).length} closed positions</p>
+                                    <IconWrapper id={IconIds.FILTER_REMOVE} className="size-3" />
+                                </>
                             ) : (
-                                <p>Click to show {positions.filter((p) => p.isClosed).length} closed positions</p>
+                                <>
+                                    <p>Click to show {positions.filter((p) => p.isClosed).length} closed positions</p>
+                                    <IconWrapper id={IconIds.FILTER_ADD} className="size-3" />
+                                </>
                             )}
                         </button>
                     ) : (
@@ -616,8 +622,12 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                     )}
 
                     {/* Rebalance Transactions Button */}
-                    <button onClick={handleShowRebalances} className="flex gap-3 text-xs text-default/40 transition-colors hover:text-primary">
+                    <button
+                        onClick={handleShowRebalances}
+                        className="flex items-center gap-1 text-xs text-default/40 transition-colors hover:text-primary"
+                    >
                         <p>Click to see rebalance txs</p>
+                        <IconWrapper id={IconIds.LIST} className="size-3" />
                     </button>
                 </div>
             )}

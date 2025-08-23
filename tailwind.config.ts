@@ -32,11 +32,16 @@ const config: Config = {
             animation: {
                 'skeleton-move': 'skeleton-move 2s infinite',
                 flash: 'flash 0.8s ease-in-out',
+                'gradient-shift': 'gradient-shift 3s ease-in-out infinite',
             },
             keyframes: {
                 'skeleton-move': {
                     '0%': { transform: 'translateX(-100%)' },
                     '100%': { transform: 'translateX(100%)' },
+                },
+                'gradient-shift': {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
                 },
             },
         },

@@ -43,6 +43,7 @@ function EchartWrapperOptimized(props: InterfaceEchartWrapperProps) {
     const myChart = useRef<echarts.ECharts | null>(null)
     const [echartsModule, setEchartsModule] = useState<typeof echarts | null>(null)
     const handleChartResize = () => myChart.current?.resize()
+    const prevOptionsRef = useRef<echarts.EChartsOption | null>(null)
 
     useEffect(() => {
         let isSubscribed = true
@@ -68,7 +69,29 @@ function EchartWrapperOptimized(props: InterfaceEchartWrapperProps) {
             myChart.current = echartsModule.init(chartRef.current)
         }
 
-        myChart.current.setOption(props.options)
+        // Preserve user's zoom state if they've zoomed
+        const currentOption = myChart.current.getOption()
+        let optionsToApply = props.options
+
+        if (currentOption?.dataZoom) {
+            const dataZoom = currentOption.dataZoom as any[]
+            const hasUserZoom = dataZoom.some((dz: any) => (dz.start !== 0 && dz.start !== undefined) || (dz.end !== 100 && dz.end !== undefined))
+
+            if (hasUserZoom) {
+                optionsToApply = {
+                    ...props.options,
+                    dataZoom,
+                }
+            }
+        }
+
+        // Apply options
+        myChart.current.setOption(optionsToApply, {
+            notMerge: false,
+            lazyUpdate: true,
+            replaceMerge: [], // Don't replace any components, merge them all
+        })
+        prevOptionsRef.current = props.options
 
         if (props.onPointClick) {
             myChart.current.off('click')

@@ -75,4 +75,7 @@ export enum IconIds {
     DOTS_HORIZONTAL = 'mdi:dots-horizontal',
     SHARE = 'ic:round-ios-share',
     EXPAND = 'gg:arrows-expand-right',
+    VIEW = 'carbon:view',
+    FILTER_ADD = 'carbon:filter-edit',
+    FILTER_REMOVE = 'carbon:filter-remove',
 }

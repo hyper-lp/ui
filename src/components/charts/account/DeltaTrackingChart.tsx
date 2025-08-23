@@ -10,8 +10,30 @@ import { DAYJS_FORMATS, formatUSD } from '@/utils'
 import { useAppStore } from '@/stores/app.store'
 import numeral from 'numeral'
 import { CHART_SERIES_NAMES, SECTION_CONFIG, SectionType } from '@/config/sections.config'
+import IconWrapper from '@/components/icons/IconWrapper'
+import { IconIds } from '@/enums'
+import RebalanceModal from '@/components/modals/RebalanceModal'
 
-const DEFAULT_VISIBLE_POINTS = 10 // Number of points to show by default in dataZoom
+const Legends = ({ isLpAccount, onShowRebalances }: { isLpAccount?: boolean; onShowRebalances?: () => void }) => {
+    return (
+        <div className="flex items-center gap-1 px-2">
+            <div className="flex items-center gap-1 text-hyper-evm-lps">
+                {isLpAccount && (
+                    <>
+                        <div className="h-4 w-2 border-l-2 border-dashed border-hyper-evm-lps" />
+                        <p className="text-sm">Rebalances done by our ALM</p>
+                    </>
+                )}
+            </div>
+            <button onClick={onShowRebalances} className="flex items-center gap-1 text-default/50 transition-colors hover:text-primary">
+                <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4" />
+                <p className="text-sm">Click to see full history</p>
+                <IconWrapper id={IconIds.LIST} className="size-4" />
+            </button>
+        </div>
+    )
+}
+const DEFAULT_VISIBLE_POINTS = 50 // Number of points to show by default in dataZoom
 
 const grid = {
     top: 70,
@@ -50,11 +72,23 @@ export const ChartSeries = {
 export default function DeltaTrackingChart() {
     const [options, setOptions] = useState<EChartsOption | null>(null)
     const [isInitialLoad, setIsInitialLoad] = useState(true)
+    const [showRebalanceModal, setShowRebalanceModal] = useState(false)
     const { resolvedTheme } = useTheme()
     const colors = getThemeColors(resolvedTheme)
 
-    // Store legend selection state to persist between refreshes
-    const legendSelectionRef = useRef<Record<string, boolean> | null>(null)
+    // Store legend selection state to persist between refreshes - initialize with defaults
+    const legendSelectionRef = useRef<Record<string, boolean>>({
+        [ChartSeries.hyperLpBalance]: false,
+        [ChartSeries.DeployedAUM]: false,
+        [ChartSeries.LongEVM]: true,
+        [ChartSeries.HyperEvmBalances]: false,
+        [ChartSeries.HyperCorePerps]: true,
+        [ChartSeries.HyperCoreSpots]: false,
+        [ChartSeries.StrategyDelta]: true,
+    })
+
+    // Store valid snapshots to prevent stale closure issues in tooltip formatter
+    const validSnapshotsRef = useRef<ReturnType<typeof getSnapshots>>([])
 
     // Create loading skeleton options dynamically based on theme
     const createLoadingOptions = useCallback((): EChartsOption => {
@@ -76,7 +110,7 @@ export default function DeltaTrackingChart() {
                     top: 'center',
                     z: 0,
                     style: {
-                        text: 'Loading snapshots...',
+                        text: 'Loading HyperLP history...',
                         fontSize: 14,
                         fontWeight: 'normal',
                         fill: textOpacity,
@@ -239,44 +273,26 @@ export default function DeltaTrackingChart() {
         }
     }, [colors, resolvedTheme])
 
-    // Store dataZoom range to persist between refreshes
-    const [, setZoomRange] = useState<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
-    const zoomRangeRef = useRef<{ x: { start: number; end: number }; y: { start: number; end: number } } | null>(null)
-
-    // Store legend selection state to persist between refreshes
-    const [, setLegendSelection] = useState<Record<string, boolean> | null>(null)
-
     // Get historical snapshots and rebalance events from the app store
     const getSnapshots = useAppStore((state) => state.getSnapshots)
     const rebalanceEvents = useAppStore((state) => state.rebalanceEvents)
     const lastSnapshotAddedAt = useAppStore((state) => state.lastSnapshotAddedAt)
 
-    // Handle dataZoom changes
-    const handleDataZoom = useCallback((start: number, end: number, axis: 'x' | 'y' = 'x') => {
-        const currentRange = zoomRangeRef.current || { x: { start: 0, end: 100 }, y: { start: 0, end: 100 } }
-        const newRange = {
-            ...currentRange,
-            [axis]: { start, end },
-        }
-        setZoomRange(newRange)
-        zoomRangeRef.current = newRange
-    }, [])
-
     // Handle legend selection changes
     const handleLegendSelectChanged = useCallback((selected: Record<string, boolean>) => {
-        setLegendSelection(selected)
         legendSelectionRef.current = selected
     }, [])
 
-    // Handle reset/restore from toolbox
-    const handleRestore = useCallback(() => {
-        // Clear the persisted zoom state
-        zoomRangeRef.current = null
-        setZoomRange(null)
-        // Clear the persisted legend selection state
-        legendSelectionRef.current = null
-        setLegendSelection(null)
-        // Force re-render with default zoom values
+    // Handle reset/restore from toolbox - let the chart handle this internally
+
+    // Handle showing rebalance modal
+    const handleShowRebalances = useCallback(() => {
+        setShowRebalanceModal(true)
+    }, [])
+
+    // Handle closing rebalance modal
+    const handleCloseRebalanceModal = useCallback(() => {
+        setShowRebalanceModal(false)
     }, [])
 
     // Show skeleton briefly on initial load for better UX
@@ -290,6 +306,17 @@ export default function DeltaTrackingChart() {
         }
     }, [isInitialLoad, createLoadingOptions])
 
+    // Debounce chart updates to prevent excessive re-renders
+    const [debouncedUpdate, setDebouncedUpdate] = useState(0)
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedUpdate((prev) => prev + 1)
+        }, 500) // 500ms debounce
+
+        return () => clearTimeout(timer)
+    }, [lastSnapshotAddedAt, rebalanceEvents.length])
+
     useEffect(() => {
         // Skip if still showing initial loading state
         if (isInitialLoad) return
@@ -297,9 +324,6 @@ export default function DeltaTrackingChart() {
         try {
             // 1. get stored snapshots
             let storedSnapshots = getSnapshots()
-            console.log(
-                `[DeltaTrackingChart] Re-rendering with ${storedSnapshots.length} snapshots, trigger: lastSnapshotAddedAt=${lastSnapshotAddedAt}`,
-            )
 
             // Show loading skeleton if no data
             if (storedSnapshots.length === 0) {
@@ -372,6 +396,9 @@ export default function DeltaTrackingChart() {
                     `[DeltaTrackingChart] Filtered ${storedSnapshots.length - validSnapshots.length} invalid snapshots, ${validSnapshots.length} remain`,
                 )
             }
+
+            // Update the ref with valid snapshots for tooltip formatter
+            validSnapshotsRef.current = validSnapshots
 
             validSnapshots.forEach((snapshot) => {
                 const timestamp = snapshot.timestamp
@@ -465,8 +492,8 @@ export default function DeltaTrackingChart() {
                         const firstParam = uniqueParams[0]
                         const timestamp = DAYJS_FORMATS.custom(firstParam.value[0], 'ddd. MMM. D ∙ hh:mm:ss A')
 
-                        // Get snapshot for total capital context
-                        const snapshot = storedSnapshots.find((s) => s.timestamp === firstParam.value[0])
+                        // Get snapshot for total capital context - use ref to avoid stale closure
+                        const snapshot = validSnapshotsRef.current.find((s) => s.timestamp === firstParam.value[0])
                         const deployedAUM = snapshot?.metrics.portfolio.deployedValueUSD || 0
                         const hypePrice = snapshot?.prices.HYPE || 0
 
@@ -645,16 +672,7 @@ export default function DeltaTrackingChart() {
                         // },
                     ],
                     top: 10,
-                    selected: legendSelectionRef.current || {
-                        [ChartSeries.hyperLpBalance]: false,
-                        [ChartSeries.DeployedAUM]: false,
-                        [ChartSeries.LongEVM]: true,
-                        [ChartSeries.HyperEvmBalances]: false,
-                        [ChartSeries.HyperCorePerps]: true,
-                        [ChartSeries.HyperCoreSpots]: false,
-                        [ChartSeries.StrategyDelta]: true,
-                        // [ChartSeries.NetDelta]: false,
-                    },
+                    selected: legendSelectionRef.current,
                     icon: 'roundRect',
                     itemWidth: 14,
                     itemHeight: 8,
@@ -799,6 +817,13 @@ export default function DeltaTrackingChart() {
                         },
                         emphasis: {
                             focus: 'series',
+                            lineStyle: {
+                                width: 2,
+                                opacity: 1,
+                            },
+                            itemStyle: {
+                                opacity: 1,
+                            },
                         },
                         endLabel: {
                             show: true,
@@ -836,6 +861,13 @@ export default function DeltaTrackingChart() {
                         },
                         emphasis: {
                             focus: 'series',
+                            lineStyle: {
+                                width: 2,
+                                opacity: 1,
+                            },
+                            itemStyle: {
+                                opacity: 1,
+                            },
                         },
                         endLabel: {
                             show: true,
@@ -870,6 +902,13 @@ export default function DeltaTrackingChart() {
                         },
                         emphasis: {
                             focus: 'series',
+                            lineStyle: {
+                                width: 2,
+                                opacity: 1,
+                            },
+                            itemStyle: {
+                                opacity: 1,
+                            },
                         },
                         endLabel: {
                             show: true,
@@ -905,6 +944,13 @@ export default function DeltaTrackingChart() {
                         },
                         emphasis: {
                             focus: 'series',
+                            lineStyle: {
+                                width: 2,
+                                opacity: 1,
+                            },
+                            itemStyle: {
+                                opacity: 1,
+                            },
                         },
                         endLabel: {
                             show: true,
@@ -940,6 +986,13 @@ export default function DeltaTrackingChart() {
                         },
                         emphasis: {
                             focus: 'series',
+                            lineStyle: {
+                                width: 2,
+                                opacity: 1,
+                            },
+                            itemStyle: {
+                                opacity: 1,
+                            },
                         },
                         endLabel: {
                             show: true,
@@ -975,6 +1028,13 @@ export default function DeltaTrackingChart() {
                         },
                         emphasis: {
                             focus: 'series',
+                            lineStyle: {
+                                width: 2,
+                                opacity: 1,
+                            },
+                            itemStyle: {
+                                opacity: 1,
+                            },
                         },
                         endLabel: {
                             show: true,
@@ -1070,6 +1130,16 @@ export default function DeltaTrackingChart() {
                         },
                         emphasis: {
                             focus: 'series',
+                            lineStyle: {
+                                width: 3,
+                                opacity: 1,
+                            },
+                            itemStyle: {
+                                opacity: 1,
+                            },
+                            areaStyle: {
+                                opacity: 0.15,
+                            },
                         },
                         z: 9,
                         markLine: {
@@ -1089,14 +1159,6 @@ export default function DeltaTrackingChart() {
                                         .replace(/\bhyperbrick\b/gi, 'HyperBrick')
                                         .replace(/\bprjtx\b/gi, 'PRJTX')
                                         .replace(/\bproject[\s-]?x\b/gi, 'Project X')
-                                    // console.log(
-                                    //     '[DeltaTrackingChart] Adding markLine for rebalance at:',
-                                    //     new Date(event.timestamp).toISOString(),
-                                    //     'timestamp:',
-                                    //     timestamp,
-                                    //     'summary:',
-                                    //     summary,
-                                    // )
                                     return {
                                         xAxis: timestamp,
                                         label: {
@@ -1141,15 +1203,21 @@ export default function DeltaTrackingChart() {
                     {
                         type: 'inside',
                         xAxisIndex: 0,
-                        start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / storedSnapshots.length),
-                        end: zoomRangeRef.current?.x?.end ?? 100,
+                        start:
+                            validSnapshots.length > DEFAULT_VISIBLE_POINTS
+                                ? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / validSnapshots.length)
+                                : 0,
+                        end: 100,
                     },
                     // X-axis slider
                     {
                         type: 'slider',
                         xAxisIndex: 0,
-                        start: zoomRangeRef.current?.x?.start ?? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / storedSnapshots.length),
-                        end: zoomRangeRef.current?.x?.end ?? 100,
+                        start:
+                            validSnapshots.length > DEFAULT_VISIBLE_POINTS
+                                ? Math.max(0, 100 - (100 * DEFAULT_VISIBLE_POINTS) / validSnapshots.length)
+                                : 0,
+                        end: 100,
                         height: 18,
                         bottom: 15,
                         backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
@@ -1201,8 +1269,8 @@ export default function DeltaTrackingChart() {
                     {
                         type: 'slider',
                         yAxisIndex: 0,
-                        start: zoomRangeRef.current?.y?.start ?? 0,
-                        end: zoomRangeRef.current?.y?.end ?? 100,
+                        start: 0,
+                        end: 100,
                         width: 16,
                         left: 12,
                         backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)',
@@ -1260,23 +1328,26 @@ export default function DeltaTrackingChart() {
             setOptions(createLoadingOptions())
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [lastSnapshotAddedAt, resolvedTheme, isInitialLoad, rebalanceEvents])
+    }, [debouncedUpdate, isInitialLoad, resolvedTheme])
 
     if (!options) {
         return (
-            <div className="flex h-[400px] w-full items-center justify-center md:h-[480px]">
-                <div className="text-default/50">Loading chart...</div>
+            <div className="flex h-[400px] w-full flex-col gap-2 md:h-[480px]">
+                <div className="flex h-full w-full grow flex-col items-center justify-center">
+                    <div className="text-default/50">Loading chart...</div>
+                </div>
+                <Legends onShowRebalances={handleShowRebalances} />
             </div>
         )
     }
 
     return (
-        <EchartWrapper
-            options={options}
-            className="h-[400px] w-full md:h-[480px]"
-            onDataZoomChange={handleDataZoom}
-            onLegendSelectChanged={handleLegendSelectChanged}
-            onRestore={handleRestore}
-        />
+        <div className="flex h-[400px] w-full flex-col gap-2 md:h-[480px]">
+            <EchartWrapper options={options} className="h-full w-full" onLegendSelectChanged={handleLegendSelectChanged} />
+            <Legends isLpAccount={true} onShowRebalances={handleShowRebalances} />
+
+            {/* Rebalance Modal */}
+            <RebalanceModal isOpen={showRebalanceModal} onClose={handleCloseRebalanceModal} vaultAddress={validSnapshotsRef.current[0]?.address} />
+        </div>
     )
 }

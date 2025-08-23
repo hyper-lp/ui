@@ -60,17 +60,20 @@ export default function UseCasesDropdown() {
 
     return (
         <div className="relative z-50" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-            <button
-                className={cn(
-                    'flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium transition-colors hover:bg-default/10',
-                    isDropdownOpen && 'bg-default/10',
-                )}
-            >
-                <span className="cursor-help text-lg">Explore use cases</span>
-                <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }} transition={{ duration: 0.15, ease: 'easeInOut' }}>
-                    <IconWrapper id={IconIds.CHEVRON_DOWN} className="size-4" />
-                </motion.div>
-            </button>
+            <div className="relative overflow-hidden rounded-xl p-px">
+                <div className="absolute inset-0 animate-[gradient-shift_3s_ease-in-out_infinite] bg-gradient-to-r from-purple-600/40 via-blue-600/40 to-primary/50 bg-[length:200%_200%] dark:from-primary/60 dark:via-purple-500/30 dark:to-blue-500/40" />
+                <button
+                    className={cn(
+                        'group relative z-10 flex items-center gap-2 rounded-xl bg-background px-3 py-1.5 text-sm font-medium text-primary transition-all duration-300 hover:text-white',
+                        isDropdownOpen && 'bg-default/5 text-white',
+                    )}
+                >
+                    <span className="cursor-help text-lg font-semibold">Explore our strategies</span>
+                    <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }} transition={{ duration: 0.15, ease: 'easeInOut' }}>
+                        <IconWrapper id={IconIds.CHEVRON_DOWN} className="size-4" />
+                    </motion.div>
+                </button>
+            </div>
 
             <AnimatePresence>
                 {isDropdownOpen && (
@@ -79,7 +82,7 @@ export default function UseCasesDropdown() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
                         transition={{ duration: 0.15, ease: 'easeOut' }}
-                        className="absolute right-0 top-full z-[100] mt-2 w-[400px] overflow-hidden rounded-xl border border-default/10 bg-background/95 shadow-xl"
+                        className="absolute right-0 top-full z-[100] mt-2 w-[400px] overflow-hidden rounded-2xl border border-default/10 bg-background/95 shadow-xl"
                         style={{
                             zIndex: 100,
                             backdropFilter: 'blur(12px)',

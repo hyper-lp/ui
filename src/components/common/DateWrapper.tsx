@@ -58,7 +58,7 @@ export function DateWrapperAccurate(props: DateWrapperProps) {
     if (!props.date) return null
     return (
         <DateWrapper date={props.date}>
-            <p className={cn('cursor-help truncate hover:underline', props.className)}>
+            <span className={cn('cursor-help truncate hover:underline', props.className)}>
                 {
                     getDurationBetween({
                         startTs: new Date(props.date).getTime(),
@@ -68,7 +68,7 @@ export function DateWrapperAccurate(props: DateWrapperProps) {
                         showWeeks: false,
                     }).oneLiner
                 }
-            </p>
+            </span>
         </DateWrapper>
     )
 }

@@ -25,10 +25,10 @@ const nextConfig: NextConfig = {
             },
         },
     },
-    // Disable caching in development
+    // Better HMR settings for development
     onDemandEntries: {
-        maxInactiveAge: 1,
-        pagesBufferLength: 1,
+        maxInactiveAge: 25 * 1000, // 25 seconds
+        pagesBufferLength: 5,
     },
     async headers() {
         const isDev = process.env.NODE_ENV === 'development'

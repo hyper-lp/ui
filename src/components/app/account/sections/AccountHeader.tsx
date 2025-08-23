@@ -64,7 +64,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
     }, [])
 
     return (
-        <div className="mb-4 flex flex-col gap-2 px-2 lg:px-4">
+        <div className="mb-4 flex flex-col gap-2 px-2 text-lg lg:px-4 lg:text-xl">
             {/* Title */}
             {DEMO_ACCOUNTS.find((a) => a.address.toLowerCase() === accountFromUrl.toLowerCase())?.hasLP === true ? (
                 <div className="flex w-full flex-wrap items-center gap-1">
@@ -383,8 +383,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     {numeral(allocation.longPercentage)
                                                                         .divide(100)
                                                                         .multiply(aprSources.longAPR24h)
-                                                                        .divide(100)
-                                                                        .format('+0,0%')}
+                                                                        .format('+0,0.0%')}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -402,8 +401,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                         {numeral(allocation.shortPercentage)
                                                                             .divide(100)
                                                                             .multiply(aprSources.fundingAPR24h)
-                                                                            .divide(100)
-                                                                            .format('+0,0%')}
+                                                                            .format('+0,0.0%')}
                                                                     </span>
                                                                 </div>
                                                             )}
@@ -450,8 +448,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     {numeral(allocation.longPercentage)
                                                                         .divide(100)
                                                                         .multiply(aprSources.longAPR7d)
-                                                                        .divide(100)
-                                                                        .format('+0,0%')}
+                                                                        .format('+0,0.0%')}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -469,8 +466,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                         {numeral(allocation.shortPercentage)
                                                                             .divide(100)
                                                                             .multiply(aprSources.fundingAPR7d)
-                                                                            .divide(100)
-                                                                            .format('+0,0%')}
+                                                                            .format('+0,0.0%')}
                                                                     </span>
                                                                 </div>
                                                             )}
@@ -517,8 +513,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     {numeral(allocation.longPercentage)
                                                                         .divide(100)
                                                                         .multiply(aprSources.longAPR30d)
-                                                                        .divide(100)
-                                                                        .format('+0,0%')}
+                                                                        .format('+0,0.0%')}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -536,8 +531,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                         {numeral(allocation.shortPercentage)
                                                                             .divide(100)
                                                                             .multiply(aprSources.fundingAPR30d)
-                                                                            .divide(100)
-                                                                            .format('+0,0%')}
+                                                                            .format('+0,0.0%')}
                                                                     </span>
                                                                 </div>
                                                             )}

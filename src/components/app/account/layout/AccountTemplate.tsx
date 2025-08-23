@@ -58,6 +58,7 @@ export default function AccountTemplate(props: {
                             height={28}
                             scaleByHeight
                             className="ml-4 rounded-none"
+                            priority
                         />
                         <div className="flex flex-col gap-2 p-2">
                             {/* Yield leg EVM Positions (LP + HyperDrive) */}

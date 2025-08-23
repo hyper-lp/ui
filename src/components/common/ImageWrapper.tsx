@@ -24,7 +24,8 @@ export function ImageWrapper({
     const [imgError, setImgError] = useState(false)
     if (!src || imgError) return <div className={cn('skeleton-loading', className)} style={{ width, height }} />
 
-    const imageStyle = scaleByHeight ? { height: height, width: 'auto' } : { width: 'auto', height: 'auto', maxWidth: width, maxHeight: height }
+    // Use proper aspect ratio preserving styles
+    const imageStyle = scaleByHeight ? { height: height, width: 'auto' } : { width: width, height: 'auto' }
 
     return (
         <Image
@@ -32,7 +33,7 @@ export function ImageWrapper({
             alt={alt}
             width={width}
             height={height}
-            className={cn('object-cover', className)}
+            className={cn('object-contain', className)}
             style={imageStyle}
             onError={() => setImgError(true)}
             priority={priority}

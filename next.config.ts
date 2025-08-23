@@ -94,10 +94,19 @@ const nextConfig: NextConfig = {
                             priority: 40,
                             enforce: true,
                         },
+                        // ECharts should be in its own chunk to avoid dynamic import issues
+                        echarts: {
+                            name: 'echarts',
+                            test: /[\\/]node_modules[\\/]echarts[\\/]/,
+                            chunks: 'all',
+                            priority: 35,
+                            enforce: true,
+                        },
                         lib: {
                             test(module: any) {
                                 return module.size() > 160000 &&
-                                    /node_modules[\\/]/.test(module.identifier())
+                                    /node_modules[\\/]/.test(module.identifier()) &&
+                                    !/echarts/.test(module.identifier())
                             },
                             name(module: any) {
                                 const hash = require('crypto').createHash('sha1')

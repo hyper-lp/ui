@@ -99,7 +99,7 @@ export default function AccountLongEVM() {
                     )}
                 </div>
             }
-            defaultExpanded={false}
+            defaultExpanded={true}
             headerRight={
                 <div className="flex items-center gap-6">
                     {hasAPRData && (

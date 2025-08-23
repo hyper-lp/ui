@@ -67,60 +67,62 @@ export default function Footer(props: { className?: string }) {
                 </StyledTooltip> */}
                 <div className="flex items-center gap-2">
                     <p className="cursor-alias truncate">Team</p>
-                    {[
-                        {
-                            id: FileIds.TEAM_MERSO,
-                            taikaiUrl: 'https://taikai.network/Merso',
-                            xUrl: 'https://x.com/0xMerso',
-                            name: 'Merso',
-                            description: 'Rust / Solidity',
-                            width: 24,
-                            height: 24,
-                            className: 'rounded-full border border-primary/50 shadow',
-                        },
-                        {
-                            id: FileIds.TEAM_KATALYSTER,
-                            taikaiUrl: 'https://taikai.network/Katalyster',
-                            xUrl: 'https://x.com/Katalyster',
-                            name: 'Katalyster',
-                            description: 'BD / Ops',
-                            width: 24,
-                            height: 24,
-                            className: '-ml-2 rounded-full border border-primary/50 shadow',
-                        },
-                        {
-                            id: FileIds.TEAM_ZARBOQ,
-                            taikaiUrl: 'https://taikai.network/zarboq',
-                            xUrl: 'https://x.com/zarboq',
-                            name: 'Zarboq',
-                            description: 'Rust / Solidity',
-                            width: 24,
-                            height: 24,
-                            className: '-ml-2 rounded-full border border-primary/50 shadow',
-                        },
-                        {
-                            id: FileIds.TEAM_FBERGER,
-                            taikaiUrl: 'https://taikai.network/fberger-xyz',
-                            xUrl: 'https://x.com/fberger_xyz',
-                            name: 'fberger',
-                            description: 'Fullstack dev',
-                            width: 24,
-                            height: 24,
-                            className: '-ml-2 rounded-full border border-primary/50 shadow',
-                        },
-                    ].map((item, index) => (
-                        <div key={`${item.id}-${index}`} className="flex items-center gap-2">
-                            <StyledTooltip content={item.taikaiUrl}>
-                                <LinkWrapper
-                                    href={item.taikaiUrl}
-                                    target="_blank"
-                                    className="flex cursor-alias items-center gap-2 transition-all duration-300 hover:scale-110"
-                                >
-                                    <FileMapper {...item} priority />
-                                </LinkWrapper>
-                            </StyledTooltip>
-                        </div>
-                    ))}
+                    <div className="flex items-center gap-0">
+                        {[
+                            {
+                                id: FileIds.TEAM_MERSO,
+                                taikaiUrl: 'https://taikai.network/Merso',
+                                xUrl: 'https://x.com/0xMerso',
+                                name: 'Merso',
+                                description: 'Rust / Solidity',
+                                width: 24,
+                                height: 24,
+                                className: 'size-6 rounded-full border border-primary/50 shadow',
+                            },
+                            {
+                                id: FileIds.TEAM_KATALYSTER,
+                                taikaiUrl: 'https://taikai.network/Katalyster',
+                                xUrl: 'https://x.com/Katalyster',
+                                name: 'Katalyster',
+                                description: 'BD / Ops',
+                                width: 24,
+                                height: 24,
+                                className: 'size-6 rounded-full border border-primary/50 shadow',
+                            },
+                            {
+                                id: FileIds.TEAM_ZARBOQ,
+                                taikaiUrl: 'https://taikai.network/zarboq',
+                                xUrl: 'https://x.com/zarboq',
+                                name: 'Zarboq',
+                                description: 'Rust / Solidity',
+                                width: 24,
+                                height: 24,
+                                className: 'size-6 rounded-full border border-primary/50 shadow',
+                            },
+                            {
+                                id: FileIds.TEAM_FBERGER,
+                                taikaiUrl: 'https://taikai.network/fberger-xyz',
+                                xUrl: 'https://x.com/fberger_xyz',
+                                name: 'fberger',
+                                description: 'Fullstack dev',
+                                width: 24,
+                                height: 24,
+                                className: 'size-6 rounded-full border border-primary/50 shadow',
+                            },
+                        ].map((item, index) => (
+                            <div key={`${item.id}-${index}`} className="flex items-center">
+                                <StyledTooltip content={item.taikaiUrl}>
+                                    <LinkWrapper
+                                        href={item.taikaiUrl}
+                                        target="_blank"
+                                        className="flex cursor-alias items-center gap-2 transition-all duration-300 hover:scale-110"
+                                    >
+                                        <FileMapper {...item} priority />
+                                    </LinkWrapper>
+                                </StyledTooltip>
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <LinkWrapper href={AppUrls.STATUS} target="_blank">
                     <p className="cursor-alias truncate hover:text-primary hover:underline">Status</p>

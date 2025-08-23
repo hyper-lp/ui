@@ -23,16 +23,16 @@ export default function UseCasesDropdown() {
     // Hardcoded use cases - you can modify these as needed
     const useCases: UseCase[] = [
         {
-            title: 'Delta-neutral LP on HyperSwap',
-            description: 'Earn LP fees + short funding',
-            banner: FileIds.BANNER_HYPERSWAP,
-            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[0].address}`,
-        },
-        {
             title: 'Delta-neutral LP on Project X',
             description: 'Earn LP fees + short funding',
             banner: FileIds.BANNER_PROJETX,
             url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[2].address}`,
+        },
+        {
+            title: 'Delta-neutral LP on HyperSwap',
+            description: 'Earn LP fees + short funding',
+            banner: FileIds.BANNER_HYPERSWAP,
+            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[0].address}`,
         },
         {
             title: 'Delta-neutral Lending on HyperDrive',

@@ -9,11 +9,11 @@ const HeatmapAprChart = dynamic(
     () =>
         import('@/components/charts/homepage/HeatmapAprChart').catch(() => {
             // Fallback if the module fails to load
-            return { default: () => <div className="h-[500px] animate-pulse rounded-xl bg-default/5">Chart unavailable</div> }
+            return { default: () => <div className="h-[460px] animate-pulse rounded-xl bg-default/5">Chart unavailable</div> }
         }),
     {
         ssr: false,
-        loading: () => <div className="h-[500px] animate-pulse rounded-xl bg-default/5" />,
+        loading: () => <div className="h-[460px] animate-pulse rounded-xl bg-default/5" />,
     },
 )
 

@@ -1332,7 +1332,7 @@ export default function DeltaTrackingChart() {
 
     if (!options) {
         return (
-            <div className="flex h-[400px] w-full flex-col gap-2 md:h-[480px]">
+            <div className="flex h-[400px] w-full flex-col gap-2 md:h-[460px]">
                 <div className="flex h-full w-full grow flex-col items-center justify-center">
                     <div className="text-default/50">Loading chart...</div>
                 </div>
@@ -1342,7 +1342,7 @@ export default function DeltaTrackingChart() {
     }
 
     return (
-        <div className="flex h-[400px] w-full flex-col gap-2 md:h-[480px]">
+        <div className="flex h-[400px] w-full flex-col gap-2 md:h-[460px]">
             <EchartWrapper options={options} className="h-full w-full" onLegendSelectChanged={handleLegendSelectChanged} />
             <Legends isLpAccount={true} onShowRebalances={handleShowRebalances} />
 

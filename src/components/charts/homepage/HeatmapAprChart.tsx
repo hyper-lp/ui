@@ -389,7 +389,7 @@ function HeatmapAprChart({ className, highlightedCell, showNegativeFunding = fal
             <div className={cn('relative mx-auto w-full', className)}>
                 <EchartWrapper
                     options={options}
-                    className="relative mx-auto h-full max-h-[300px] min-h-[450px] w-full min-w-[300px] max-w-[900px] md:max-h-[600px] md:min-h-[500px]"
+                    className="relative mx-auto h-full max-h-[300px] min-h-[450px] w-full min-w-[300px] max-w-[900px] md:max-h-[550px] md:min-h-[460px]"
                 />
             </div>
         </ErrorBoundary>

@@ -39,14 +39,14 @@ export default function AccountTemplate(props: {
     const { resolvedTheme } = useTheme()
 
     return (
-        <div className={cn('flex flex-col gap-4', props.className)}>
+        <div className={cn('flex flex-col gap-5', props.className)}>
             {/* --------------- Header */}
             {props.header}
 
             {/* --------------- Content */}
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-4">
                 {/* 1. historic of snapshots */}
-                <SectionCard className="h-[400px] flex-1 !p-1 md:h-[500px] md:!p-2">{props.charts}</SectionCard>
+                <SectionCard className="h-[400px] flex-1 !p-1 md:h-[460px] md:!p-2">{props.charts}</SectionCard>
 
                 {/* 2. last snapshot */}
                 <div className="3xl:w-[800px] flex h-min w-full flex-col gap-8 lg:w-[500px] xl:w-[600px] 2xl:w-[700px]">

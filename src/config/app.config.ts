@@ -64,7 +64,8 @@ export const APP_PAGES: InterfaceAppLink[] = [
 
 export const DEMO_ACCOUNTS = [
     {
-        address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
+        // address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
+        address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
         name: 'Alpha',
         description: 'Demo - Delta neutral LP on Hyperswap (actively rebalanced)',
         hasLP: true,
@@ -78,7 +79,8 @@ export const DEMO_ACCOUNTS = [
         hasHyperDrive: false,
     },
     {
-        address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
+        // address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
+        address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
         name: 'Charlie',
         description: 'Demo - Delta neutral LP on Project X (actively rebalanced)',
         hasLP: true,

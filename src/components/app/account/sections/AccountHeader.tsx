@@ -94,7 +94,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                 {/* Address */}
                 <div className="flex flex-col">
                     {/* row */}
-                    <div className="flex items-baseline gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm">
                         {/* Address Dropdown */}
                         <div className="relative" ref={dropdownRef}>
                             <button

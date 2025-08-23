@@ -155,6 +155,11 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                     {positions
                         // Filter based on showClosedPositions state
                         .filter((position) => showClosedPositions || !position.isClosed)
+                        .sort((a, b) => {
+                            if (a.isClosed && !b.isClosed) return 1
+                            if (!a.isClosed && b.isClosed) return -1
+                            return 0
+                        })
                         .map((position) => {
                             const isHypeToken0 = position.token0Symbol === 'HYPE' || position.token0Symbol === 'WHYPE'
                             const hypeAmount = isHypeToken0 ? position.token0Amount : position.token1Amount
@@ -626,7 +631,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                         onClick={handleShowRebalances}
                         className="flex items-center gap-1 text-xs text-default/40 transition-colors hover:text-primary"
                     >
-                        <p>Click to see rebalance txs</p>
+                        <p>Click to see rebalances</p>
                         <IconWrapper id={IconIds.LIST} className="size-3" />
                     </button>
                 </div>

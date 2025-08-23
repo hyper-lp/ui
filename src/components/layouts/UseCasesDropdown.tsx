@@ -32,7 +32,7 @@ export default function UseCasesDropdown() {
             title: 'Delta-neutral LP on HyperSwap',
             description: 'Earn LP fees + short funding',
             banner: FileIds.BANNER_HYPERSWAP,
-            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[0].address}`,
+            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[1].address}`,
         },
         {
             title: 'Delta-neutral Lending on HyperDrive',

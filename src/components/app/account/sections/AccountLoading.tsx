@@ -3,40 +3,55 @@
 import { CollapsibleCard } from '@/components/app/account/CollapsibleCard'
 import AccountTemplate from '@/components/app/account/layout/AccountTemplate'
 import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
+import { SectionCard } from '@/components/app/account/layout/Cards'
 
 export default function AccountLoading() {
     return (
         <AccountTemplate
             header={
-                <div className="flex flex-col gap-4 px-2 lg:flex-row lg:items-center lg:justify-between lg:px-4">
-                    {/* Address skeleton - mirrors the actual loaded header structure */}
-                    <div className="mb-1 flex flex-col">
-                        <div className="mb-10 flex items-center gap-1">
-                            <div className="h-5 w-60 animate-pulse rounded bg-default/20" />
-                            <div className="h-5 w-10 animate-pulse rounded bg-default/20" />
-                            <div className="h-5 w-48 animate-pulse rounded bg-default/20" />
-                        </div>
-                        <div className="flex items-baseline gap-2 text-sm">
-                            <div className="h-5 w-96 animate-pulse rounded bg-default/20" />
-                            <div className="h-5 w-14 animate-pulse rounded bg-default/20" />
-                            <div className="h-5 w-14 animate-pulse rounded bg-default/20" />
-                            <div className="h-5 w-14 animate-pulse rounded bg-default/20" />
-                        </div>
-                        <div className="mt-1 flex items-center gap-1.5 text-sm">
-                            <div className="h-5 w-48 animate-pulse rounded bg-default/20" />
-                        </div>
+                <div className="flex flex-col gap-2 text-lg lg:text-xl">
+                    {/* Title skeleton */}
+                    <div className="mb-2 flex w-full flex-wrap items-center gap-1">
+                        <div className="h-6 w-48 animate-pulse rounded bg-default/20" />
+                        <div className="h-6 w-24 animate-pulse rounded bg-default/20" />
+                        <div className="h-6 w-32 animate-pulse rounded bg-default/20" />
                     </div>
 
-                    {/* KPIs skeleton - matches the actual KPIs layout */}
-                    <div className="flex items-center gap-6">
-                        <div className="flex flex-col items-end">
-                            <div className="h-5 w-24 animate-pulse rounded bg-default/20" />
-                            <div className="mt-1 h-6 w-16 animate-pulse rounded bg-default/20" />
-                        </div>
-                        <div className="h-8 w-px border-l border-dashed border-default/20" />
-                        <div className="flex flex-col items-end">
-                            <div className="h-5 w-40 animate-pulse rounded bg-default/20" />
-                            <div className="mt-1 h-6 w-32 animate-pulse rounded bg-default/20" />
+                    {/* Summary skeleton */}
+                    <div className="flex flex-col gap-3 lg:w-full lg:flex-row lg:justify-between">
+                        {/* Address section */}
+                        <SectionCard padding="px-4 py-2" className="flex w-fit flex-col justify-around lg:grow">
+                            <div className="flex items-center gap-2 text-sm">
+                                <div className="h-5 w-60 animate-pulse rounded bg-default/20" />
+                                <div className="h-5 w-10 animate-pulse rounded bg-default/20" />
+                                <div className="h-5 w-10 animate-pulse rounded bg-default/20" />
+                                <div className="h-5 w-14 animate-pulse rounded bg-default/20" />
+                            </div>
+                            <div className="flex items-center gap-1.5 text-sm">
+                                <div className="h-4 w-4 animate-pulse rounded bg-default/20" />
+                                <div className="h-4 w-48 animate-pulse rounded bg-default/20" />
+                            </div>
+                        </SectionCard>
+
+                        {/* Global KPIs */}
+                        <div className="flex w-full items-center gap-3 lg:w-max">
+                            {/* HyperLP balance */}
+                            <SectionCard padding="px-4 py-2" className="flex flex-col items-center lg:items-end">
+                                <div className="h-5 w-24 animate-pulse rounded bg-default/20" />
+                                <div className="mt-1 h-6 w-20 animate-pulse rounded bg-default/20" />
+                            </SectionCard>
+
+                            {/* Net P&L */}
+                            <SectionCard padding="px-4 py-2" className="hidden flex-col items-center md:flex lg:items-end">
+                                <div className="h-5 w-16 animate-pulse rounded bg-default/20" />
+                                <div className="mt-1 h-6 w-24 animate-pulse rounded bg-default/20" />
+                            </SectionCard>
+
+                            {/* Estimated Gross APR */}
+                            <SectionCard padding="px-4 py-2" className="flex flex-col items-center lg:items-end">
+                                <div className="h-5 w-32 animate-pulse rounded bg-default/20" />
+                                <div className="mt-1 h-6 w-28 animate-pulse rounded bg-default/20" />
+                            </SectionCard>
                         </div>
                     </div>
                 </div>

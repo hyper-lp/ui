@@ -100,16 +100,16 @@ export default function UseCasesDropdown() {
                                     >
                                         {/* Overlay with forced GPU acceleration */}
                                         <div
-                                            className="absolute inset-0 overflow-hidden rounded-xl bg-gradient-to-b from-background/20 to-background/30"
+                                            className="absolute inset-0 overflow-hidden rounded-xl bg-gradient-to-b from-background/50 to-background/40 dark:from-background/20 dark:to-background/30"
                                             style={{
-                                                backdropFilter: 'blur(2px) saturate(150%)',
-                                                WebkitBackdropFilter: 'blur(2px) saturate(150%)',
+                                                backdropFilter: 'blur(1px) saturate(200%)',
+                                                WebkitBackdropFilter: 'blur(1px) saturate(200%)',
                                                 transform: 'translateZ(0)',
                                                 willChange: 'transform',
                                             }}
                                         />
                                         <div className="relative z-10 flex h-full w-full flex-col items-start gap-1 p-3">
-                                            <div className="flex items-center gap-2 rounded bg-background pl-1.5 pr-1">
+                                            <div className="flex items-center gap-2 rounded bg-background/90 pl-1.5 pr-1 backdrop-blur-sm">
                                                 <h3 className="text-xl font-medium text-primary drop-shadow-sm transition-colors">{useCase.title}</h3>
                                                 <FileMapper
                                                     id={
@@ -122,7 +122,7 @@ export default function UseCasesDropdown() {
                                                     className="size-4 rounded"
                                                 />
                                             </div>
-                                            <p className={cn('mt-0.5 rounded bg-background px-1.5 text-base drop-shadow-sm')}>
+                                            <p className={cn('mt-0.5 rounded bg-background/90 px-1.5 text-base drop-shadow-sm backdrop-blur-sm')}>
                                                 {useCase.description}
                                             </p>
                                         </div>

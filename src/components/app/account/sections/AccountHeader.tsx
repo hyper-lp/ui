@@ -383,6 +383,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     {numeral(allocation.longPercentage)
                                                                         .divide(100)
                                                                         .multiply(aprSources.longAPR24h)
+                                                                        .divide(100)
                                                                         .format('+0,0.0%')}
                                                                 </span>
                                                             </div>
@@ -401,6 +402,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                         {numeral(allocation.shortPercentage)
                                                                             .divide(100)
                                                                             .multiply(aprSources.fundingAPR24h)
+                                                                            .divide(100)
                                                                             .format('+0,0.0%')}
                                                                     </span>
                                                                 </div>
@@ -448,6 +450,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     {numeral(allocation.longPercentage)
                                                                         .divide(100)
                                                                         .multiply(aprSources.longAPR7d)
+                                                                        .divide(100)
                                                                         .format('+0,0.0%')}
                                                                 </span>
                                                             </div>
@@ -466,6 +469,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                         {numeral(allocation.shortPercentage)
                                                                             .divide(100)
                                                                             .multiply(aprSources.fundingAPR7d)
+                                                                            .divide(100)
                                                                             .format('+0,0.0%')}
                                                                     </span>
                                                                 </div>
@@ -513,6 +517,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                     {numeral(allocation.longPercentage)
                                                                         .divide(100)
                                                                         .multiply(aprSources.longAPR30d)
+                                                                        .divide(100)
                                                                         .format('+0,0.0%')}
                                                                 </span>
                                                             </div>
@@ -531,6 +536,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                                                         {numeral(allocation.shortPercentage)
                                                                             .divide(100)
                                                                             .multiply(aprSources.fundingAPR30d)
+                                                                            .divide(100)
                                                                             .format('+0,0.0%')}
                                                                     </span>
                                                                 </div>

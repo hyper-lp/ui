@@ -1,4 +1,4 @@
-import { AppUrls } from '@/enums'
+import { AppDemoAccountAddresses, AppUrls } from '@/enums'
 import { env } from '@/env/t3-env'
 import { InterfaceAppLink } from '@/interfaces'
 
@@ -62,35 +62,47 @@ export const APP_PAGES: InterfaceAppLink[] = [
  * DEMO ACCOUNTS
  */
 
-export const DEMO_ACCOUNTS = [
+export const DEMO_ACCOUNTS: Record<
+    AppDemoAccountAddresses,
     {
-        // address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
+        id: AppDemoAccountAddresses
+        address: string
+        name: string
+        description: string
+        hasLP: boolean
+        hasHyperDrive: boolean
+    }
+> = {
+    [AppDemoAccountAddresses.HYPERSWAP_1_2]: {
+        id: AppDemoAccountAddresses.HYPERSWAP_1_2,
         address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
-        name: 'Alpha',
+        name: 'HyperSwap 1/2',
         description: 'Demo - Delta neutral LP on Hyperswap (actively rebalanced)',
         hasLP: true,
         hasHyperDrive: false,
     },
-    {
+    [AppDemoAccountAddresses.HYPERSWAP_2_2]: {
+        id: AppDemoAccountAddresses.HYPERSWAP_2_2,
         address: '0x8466D5b78CaFc01fC1264D2D724751b70211D979',
-        name: 'Bravo',
+        name: 'HyperSwap 2/2',
         description: 'Demo - Delta neutral LP on Hyperswap (actively rebalanced)',
         hasLP: true,
         hasHyperDrive: false,
     },
-    {
-        // address: '0x3cEe139542222D0d15BdCB8fd519B2615662B1E3',
+    [AppDemoAccountAddresses.PROJECT_X]: {
+        id: AppDemoAccountAddresses.PROJECT_X,
         address: '0x10B4F7e91f045363714015374D2d9Ff58Fda3186',
-        name: 'Charlie',
+        name: 'Project X',
         description: 'Demo - Delta neutral LP on Project X (actively rebalanced)',
         hasLP: true,
         hasHyperDrive: false,
     },
-    {
+    [AppDemoAccountAddresses.HYPERDRIVE]: {
+        id: AppDemoAccountAddresses.HYPERDRIVE,
         address: '0x15bB17E4D2F7ACcca7c9610133c27e9eAB9EC815',
-        name: 'Gamma',
+        name: 'HyperDrive',
         description: 'Demo - Delta neutral lending of HYPE on Hyperdrive',
         hasLP: false,
         hasHyperDrive: true,
     },
-]
+} as const

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AppUrls, FileIds, IconIds } from '@/enums'
+import { AppDemoAccountAddresses, AppUrls, FileIds, IconIds } from '@/enums'
 import IconWrapper from '../icons/IconWrapper'
 import { cn } from '@/utils'
 import LinkWrapper from '../common/LinkWrapper'
@@ -26,19 +26,19 @@ export default function UseCasesDropdown() {
             title: 'Delta-neutral LP on Project X',
             description: 'Earn LP fees + short funding',
             banner: FileIds.BANNER_PROJETX,
-            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[2].address}`,
+            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[AppDemoAccountAddresses.PROJECT_X].address}`,
         },
         {
             title: 'Delta-neutral LP on HyperSwap',
             description: 'Earn LP fees + short funding',
             banner: FileIds.BANNER_HYPERSWAP,
-            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[1].address}`,
+            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[AppDemoAccountAddresses.HYPERSWAP_2_2].address}`,
         },
         {
             title: 'Delta-neutral Lending on HyperDrive',
             description: 'Earn interests + short funding',
             banner: FileIds.BANNER_HYPERDRIVE,
-            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[3].address}`,
+            url: `${SITE_DOMAIN}/${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[AppDemoAccountAddresses.HYPERDRIVE].address}`,
         },
     ]
 
@@ -64,11 +64,12 @@ export default function UseCasesDropdown() {
                 <div className="absolute inset-0 animate-[gradient-shift_3s_ease-in-out_infinite] bg-gradient-to-r from-purple-600/40 via-blue-600/40 to-primary/50 bg-[length:200%_200%] dark:from-primary/60 dark:via-purple-500/30 dark:to-blue-500/40" />
                 <button
                     className={cn(
-                        'group relative z-10 flex items-center gap-2 rounded-xl bg-background px-3 py-1.5 text-sm font-medium text-primary transition-all duration-300 hover:text-white',
+                        'group relative z-10 flex items-center gap-2 rounded-xl bg-background/90 px-3 py-1.5 text-sm font-medium text-primary transition-all duration-300 hover:text-white',
                         isDropdownOpen && 'bg-default/5 text-white',
                     )}
                 >
-                    <span className="cursor-help text-lg font-semibold">Explore our strategies</span>
+                    <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4" />
+                    <span className="cursor-help text-base font-semibold">Explore our strategies</span>
                     <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }} transition={{ duration: 0.15, ease: 'easeInOut' }}>
                         <IconWrapper id={IconIds.CHEVRON_DOWN} className="size-4" />
                     </motion.div>

@@ -7,7 +7,7 @@ import { calculateSpotDelta, calculatePerpDelta, calculateWalletDelta } from '@/
 import { MemoryCache, createCachedResponse } from '@/utils/cache.util'
 import { PositionAggregator } from '@/utils/position-aggregator.util'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
-import { SCHEMA_VERSION } from '@/constants/schema.constants'
+import { SCHEMA_VERSION } from '@/config/constants.config'
 import { processAllPositions } from '@/services/position-processors/base.processor'
 import { POSITION_CONFIGS } from '@/config/position-types.config'
 import { AppUrls } from '@/enums/app.enum'

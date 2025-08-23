@@ -14,6 +14,7 @@ import numeral from 'numeral'
 import type { AccountSnapshotMetrics, AccountSnapshot } from '@/interfaces/account.interface'
 import { DEMO_ACCOUNTS } from '@/config/app.config'
 import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
+import { SectionCard } from '../layout/Cards'
 
 interface AccountHeaderProps {
     accountFromUrl: string
@@ -64,10 +65,10 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
     }, [])
 
     return (
-        <div className="mb-4 flex flex-col gap-2 px-2 text-lg lg:px-4 lg:text-xl">
+        <div className="flex flex-col gap-2 text-lg lg:text-xl">
             {/* Title */}
-            {DEMO_ACCOUNTS.find((a) => a.address.toLowerCase() === accountFromUrl.toLowerCase())?.hasLP === true ? (
-                <div className="flex w-full flex-wrap items-center gap-1">
+            {Object.values(DEMO_ACCOUNTS).find((a) => a.address.toLowerCase() === accountFromUrl.toLowerCase())?.hasLP === true ? (
+                <div className="mb-2 flex w-full flex-wrap items-center gap-1">
                     <p className="text-wrap text-default">Below is an example of a delta neutral</p>
                     {/* <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4 text-default" /> */}
                     <p className="text-wrap text-hyper-evm-lps">HYPE/USD₮0</p>
@@ -77,8 +78,8 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     <p className="text-wrap text-default">with a</p>
                     <p className="text-wrap text-hyper-core-perps">dynamic short leg</p>
                 </div>
-            ) : DEMO_ACCOUNTS.find((a) => a.address.toLowerCase() === accountFromUrl.toLowerCase())?.hasHyperDrive === true ? (
-                <div className="flex w-full flex-wrap items-center gap-1">
+            ) : Object.values(DEMO_ACCOUNTS).find((a) => a.address.toLowerCase() === accountFromUrl.toLowerCase())?.hasHyperDrive === true ? (
+                <div className="mb-2 flex w-full flex-wrap items-center gap-1">
                     <p className="text-wrap text-default">Below is an example of a delta neutral</p>
                     <p className="text-wrap text-hyper-evm-lps">lending of HYPE</p>
                     <FileMapper id={FileIds.TOKEN_HYPE} width={20} height={20} className="z-10 rounded-full" />
@@ -90,9 +91,9 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
             ) : null}
 
             {/* Summary */}
-            <div className="flex w-full flex-col gap-6 lg:flex-row lg:justify-between">
+            <div className="flex flex-col gap-3 lg:w-full lg:flex-row lg:justify-between">
                 {/* Address */}
-                <div className="flex flex-col">
+                <SectionCard padding="px-3 py-2" className="flex w-fit flex-col justify-around lg:grow">
                     {/* row */}
                     <div className="flex items-center gap-2 text-sm">
                         {/* Address Dropdown */}
@@ -105,13 +106,14 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                     id={IconIds.CHEVRON_DOWN}
                                     className={cn('size-4 text-default/50 transition-transform', isDropdownOpen && 'rotate-180')}
                                 />
-                                <span className="hidden xl:flex">{accountFromUrl}</span>
-                                <span className="flex xl:hidden">{shortenValue(accountFromUrl, 6)}</span>
+                                <span className="hidden 2xl:flex">Vault = {accountFromUrl}</span>
+                                <span className="hidden md:flex 2xl:hidden">Vault = {shortenValue(accountFromUrl, 8)}</span>
+                                <span className="flex md:hidden">{shortenValue(accountFromUrl, 4)}</span>
                             </button>
 
                             {isDropdownOpen && (
                                 <div className="absolute left-0 top-full z-50 mt-2 min-w-[400px] rounded-lg border border-default/20 bg-background shadow-lg">
-                                    {DEMO_ACCOUNTS.map((account) => (
+                                    {Object.values(DEMO_ACCOUNTS).map((account) => (
                                         <LinkWrapper
                                             key={account.address}
                                             href={`/account/${account.address}`}
@@ -120,11 +122,13 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                         >
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={cn('font-semibold', account.address === accountFromUrl && 'text-primary')}>
+                                                    <span
+                                                        className={cn('truncate font-semibold', account.address === accountFromUrl && 'text-primary')}
+                                                    >
                                                         {account.name}
                                                     </span>
                                                     <span className="text-default/50">•</span>
-                                                    <span className="text-default/50">{account.description}</span>
+                                                    <span className="truncate text-default/50">{account.description}</span>
                                                 </div>
                                                 <p className="mt-1 font-mono text-sm text-default/70">{account.address}</p>
                                             </div>
@@ -212,12 +216,14 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                             </>
                         )}
                     </div>
-                </div>
+                </SectionCard>
 
                 {/* Global KPIs */}
-                <div className="flex items-center gap-3 md:gap-5">
+                {/* <div className="flex items-center gap-3 md:gap-5"> */}
+                <div className="flex w-full items-center gap-3 lg:w-max">
                     {/* HyperLP balance */}
-                    <div className="flex flex-col items-center lg:items-end">
+                    {/* <div className="flex flex-col items-center lg:items-end"> */}
+                    <SectionCard className="flex flex-col items-center lg:items-end">
                         <span className="text-base tracking-wider text-default/50">HyperLP balance</span>
                         <StyledTooltip
                             content={
@@ -283,13 +289,12 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         >
                             <span className="cursor-help text-xl font-semibold">{formatUSD(metrics?.portfolio?.totalValueUSD || 0)}</span>
                         </StyledTooltip>
-                    </div>
+                    </SectionCard>
 
                     {/* Net P&L */}
-                    <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" />
-                    <div className="hidden flex-col items-center md:flex lg:items-end">
+                    {/* <div className="hidden h-10 border-l border-dashed border-default/20 md:flex" /> */}
+                    <SectionCard className="hidden flex-col items-center md:flex lg:items-end">
                         <span className="text-base tracking-wider text-default/50">Net P&L</span>
-
                         <StyledTooltip
                             content={
                                 <div className="flex max-w-[380px] flex-col gap-2">
@@ -321,12 +326,13 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                         >
                             <span className="cursor-help text-lg font-semibold text-default/30 hover:text-primary hover:underline">Coming soon</span>
                         </StyledTooltip>
-                    </div>
+                    </SectionCard>
 
                     {aprRange !== null && (
                         <>
-                            <div className="h-10 border-l border-dashed border-default/20" />
-                            <div className="flex flex-col items-center lg:items-end">
+                            {/* <div className="h-10 border-l border-dashed border-default/20" /> */}
+                            {/* <div className="flex flex-col items-center lg:items-end"> */}
+                            <SectionCard className="flex flex-col items-center lg:items-end">
                                 <span className="text-base tracking-wider text-default/50">Estimated Gross APR</span>
                                 <StyledTooltip
                                     content={
@@ -578,7 +584,7 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                         )}
                                     </p>
                                 </StyledTooltip>
-                            </div>
+                            </SectionCard>
                         </>
                     )}
                 </div>

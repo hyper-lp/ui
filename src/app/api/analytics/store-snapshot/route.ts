@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMonitoringPool } from '@/lib/database-pools'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
-import { SCHEMA_VERSION } from '@/constants/schema.constants'
+import { SCHEMA_VERSION } from '@/config/constants.config'
 
 export async function POST(request: NextRequest) {
     const pool = getMonitoringPool()

@@ -1,5 +1,6 @@
 /**
  * Application constants and default values
+ * SINGLE SOURCE OF TRUTH for all constants - DO NOT CREATE SEPARATE CONSTANT FILES
  */
 
 // Transaction Configuration
@@ -89,3 +90,77 @@ export const PLATFORM_NAMES = {
     HYPER_EVM: 'HyperEVM',
     HYPER_CORE: 'HyperCore',
 } as const
+
+// ============================================
+// UI CONSTANTS (from ui.constants.ts)
+// ============================================
+
+// Table styling
+export const TABLE_HEADER_CLASSES = 'sticky top-0 z-10 h-10 border-b border-default/10 bg-default/5 backdrop-blur'
+
+// Modal animations (consistent across all modals)
+export const MODAL_ANIMATION_CONFIG = {
+    backdrop: {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.3 },
+    },
+    content: {
+        initial: { opacity: 0, scale: 0.95, y: 20 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.95, y: 20 },
+        transition: {
+            duration: 0.3,
+            ease: [0.4, 0, 0.2, 1],
+        },
+    },
+}
+
+// Common modal styling
+export const MODAL_BACKDROP_CLASSES = 'fixed inset-0 z-50 bg-default/40 backdrop-blur-sm'
+export const MODAL_CONTAINER_CLASSES = 'fixed inset-0 z-50 flex items-center justify-center p-4'
+export const MODAL_CONTENT_CLASSES =
+    'relative flex max-h-[95vh] w-full flex-col overflow-hidden rounded-2xl border border-default/10 bg-background shadow-2xl'
+export const MODAL_HEADER_CLASSES = 'flex items-center justify-between border-b border-default/10 px-6 py-4'
+export const MODAL_CLOSE_BUTTON_CLASSES = 'rounded-lg p-2 text-default/50 transition-colors hover:bg-default/10 hover:text-default'
+
+// Row styling
+export const TABLE_ROW_HOVER_CLASSES = 'py-3 transition-colors hover:bg-default/5'
+
+// ============================================
+// SCHEMA CONSTANTS (from schema.constants.ts)
+// ============================================
+
+export const SCHEMA_VERSION = {
+    CURRENT: '1.0.0',
+    VERSIONS: {
+        '1.0.0': {
+            date: '2025-01-17',
+            description: 'Initial schema with complete account snapshot structure',
+            changes: [
+                'Added positions (hyperEvm.lps, hyperEvm.balances, hyperCore.perps, hyperCore.spots)',
+                'Added metrics (values, deltas, APRs)',
+                'Added deployedAUM tracking',
+                'Added unclaimed fees tracking',
+                'Added market data and prices',
+                'Added performance timings',
+            ],
+        },
+    },
+} as const
+
+/**
+ * Check if a schema version is compatible with the current version
+ */
+export function isSchemaVersionCompatible(version: string): boolean {
+    return version === SCHEMA_VERSION.CURRENT
+}
+
+/**
+ * Get the major version number from a semantic version string
+ */
+export function getMajorVersion(version: string): number {
+    const [major] = version.split('.')
+    return parseInt(major, 10)
+}

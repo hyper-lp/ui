@@ -6,6 +6,7 @@ import { APP_METADATA, IS_DEV } from '@/config/app.config'
 import { env } from '@/env/t3-env'
 import type { AccountSnapshot } from '@/interfaces/account.interface'
 import type { RebalanceEvent } from '@/interfaces/rebalance.interface'
+import type { HyperCoreTransaction } from '@/services/explorers/hypercore.service'
 import { isValidSnapshot, sanitizeSnapshot } from '@/utils/snapshot-validator.util'
 
 interface AppStore {
@@ -39,6 +40,8 @@ interface AppStore {
     // Rebalance events
     rebalanceEvents: RebalanceEvent[]
     setRebalanceEvents: (events: RebalanceEvent[]) => void
+    hypercoreTrades: HyperCoreTransaction[]
+    setHypercoreTrades: (trades: HyperCoreTransaction[]) => void
 
     // Account actions
     addSnapshot: (snapshot: AccountSnapshot) => void
@@ -94,6 +97,8 @@ export const useAppStore = create<AppStore>()(
             // Rebalance events
             rebalanceEvents: [],
             setRebalanceEvents: (events) => set({ rebalanceEvents: events }),
+            hypercoreTrades: [],
+            setHypercoreTrades: (trades) => set({ hypercoreTrades: trades }),
 
             // Account actions
             addSnapshot: (snapshot: AccountSnapshot) =>

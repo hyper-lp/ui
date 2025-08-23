@@ -4,7 +4,7 @@ import { getDexProtocols } from '@/config/hyperevm-protocols.config'
 import { getPoolAddress, fetchPoolState } from '@/services/core/uniswap-pool.service'
 import { getTokenPrice } from '@/services/core/token-prices.service'
 import type { Address } from 'viem'
-import { ERC20_ABI } from '@/services/constants/abis'
+import { ERC20_ABI } from '@/contracts/uniswap-v3-abis'
 import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 
 // Token addresses on HyperEVM

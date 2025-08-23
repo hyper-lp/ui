@@ -14,10 +14,20 @@ import { isValidSnapshot, sanitizeSnapshot } from '@/utils/snapshot-validator.ut
  */
 export function useAccountData(address: string) {
     const queryClient = useQueryClient()
-    const { addSnapshot, setCurrentAddress, setFetchingAccount, setAccountError, isFetchingAccount, accountError, setSnapshots, setRebalanceEvents } =
-        useAppStore()
+    const {
+        addSnapshot,
+        setCurrentAddress,
+        setFetchingAccount,
+        setAccountError,
+        isFetchingAccount,
+        accountError,
+        setSnapshots,
+        setRebalanceEvents,
+        setHypercoreTrades,
+    } = useAppStore()
     const rebalanceIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const historicalIntervalRef = useRef<NodeJS.Timeout | null>(null)
+    const tradesIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     // Function to fetch rebalance events
     const fetchRebalances = useCallback(() => {
@@ -32,6 +42,20 @@ export function useAccountData(address: string) {
             })
             .catch((err) => console.error('Failed to fetch rebalance events:', err))
     }, [address, setRebalanceEvents])
+
+    // Function to fetch HyperCore trades
+    const fetchHypercoreTrades = useCallback(() => {
+        if (!address) return
+
+        fetch(`/api/trades/${address}?limit=100`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success && data.transactions) {
+                    setHypercoreTrades(data.transactions)
+                }
+            })
+            .catch((err) => console.error('Failed to fetch HyperCore trades:', err))
+    }, [address, setHypercoreTrades])
 
     // Function to fetch historical snapshots
     const fetchHistoricalSnapshots = useCallback(() => {
@@ -65,9 +89,15 @@ export function useAccountData(address: string) {
             // Fetch rebalance events immediately
             fetchRebalances()
 
+            // Fetch HyperCore trades immediately
+            fetchHypercoreTrades()
+
             // Set up interval to fetch rebalances every 10 seconds
             const rebalanceIntervalMs = TIME_INTERVALS.SECONDS_10
             rebalanceIntervalRef.current = setInterval(fetchRebalances, rebalanceIntervalMs)
+
+            // Set up interval to fetch trades every 10 seconds
+            tradesIntervalRef.current = setInterval(fetchHypercoreTrades, rebalanceIntervalMs)
 
             // Set up interval to refresh historical snapshots periodically
             const historicalIntervalMs = REFRESH_INTERVALS.HISTORICAL_DATA
@@ -79,6 +109,10 @@ export function useAccountData(address: string) {
                 clearInterval(rebalanceIntervalRef.current)
                 rebalanceIntervalRef.current = null
             }
+            if (tradesIntervalRef.current) {
+                clearInterval(tradesIntervalRef.current)
+                tradesIntervalRef.current = null
+            }
             if (historicalIntervalRef.current) {
                 clearInterval(historicalIntervalRef.current)
                 historicalIntervalRef.current = null
@@ -87,8 +121,18 @@ export function useAccountData(address: string) {
             setCurrentAddress(null)
             setAccountError(null)
             setRebalanceEvents([])
+            setHypercoreTrades([])
         }
-    }, [address, setCurrentAddress, setAccountError, fetchHistoricalSnapshots, fetchRebalances, setRebalanceEvents])
+    }, [
+        address,
+        setCurrentAddress,
+        setAccountError,
+        fetchHistoricalSnapshots,
+        fetchRebalances,
+        setRebalanceEvents,
+        fetchHypercoreTrades,
+        setHypercoreTrades,
+    ])
 
     // Main data query - only for fetching fresh data
     const {

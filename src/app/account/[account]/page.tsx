@@ -7,7 +7,7 @@ export async function generateMetadata({ params }: { params: Promise<{ account: 
     const { account } = await params
 
     // Find the account name from the address
-    const accountInfo = DEMO_ACCOUNTS.find((acc) => acc.address.toLowerCase() === account.toLowerCase())
+    const accountInfo = Object.values(DEMO_ACCOUNTS).find((acc) => acc.address.toLowerCase() === account.toLowerCase())
 
     const accountName = accountInfo?.name || 'HyperLP Account'
 

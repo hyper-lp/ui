@@ -98,7 +98,7 @@ export function LPPositionsTableHeader() {
                     Position ID
                 </span>
             }
-            className="h-8 border-b border-default/10 text-xs text-default/50"
+            className="sticky top-0 h-8 border-b border-default/10 text-xs text-default/50"
         />
     )
 }
@@ -149,7 +149,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
     return (
         <div role="table" className={cn('overflow-x-auto', className)}>
-            <div className="min-w-max">
+            <div className="max-h-[300px] min-w-max overflow-y-auto">
                 <LPPositionsTableHeader />
                 <div role="rowgroup" className="divide-y divide-default/5">
                     {positions

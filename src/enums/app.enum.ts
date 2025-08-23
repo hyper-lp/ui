@@ -55,5 +55,9 @@ export enum ProtocolType {
     HYPERDRIVE = 'hyperdrive',
 }
 
-// Backwards compatibility
-export const DexProtocol = ProtocolType
+export enum AppDemoAccountAddresses {
+    HYPERSWAP_1_2 = 'Hyperswap-1/2',
+    HYPERSWAP_2_2 = 'Hyperswap-2/2',
+    PROJECT_X = 'Project-X',
+    HYPERDRIVE = 'HyperDrive',
+}

@@ -204,12 +204,14 @@ export default function RebalanceModal({ isOpen, onClose, vaultAddress }: Rebala
                                                                                 {idx + 1}. {tx.action_name}{' '}
                                                                                 {tx.swap_method ? (
                                                                                     tx.swap_method.toLowerCase().includes('liquidlabs') ? (
-                                                                                        <FileMapper
-                                                                                            id={FileIds.SWAP_LIQUIDSWAP}
-                                                                                            width={100}
-                                                                                            height={26}
-                                                                                            className="rounded"
-                                                                                        />
+                                                                                        <LinkWrapper href="https://liqd.ag/" target="_blank">
+                                                                                            <FileMapper
+                                                                                                id={FileIds.SWAP_LIQUIDSWAP}
+                                                                                                width={100}
+                                                                                                height={26}
+                                                                                                className="rounded"
+                                                                                            />
+                                                                                        </LinkWrapper>
                                                                                     ) : (
                                                                                         `> ${tx.swap_method}`
                                                                                     )

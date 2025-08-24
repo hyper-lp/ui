@@ -33,7 +33,7 @@ const Legends = ({ isLpAccount, onShowRebalances }: { isLpAccount?: boolean; onS
         </div>
     )
 }
-const DEFAULT_VISIBLE_POINTS = 50 // Number of points to show by default in dataZoom
+const DEFAULT_VISIBLE_POINTS = 30 // Number of points to show by default in dataZoom
 
 const grid = {
     top: 70,

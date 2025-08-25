@@ -81,7 +81,7 @@ export default function DeltaTrackingChart() {
         [ChartSeries.hyperLpBalance]: false,
         [ChartSeries.DeployedAUM]: false,
         [ChartSeries.LongEVM]: true,
-        [ChartSeries.HyperEvmBalances]: false,
+        [ChartSeries.HyperEvmBalances]: true,
         [ChartSeries.HyperCorePerps]: true,
         [ChartSeries.HyperCoreSpots]: false,
         [ChartSeries.StrategyDelta]: true,

@@ -77,7 +77,7 @@ export default function DeltaTrackingChart() {
     const colors = getThemeColors(resolvedTheme)
 
     // Store legend selection state to persist between refreshes - initialize with defaults
-    const legendSelectionRef = useRef<Record<string, boolean>>({
+    const [legendSelection, setLegendSelection] = useState<Record<string, boolean>>({
         [ChartSeries.hyperLpBalance]: false,
         [ChartSeries.DeployedAUM]: false,
         [ChartSeries.LongEVM]: true,
@@ -280,7 +280,7 @@ export default function DeltaTrackingChart() {
 
     // Handle legend selection changes
     const handleLegendSelectChanged = useCallback((selected: Record<string, boolean>) => {
-        legendSelectionRef.current = selected
+        setLegendSelection(selected)
     }, [])
 
     // Handle reset/restore from toolbox - let the chart handle this internally
@@ -431,6 +431,7 @@ export default function DeltaTrackingChart() {
                 netDeltasUSD.push([timestamp, netUSD])
                 // strategyDeltasUSD.push([timestamp, strategyUSD])
                 strategyDeltasUSD.push([timestamp, lpUSD + perpUSD])
+                // strategyDeltasUSD.push([timestamp, lpUSD + perpUSD + balancesUSD])
                 totalCapitalUSD.push([timestamp, totalUSD])
                 deployedAUM.push([timestamp, deployedUSD])
             })
@@ -672,7 +673,7 @@ export default function DeltaTrackingChart() {
                         // },
                     ],
                     top: 10,
-                    selected: legendSelectionRef.current,
+                    selected: legendSelection,
                     icon: 'roundRect',
                     itemWidth: 14,
                     itemHeight: 8,
@@ -1328,7 +1329,7 @@ export default function DeltaTrackingChart() {
             setOptions(createLoadingOptions())
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debouncedUpdate, isInitialLoad, resolvedTheme])
+    }, [debouncedUpdate, isInitialLoad, resolvedTheme, legendSelection])
 
     if (!options) {
         return (

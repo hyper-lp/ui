@@ -2,45 +2,16 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AppDemoAccountAddresses, AppUrls, FileIds, IconIds } from '@/enums'
+import { FileIds, IconIds } from '@/enums'
 import IconWrapper from '../icons/IconWrapper'
 import { cn } from '@/utils'
 import LinkWrapper from '../common/LinkWrapper'
-import { DEMO_ACCOUNTS, SITE_DOMAIN } from '@/config'
+import { USE_CASES } from '@/config'
 import FileMapper from '../common/FileMapper'
-
-interface UseCase {
-    title: string
-    description: string
-    banner: FileIds
-    url: string
-}
 
 export default function UseCasesDropdown() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-    // Hardcoded use cases - you can modify these as needed
-    const useCases: UseCase[] = [
-        {
-            title: 'Delta-neutral LP on Project X',
-            description: 'Earn LP fees + short funding',
-            banner: FileIds.BANNER_PROJETX,
-            url: `${SITE_DOMAIN}${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[AppDemoAccountAddresses.PROJECT_X].address}`,
-        },
-        {
-            title: 'Delta-neutral Lending on HyperDrive',
-            description: 'Earn interests + short funding',
-            banner: FileIds.BANNER_HYPERDRIVE,
-            url: `${SITE_DOMAIN}${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[AppDemoAccountAddresses.HYPERDRIVE].address}`,
-        },
-        {
-            title: 'Delta-neutral LP on HyperSwap',
-            description: 'Earn LP fees + short funding',
-            banner: FileIds.BANNER_HYPERSWAP,
-            url: `${SITE_DOMAIN}${AppUrls.ACCOUNT}/${DEMO_ACCOUNTS[AppDemoAccountAddresses.HYPERSWAP_2_2].address}`,
-        },
-    ]
 
     const handleMouseEnter = () => {
         // Clear any existing timeout when entering
@@ -69,7 +40,7 @@ export default function UseCasesDropdown() {
                     )}
                 >
                     <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4" />
-                    <span className="cursor-help text-base font-semibold">Explore our strategies</span>
+                    <p className="cursor-help text-base font-semibold">Explore our strategies</p>
                     <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }} transition={{ duration: 0.15, ease: 'easeInOut' }}>
                         <IconWrapper id={IconIds.CHEVRON_DOWN} className="size-4" />
                     </motion.div>
@@ -91,7 +62,7 @@ export default function UseCasesDropdown() {
                         }}
                     >
                         <div className="flex flex-col gap-2 overflow-hidden rounded-xl p-2">
-                            {useCases.map((useCase) => (
+                            {USE_CASES.map((useCase) => (
                                 <LinkWrapper key={useCase.title} href={useCase.url} target="_blank">
                                     <div
                                         className="group relative h-40 w-full overflow-hidden rounded-xl py-1 transition-all hover:shadow-md"

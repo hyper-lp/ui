@@ -114,7 +114,7 @@ export default function AccountLongEVM() {
                                                 <span className="text-sm font-medium opacity-60">24h avg</span>
                                                 <span className="text-sm font-medium text-success">
                                                     {combinedAPRs.avg24h > 0 ? '+' : ''}
-                                                    {combinedAPRs.avg24h.toFixed(2)}%
+                                                    {combinedAPRs.avg24h.toFixed(0)}%
                                                 </span>
                                             </div>
                                         )}
@@ -123,7 +123,7 @@ export default function AccountLongEVM() {
                                                 <span className="text-sm font-medium opacity-60">7d avg</span>
                                                 <span className="text-sm font-medium text-success">
                                                     {combinedAPRs.avg7d > 0 ? '+' : ''}
-                                                    {combinedAPRs.avg7d.toFixed(2)}%
+                                                    {combinedAPRs.avg7d.toFixed(0)}%
                                                 </span>
                                             </div>
                                         )}
@@ -132,7 +132,7 @@ export default function AccountLongEVM() {
                                                 <span className="text-sm font-medium opacity-60">30d avg</span>
                                                 <span className="text-sm font-medium text-success">
                                                     {combinedAPRs.avg30d > 0 ? '+' : ''}
-                                                    {combinedAPRs.avg30d.toFixed(2)}%
+                                                    {combinedAPRs.avg30d.toFixed(0)}%
                                                 </span>
                                             </div>
                                         )}
@@ -148,7 +148,7 @@ export default function AccountLongEVM() {
                                 <p className="text-sm text-default/50">APR</p>
                                 <p className="text-sm font-medium text-success">
                                     {combinedAPR > 0 ? '+' : ''}
-                                    {combinedAPR.toFixed(1)}%
+                                    {combinedAPR.toFixed(0)}%
                                 </p>
                             </div>
                         </StyledTooltip>

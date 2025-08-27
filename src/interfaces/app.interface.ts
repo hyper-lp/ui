@@ -1,4 +1,4 @@
-import { AppUrls } from '../enums'
+import { AppUrls, FileIds } from '../enums'
 
 export interface InterfaceAppLink {
     name: string
@@ -31,4 +31,11 @@ export interface ThemeColors {
 export interface ThemeConfig {
     light: ThemeColors
     dark: ThemeColors
+}
+
+export interface UseCase {
+    title: string
+    description: string
+    banner: FileIds
+    url: string
 }

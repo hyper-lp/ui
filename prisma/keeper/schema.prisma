@@ -36,3 +36,25 @@ model Rebalance {
   @@index([vaultAddress, timestamp(sort: Desc)])
   @@index([vaultId, timestamp(sort: Desc)])
 }
+
+// Liquidity Position tracking for LP lifecycle
+model LiquidityProvision {
+  id              String    @id @default(cuid())
+  vaultAddress    String    @db.VarChar(42)
+  poolAddress     String    @db.VarChar(42)
+  tokenId         String     // NFT id
+  status          String    @db.VarChar(20)  // "open" or "closed"
+  openedAt        DateTime
+  closedAt        DateTime?
+  prevPositionId  String?
+  nextPositionId  String?
+  metadata        Json      // Contains all position details
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([vaultAddress, status])
+  @@index([poolAddress])
+  @@index([tokenId])
+  @@index([status, openedAt])
+}
+

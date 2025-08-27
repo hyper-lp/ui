@@ -59,7 +59,7 @@ export default function AccountPerps() {
                                                     )}
                                                 >
                                                     {fundingAPRs.avgFundingAPR24h > 0 ? '+' : ''}
-                                                    {fundingAPRs.avgFundingAPR24h.toFixed(1)}%
+                                                    {fundingAPRs.avgFundingAPR24h.toFixed(0)}%
                                                 </span>
                                             </div>
                                         )}
@@ -77,7 +77,7 @@ export default function AccountPerps() {
                                                     )}
                                                 >
                                                     {fundingAPRs.avgFundingAPR7d > 0 ? '+' : ''}
-                                                    {fundingAPRs.avgFundingAPR7d.toFixed(1)}%
+                                                    {fundingAPRs.avgFundingAPR7d.toFixed(0)}%
                                                 </span>
                                             </div>
                                         )}
@@ -95,7 +95,7 @@ export default function AccountPerps() {
                                                     )}
                                                 >
                                                     {fundingAPRs.avgFundingAPR30d > 0 ? '+' : ''}
-                                                    {fundingAPRs.avgFundingAPR30d.toFixed(1)}%
+                                                    {fundingAPRs.avgFundingAPR30d.toFixed(0)}%
                                                 </span>
                                             </div>
                                         )}
@@ -116,7 +116,7 @@ export default function AccountPerps() {
                                     )}
                                 >
                                     {perpFundingAPR > 0 ? '+' : ''}
-                                    {perpFundingAPR.toFixed(1)}%
+                                    {perpFundingAPR.toFixed(0)}%
                                 </p>
                             </div>
                         </StyledTooltip>

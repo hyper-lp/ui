@@ -77,54 +77,56 @@ export default function HomePage() {
                         delay: 0.4,
                         ease: [0.4, 0, 0.2, 1],
                     }}
-                    className="mx-auto my-20 flex w-full flex-col gap-3"
+                    className="my-[60px] flex w-full flex-col gap-3 md:hidden"
                 >
                     <p className="text-center text-xl text-primary">Our strategies</p>
-                    {USE_CASES.map((useCase) => (
-                        <LinkWrapper key={useCase.title} href={useCase.url} target="_blank">
-                            <div
-                                className="group relative h-40 w-full overflow-hidden rounded-xl py-1 transition-all hover:shadow-md"
-                                style={{
-                                    backgroundImage: `url(${useCase.banner})`,
-                                    backgroundSize: 'cover',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                }}
-                            >
-                                {/* Overlay with forced GPU acceleration */}
+                    <div className="grid w-full grid-cols-1 flex-col gap-3 md:grid-cols-3">
+                        {USE_CASES.map((useCase) => (
+                            <LinkWrapper key={useCase.title} href={useCase.url} target="_blank">
                                 <div
-                                    className="absolute inset-0 overflow-hidden rounded-xl bg-gradient-to-b from-background/50 to-background/40 dark:from-background/20 dark:to-background/30"
+                                    className="group relative col-span-1 h-40 w-full overflow-hidden rounded-xl py-1 transition-all hover:shadow-md"
                                     style={{
-                                        backdropFilter: 'blur(1px) saturate(200%)',
-                                        WebkitBackdropFilter: 'blur(1px) saturate(200%)',
-                                        transform: 'translateZ(0)',
-                                        willChange: 'transform',
+                                        backgroundImage: `url(${useCase.banner})`,
+                                        backgroundSize: 'cover',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center',
                                     }}
-                                />
-                                <div className="relative z-10 flex h-full w-full flex-col items-start gap-1 p-3">
-                                    <div className="flex items-center gap-2 rounded bg-background/90 pl-1.5 pr-1 backdrop-blur-sm">
-                                        <h3 className="text-xl font-medium text-primary drop-shadow-sm transition-colors">{useCase.title}</h3>
-                                        <FileMapper
-                                            id={
-                                                useCase.banner === FileIds.BANNER_HYPERSWAP
-                                                    ? FileIds.DEX_HYPERSWAP
-                                                    : useCase.banner === FileIds.BANNER_PROJETX
-                                                      ? FileIds.DEX_PROJETX
-                                                      : FileIds.LENDING_HYPERDRIVE
-                                            }
-                                            className="size-4 rounded"
-                                        />
+                                >
+                                    {/* Overlay with forced GPU acceleration */}
+                                    <div
+                                        className="absolute inset-0 overflow-hidden rounded-xl bg-gradient-to-b from-background/50 to-background/40 dark:from-background/20 dark:to-background/30"
+                                        style={{
+                                            backdropFilter: 'blur(1px) saturate(200%)',
+                                            WebkitBackdropFilter: 'blur(1px) saturate(200%)',
+                                            transform: 'translateZ(0)',
+                                            willChange: 'transform',
+                                        }}
+                                    />
+                                    <div className="relative z-10 flex h-full w-full flex-col items-start gap-1 p-3">
+                                        <div className="flex items-center gap-2 rounded bg-background/90 pl-1.5 pr-1 backdrop-blur-sm">
+                                            <h3 className="text-xl font-medium text-primary drop-shadow-sm transition-colors">{useCase.title}</h3>
+                                            <FileMapper
+                                                id={
+                                                    useCase.banner === FileIds.BANNER_HYPERSWAP
+                                                        ? FileIds.DEX_HYPERSWAP
+                                                        : useCase.banner === FileIds.BANNER_PROJETX
+                                                          ? FileIds.DEX_PROJETX
+                                                          : FileIds.LENDING_HYPERDRIVE
+                                                }
+                                                className="size-4 rounded"
+                                            />
+                                        </div>
+                                        <p className={cn('mt-0.5 rounded bg-background/90 px-1.5 text-base drop-shadow-sm backdrop-blur-sm')}>
+                                            {useCase.description}
+                                        </p>
                                     </div>
-                                    <p className={cn('mt-0.5 rounded bg-background/90 px-1.5 text-base drop-shadow-sm backdrop-blur-sm')}>
-                                        {useCase.description}
-                                    </p>
+                                    <div className="absolute bottom-3 right-3 rounded-lg bg-background p-1.5 transition-transform duration-200 group-hover:scale-110">
+                                        <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-5 rounded-lg text-primary" />
+                                    </div>
                                 </div>
-                                <div className="absolute bottom-3 right-3 rounded-lg bg-background p-1.5 transition-transform duration-200 group-hover:scale-110">
-                                    <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-5 rounded-lg text-primary" />
-                                </div>
-                            </div>
-                        </LinkWrapper>
-                    ))}
+                            </LinkWrapper>
+                        ))}
+                    </div>
                 </motion.div>
             </motion.div>
         </PageWrapper>

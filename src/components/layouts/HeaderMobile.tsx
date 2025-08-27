@@ -5,9 +5,11 @@ import { useAppStore } from '@/stores/app.store'
 import { cn } from '@/utils'
 import { useRef, useEffect } from 'react'
 import { useKeyboardShortcut } from '@/hooks/helpers/useKeyboardShortcutArgs'
-import { AppUrls, IconIds } from '@/enums'
+import { AppUrls, IconIds, FileIds } from '@/enums'
 import IconWrapper from '../icons/IconWrapper'
 import LinkWrapper from '../common/LinkWrapper'
+import FileMapper from '../common/FileMapper'
+import StyledTooltip from '../common/StyledTooltip'
 import { AnimatePresence, motion } from 'framer-motion'
 import { WaitlistButton } from '../app/waitlist/WaitlistButton'
 import { WaitlistForm } from '../app/waitlist/WaitlistForm'
@@ -125,7 +127,7 @@ export default function HeaderMobile() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
-                                className="my-10"
+                                className="my-4"
                             >
                                 <ThemeSwitcher iconClassName="size-10" buttonClassName="p-4 py-3 rounded-2xl" containerClassName="gap-4" />
                             </motion.div>
@@ -137,12 +139,79 @@ export default function HeaderMobile() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
                             transition={{ duration: 0.4, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 2) }}
-                            className="absolute bottom-32 max-w-[300px] text-center"
+                            className="absolute bottom-32 flex flex-col items-center gap-6"
                         >
-                            {/* <Authors /> */}
-                            <LinkWrapper href={AppUrls.CONTACT_US} className="cursor-alias underline-offset-2 hover:text-primary hover:underline">
-                                Contact
-                            </LinkWrapper>
+                            {/* Team section */}
+                            <div className="flex flex-col items-center gap-2">
+                                <p className="text-sm">Team</p>
+                                <div className="flex items-center gap-1">
+                                    {[
+                                        {
+                                            id: FileIds.TEAM_MERSO,
+                                            taikaiUrl: 'https://taikai.network/Merso',
+                                            xUrl: 'https://x.com/0xMerso',
+                                            name: 'Merso',
+                                            description: 'Rust / Solidity',
+                                            width: 32,
+                                            height: 32,
+                                            className: 'size-8 rounded-full border border-primary/50 shadow',
+                                        },
+                                        {
+                                            id: FileIds.TEAM_KATALYSTER,
+                                            taikaiUrl: 'https://taikai.network/Katalyster',
+                                            xUrl: 'https://x.com/Katalyster',
+                                            name: 'Katalyster',
+                                            description: 'BD / Ops',
+                                            width: 32,
+                                            height: 32,
+                                            className: 'size-8 rounded-full border border-primary/50 shadow',
+                                        },
+                                        {
+                                            id: FileIds.TEAM_ZARBOQ,
+                                            taikaiUrl: 'https://taikai.network/zarboq',
+                                            xUrl: 'https://x.com/zarboq',
+                                            name: 'Zarboq',
+                                            description: 'Rust / Solidity',
+                                            width: 32,
+                                            height: 32,
+                                            className: 'size-8 rounded-full border border-primary/50 shadow',
+                                        },
+                                        {
+                                            id: FileIds.TEAM_FBERGER,
+                                            taikaiUrl: 'https://taikai.network/fberger-xyz',
+                                            xUrl: 'https://x.com/fberger_xyz',
+                                            name: 'fberger',
+                                            description: 'Fullstack dev',
+                                            width: 32,
+                                            height: 32,
+                                            className: 'size-8 rounded-full border border-primary/50 shadow',
+                                        },
+                                    ].map((item, index) => (
+                                        <StyledTooltip key={`${item.id}-${index}`} content={item.name}>
+                                            <LinkWrapper
+                                                href={item.taikaiUrl}
+                                                target="_blank"
+                                                className="flex cursor-alias items-center gap-2 transition-all duration-300 hover:scale-110"
+                                            >
+                                                <FileMapper {...item} priority />
+                                            </LinkWrapper>
+                                        </StyledTooltip>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Links section */}
+                            <div className="flex items-center gap-6 text-base">
+                                <LinkWrapper href={AppUrls.STATUS} target="_blank">
+                                    <p className="cursor-alias hover:text-primary hover:underline">Status</p>
+                                </LinkWrapper>
+                                <LinkWrapper href={AppUrls.DOCS_NOTION} target="_blank">
+                                    <p className="cursor-alias hover:text-primary hover:underline">Docs</p>
+                                </LinkWrapper>
+                                <LinkWrapper href={AppUrls.HYPERLP_X} target="_blank" className="cursor-alias hover:text-primary">
+                                    <IconWrapper id={IconIds.X} className="size-5 rounded-none" />
+                                </LinkWrapper>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

@@ -77,7 +77,7 @@ export default function HomePage() {
                         delay: 0.4,
                         ease: [0.4, 0, 0.2, 1],
                     }}
-                    className="my-[60px] flex w-full flex-col gap-3 md:hidden"
+                    className="my-[50px] flex w-full flex-col gap-3 md:hidden"
                 >
                     <p className="text-center text-xl text-primary">Our strategies</p>
                     <div className="grid w-full grid-cols-1 flex-col gap-3 md:grid-cols-3">

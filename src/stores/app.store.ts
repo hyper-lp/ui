@@ -216,6 +216,7 @@ export const useAppStore = create<AppStore>()(
             storage: createJSONStorage(() => ({
                 getItem: (name: string) => {
                     try {
+                        if (typeof window === 'undefined') return null
                         return localStorage.getItem(name)
                     } catch (error) {
                         console.error('Failed to get from localStorage:', error)
@@ -224,11 +225,12 @@ export const useAppStore = create<AppStore>()(
                 },
                 setItem: (name: string, value: string) => {
                     try {
+                        if (typeof window === 'undefined') return
                         localStorage.setItem(name, value)
                     } catch (error) {
                         console.error('localStorage quota exceeded, clearing old data...')
                         // Clear old localStorage items if quota exceeded
-                        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                        if (typeof window !== 'undefined' && error instanceof DOMException && error.name === 'QuotaExceededError') {
                             // Try to clear old versions of the store
                             const keys = Object.keys(localStorage)
                             keys.forEach((key) => {
@@ -253,6 +255,7 @@ export const useAppStore = create<AppStore>()(
                 },
                 removeItem: (name: string) => {
                     try {
+                        if (typeof window === 'undefined') return
                         localStorage.removeItem(name)
                     } catch (error) {
                         console.error('Failed to remove from localStorage:', error)

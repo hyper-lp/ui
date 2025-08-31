@@ -12,7 +12,6 @@ import { getDurationBetween } from '@/utils/date.util'
 
 // Section components
 import AccountHeader from '@/components/app/account/sections/AccountHeader'
-import AccountLoading from '@/components/app/account/sections/AccountLoading'
 import AccountLongEVM from '@/components/app/account/sections/AccountLongEVM'
 import AccountWallet from '@/components/app/account/sections/AccountWallet'
 import AccountPerps from '@/components/app/account/sections/AccountPerps'
@@ -25,9 +24,10 @@ export default function AccountClient() {
     const [lastRefreshTime, setLastRefreshTime] = useState<number | null>(null)
     const [nextUpdateIn, setNextUpdateIn] = useState<string>('')
     const [chartKey, setChartKey] = useState(0) // Force re-mount chart
+    const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false)
 
     // Use the simplified hook for data fetching
-    const { isLoading, isFetching, error, refetch } = useAccountData(accountFromUrl)
+    const { isFetching, error, refetch } = useAccountData(accountFromUrl)
 
     // Get data directly from the store
     const getLatestSnapshot = useAppStore((state) => state.getLatestSnapshot)
@@ -37,8 +37,12 @@ export default function AccountClient() {
     useEffect(() => {
         if (snapshot) {
             setLastRefreshTime(Date.now())
+            // Mark as initially loaded once we have data
+            if (!hasInitiallyLoaded) {
+                setHasInitiallyLoaded(true)
+            }
         }
-    }, [snapshot])
+    }, [snapshot, hasInitiallyLoaded])
 
     // Calculate next update countdown
     useEffect(() => {
@@ -102,60 +106,48 @@ export default function AccountClient() {
     // Extract metrics for display
     const metrics = snapshot?.metrics
 
-    // Show loading state only when truly loading initial data
-    if (isLoading && !snapshot) {
-        return (
-            <PageWrapper className="px-4">
-                <AccountLoading />
-            </PageWrapper>
-        )
-    }
-
-    // Show simple error state if there's an error
-    if (error && !snapshot) {
-        return (
-            <PageWrapper className="px-4">
+    return (
+        <PageWrapper className="px-4">
+            {/* Always render AccountTemplate, just show loading content inside it */}
+            {error && !snapshot ? (
+                // Show simple error state if there's an error
                 <div className="space-y-4 py-12 text-center">
                     <p className="text-default/50">{error instanceof Error ? error.message : 'Failed to load account'}</p>
                 </div>
-            </PageWrapper>
-        )
-    }
-
-    return (
-        <PageWrapper className="px-4">
-            <AccountTemplate
-                key={accountFromUrl} // Force re-mount on account change
-                header={
-                    <AccountHeader
-                        accountFromUrl={accountFromUrl}
-                        lastRefreshTime={lastRefreshTime}
-                        nextUpdateIn={nextUpdateIn}
-                        isFetching={isFetching}
-                        refetch={refetch}
-                        metrics={metrics || {}}
-                        timings={snapshot?.timings}
-                    />
-                }
-                // charts={null}
-                charts={<DeltaTrackingChart key={chartKey} />}
-                hyperEvm={{
-                    longEvm: <AccountLongEVM />,
-                    balances: <AccountWallet />,
-                    txs: null,
-                }}
-                hyperCore={{
-                    short: <AccountPerps />,
-                    spot: <AccountSpots />,
-                    txs: null,
-                }}
-                activity={
-                    null
-                    // <CollapsibleCard title="Activity" defaultExpanded={false} headerRight={null}>
-                    //     <CombinedActivity account={params.account as string} limit={50} />
-                    // </CollapsibleCard>
-                }
-            />
+            ) : (
+                // Always show the account template with animations
+                <AccountTemplate
+                    header={
+                        <AccountHeader
+                            accountFromUrl={accountFromUrl}
+                            lastRefreshTime={lastRefreshTime}
+                            nextUpdateIn={nextUpdateIn}
+                            isFetching={isFetching}
+                            refetch={refetch}
+                            metrics={metrics || {}}
+                            timings={snapshot?.timings}
+                        />
+                    }
+                    // charts={null}
+                    charts={<DeltaTrackingChart key={chartKey} />}
+                    hyperEvm={{
+                        longEvm: <AccountLongEVM />,
+                        balances: <AccountWallet />,
+                        txs: null,
+                    }}
+                    hyperCore={{
+                        short: <AccountPerps />,
+                        spot: <AccountSpots />,
+                        txs: null,
+                    }}
+                    activity={
+                        null
+                        // <CollapsibleCard title="Activity" defaultExpanded={false} headerRight={null}>
+                        //     <CombinedActivity account={params.account as string} limit={50} />
+                        // </CollapsibleCard>
+                    }
+                />
+            )}
         </PageWrapper>
     )
 }

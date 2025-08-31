@@ -81,16 +81,15 @@ export function useAccountData(address: string) {
     // Set current address when it changes and fetch historical snapshots
     useEffect(() => {
         if (address) {
-            setCurrentAddress(address)
-
-            // Fetch historical snapshots immediately
-            fetchHistoricalSnapshots()
-
-            // Fetch rebalance events immediately
-            fetchRebalances()
-
-            // Fetch HyperCore trades immediately
-            fetchHypercoreTrades()
+            // Batch the initial operations to minimize re-renders
+            Promise.all([
+                // Set address first
+                Promise.resolve(setCurrentAddress(address)),
+                // Then fetch all data in parallel
+                fetchHistoricalSnapshots(),
+                fetchRebalances(),
+                fetchHypercoreTrades(),
+            ]).catch((err) => console.error('Error during initial data fetch:', err))
 
             // Set up interval to fetch rebalances every 10 seconds
             const rebalanceIntervalMs = TIME_INTERVALS.SECONDS_10

@@ -2,6 +2,7 @@ import type { NextConfig } from 'next'
 import { execSync } from 'child_process'
 
 const nextConfig: NextConfig = {
+    reactStrictMode: true, // Helps catch bugs in development
     productionBrowserSourceMaps: false, // Save ~30% bundle size
     images: {
         remotePatterns: [{ hostname: '*' }],

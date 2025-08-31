@@ -71,7 +71,6 @@ export const ChartSeries = {
 
 export default function DeltaTrackingChart() {
     const [options, setOptions] = useState<EChartsOption | null>(null)
-    const [isInitialLoad, setIsInitialLoad] = useState(true)
     const [showRebalanceModal, setShowRebalanceModal] = useState(false)
     const { resolvedTheme } = useTheme()
     const colors = getThemeColors(resolvedTheme)
@@ -295,17 +294,6 @@ export default function DeltaTrackingChart() {
         setShowRebalanceModal(false)
     }, [])
 
-    // Show skeleton briefly on initial load for better UX
-    useEffect(() => {
-        if (isInitialLoad) {
-            setOptions(createLoadingOptions())
-            const timer = setTimeout(() => {
-                setIsInitialLoad(false)
-            }, 1500) // Show skeleton for 1.5 seconds
-            return () => clearTimeout(timer)
-        }
-    }, [isInitialLoad, createLoadingOptions])
-
     // Debounce chart updates to prevent excessive re-renders
     const [debouncedUpdate, setDebouncedUpdate] = useState(0)
 
@@ -318,9 +306,6 @@ export default function DeltaTrackingChart() {
     }, [lastSnapshotAddedAt, rebalanceEvents.length])
 
     useEffect(() => {
-        // Skip if still showing initial loading state
-        if (isInitialLoad) return
-
         try {
             // 1. get stored snapshots
             let storedSnapshots = getSnapshots()
@@ -1329,7 +1314,7 @@ export default function DeltaTrackingChart() {
             setOptions(createLoadingOptions())
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debouncedUpdate, isInitialLoad, resolvedTheme, legendSelection])
+    }, [debouncedUpdate, resolvedTheme, legendSelection])
 
     if (!options) {
         return (

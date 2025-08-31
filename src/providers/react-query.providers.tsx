@@ -16,8 +16,7 @@ const queryClient = new QueryClient({
                 return failureCount < 3
             },
             retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, API_RETRY_MAX_DELAY),
-            // Don't refetch on window focus by default
-            refetchOnWindowFocus: false,
+            refetchOnWindowFocus: true,
             // Keep trying when offline
             networkMode: 'offlineFirst',
         },

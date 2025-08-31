@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/utils'
-import { ReactNode } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { FileIds } from '@/enums'
 import { SectionCard, ThemeCard } from './Cards'
@@ -10,6 +10,7 @@ import { useTheme } from 'next-themes'
 import { AppThemes } from '@/enums'
 import { IS_DEV } from '@/config'
 import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
+import { motion } from 'framer-motion'
 
 export function ErrorBoundaryTemplate(props: { error: string }) {
     return (
@@ -37,23 +38,57 @@ export default function AccountTemplate(props: {
     className?: string
 }) {
     const { resolvedTheme } = useTheme()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    // Determine theme for images - use light theme as default to avoid hydration mismatch
+    const imageTheme = mounted ? resolvedTheme : AppThemes.LIGHT
 
     return (
-        <div className={cn('flex flex-col gap-5', props.className)}>
+        <motion.div
+            className={cn('flex flex-col gap-5', props.className)}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+                duration: 0.6,
+                ease: [0.4, 0, 0.2, 1],
+            }}
+        >
             {/* --------------- Header */}
-            {props.header}
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+            >
+                {props.header}
+            </motion.div>
 
             {/* --------------- Content */}
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-4">
                 {/* 1. historic of snapshots */}
-                <SectionCard className="h-[400px] flex-1 !p-1 md:h-[460px] md:!p-2">{props.charts}</SectionCard>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                    className="flex-1"
+                >
+                    <SectionCard className="h-[400px] !p-1 md:h-[460px] md:!p-2">{props.charts}</SectionCard>
+                </motion.div>
 
                 {/* 2. last snapshot */}
-                <div className="3xl:w-[800px] flex h-min w-full flex-col gap-8 lg:w-[500px] xl:w-[600px] 2xl:w-[700px]">
+                <motion.div
+                    className="3xl:w-[800px] flex h-min w-full flex-col gap-8 lg:w-[500px] xl:w-[600px] 2xl:w-[700px]"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                >
                     {/* HyperEvm */}
                     <div>
                         <FileMapper
-                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_EVM_MINT : FileIds.HYPER_EVM_DARK}
+                            id={imageTheme === AppThemes.DARK ? FileIds.HYPER_EVM_MINT : FileIds.HYPER_EVM_DARK}
                             width={200}
                             height={28}
                             scaleByHeight
@@ -80,7 +115,7 @@ export default function AccountTemplate(props: {
                     {/* HyperCore */}
                     <div>
                         <FileMapper
-                            id={resolvedTheme === AppThemes.DARK ? FileIds.HYPER_CORE_MINT : FileIds.HYPER_CORE_DARK}
+                            id={imageTheme === AppThemes.DARK ? FileIds.HYPER_CORE_MINT : FileIds.HYPER_CORE_DARK}
                             width={200}
                             height={28}
                             scaleByHeight
@@ -110,8 +145,8 @@ export default function AccountTemplate(props: {
                             </div>
                         </div>
                     )}
-                </div>
+                </motion.div>
             </div>
-        </div>
+        </motion.div>
     )
 }

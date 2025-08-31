@@ -125,6 +125,7 @@ export default function AccountClient() {
     return (
         <PageWrapper className="px-4">
             <AccountTemplate
+                key={accountFromUrl} // Force re-mount on account change
                 header={
                     <AccountHeader
                         accountFromUrl={accountFromUrl}

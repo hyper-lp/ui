@@ -5,10 +5,17 @@ import { AppUrls } from '@/enums'
 import { FileIds } from '@/enums/files.enum'
 import { ImageWrapper } from '../common/ImageWrapper'
 import { useTheme } from 'next-themes'
+import { useState, useEffect } from 'react'
 
 export default function HeaderLogo() {
     const { resolvedTheme } = useTheme()
-    const isDark = resolvedTheme === 'dark'
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const isDark = mounted && resolvedTheme === 'dark'
 
     return (
         <LinkWrapper href={AppUrls.HOME} className="flex cursor-pointer items-center gap-1">
@@ -31,7 +38,7 @@ export default function HeaderLogo() {
                     <p className="text-xs text-default/40">Alpha</p>
                 </div>
                 <ImageWrapper
-                    src={isDark ? FileIds.POWERED_BY_HYPERLIQUID_HL300 : FileIds.POWERED_BY_HYPERLIQUID_HL800}
+                    src={mounted && isDark ? FileIds.POWERED_BY_HYPERLIQUID_HL300 : FileIds.POWERED_BY_HYPERLIQUID_HL800}
                     alt="Logo"
                     width={140}
                     height={16}

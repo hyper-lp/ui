@@ -25,43 +25,43 @@ export const LPRowTemplate = (props: {
 }) => {
     return (
         <div role="row" className={cn('flex items-center gap-1 px-2 text-sm', props.className)}>
-            <div role="cell" className="w-[70px] pl-2">
+            <div role="cell" className="flex w-[70px] items-center pl-2">
                 {props.dex}
             </div>
-            <div role="cell" className="w-[70px]">
+            <div role="cell" className="flex w-[70px] items-center">
                 {props.poolAddress}
             </div>
-            <div role="cell" className="w-[55px]">
+            <div role="cell" className="flex w-[55px] items-center">
                 {props.feeTier}
             </div>
-            <div role="cell" className="w-[65px]">
+            <div role="cell" className="flex w-[65px] items-center">
                 {props.status}
             </div>
             <div role="cell" className="flex w-[80px] items-center justify-center text-center">
                 {props.value}
             </div>
-            <div role="cell" className="w-[60px] text-center">
+            <div role="cell" className="flex w-[60px] items-center text-center">
                 {props.hype}
             </div>
-            <div role="cell" className="w-[60px] text-center">
+            <div role="cell" className="flex w-[60px] items-center text-center">
                 {props.usdt}
             </div>
-            <div role="cell" className="w-[70px] text-center">
+            <div role="cell" className="flex w-[70px] items-center text-center">
                 {props.split}
             </div>
-            <div role="cell" className="w-[50px] text-center">
+            <div role="cell" className="flex w-[50px] items-center text-center">
                 {props.tvl}
             </div>
-            <div role="cell" className="w-[60px] text-center">
+            <div role="cell" className="flex w-[60px] items-center text-center">
                 {props.apr24h}
             </div>
-            <div role="cell" className="w-[60px] text-center">
+            <div role="cell" className="flex w-[60px] items-center text-center">
                 {props.apr7d}
             </div>
-            <div role="cell" className="w-[65px] text-center">
+            <div role="cell" className="flex w-[65px] items-center text-center">
                 {props.apr30d}
             </div>
-            <div role="cell" className="w-[80px] text-center">
+            <div role="cell" className="flex w-[80px] items-center text-center">
                 {props.positionId}
             </div>
             {/* <div className="w-[80px] text-right">{props.nftId}</div> */}

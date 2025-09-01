@@ -16,18 +16,18 @@ import RebalanceModal from '@/components/modals/RebalanceModal'
 
 const Legends = ({ isLpAccount, onShowRebalances }: { isLpAccount?: boolean; onShowRebalances?: () => void }) => {
     return (
-        <div className="flex items-center gap-1 px-2">
+        <div className="flex flex-col gap-1 px-2 sm:flex-row sm:items-center">
             <div className="flex items-center gap-1 text-hyper-evm-lps">
                 {isLpAccount && (
                     <>
                         <div className="h-4 w-2 border-l-2 border-dashed border-hyper-evm-lps" />
-                        <p className="text-sm">Rebalances done by our ALM</p>
+                        <p className="truncate text-sm">Rebalances done by our ALM</p>
                     </>
                 )}
             </div>
             <button onClick={onShowRebalances} className="flex items-center gap-1 text-default/50 transition-colors hover:text-primary">
                 <IconWrapper id={IconIds.ARROW_RIGHT} className="size-4" />
-                <p className="text-sm">Click to see full history</p>
+                <p className="truncate text-sm">Click to see full history</p>
                 <IconWrapper id={IconIds.LIST} className="size-4" />
             </button>
         </div>

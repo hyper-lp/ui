@@ -224,7 +224,8 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     {/* HyperLP balance */}
                     {/* <div className="flex flex-col items-center lg:items-end"> */}
                     <SectionCard padding="px-4 py-2" className="flex flex-col items-center lg:items-end">
-                        <span className="truncate text-base tracking-wider text-default/50">HyperLP balance</span>
+                        <span className="truncate text-base tracking-wider text-default/50 md:hidden">Balance</span>
+                        <span className="hidden truncate text-base tracking-wider text-default/50 md:flex">HyperLP balance</span>
                         <StyledTooltip
                             content={
                                 <div className="flex flex-col">

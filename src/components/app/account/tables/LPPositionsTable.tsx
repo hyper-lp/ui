@@ -603,7 +603,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
 
             {/* Footer with action buttons */}
             {positions.length > 0 && (
-                <div className="mt-3 flex justify-between px-3 pb-2">
+                <div className="mt-3 flex flex-col justify-between px-3 pb-2 sm:flex-row">
                     {/* Show/Hide Closed Positions Toggle */}
                     {positions.some((p) => p.isClosed) ? (
                         <button
@@ -612,12 +612,12 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                         >
                             {showClosedPositions ? (
                                 <>
-                                    <p>Click to hide {positions.filter((p) => p.isClosed).length} closed positions</p>
+                                    <p className="truncate">Click to hide {positions.filter((p) => p.isClosed).length} closed positions</p>
                                     <IconWrapper id={IconIds.FILTER_REMOVE} className="size-3" />
                                 </>
                             ) : (
                                 <>
-                                    <p>Click to show {positions.filter((p) => p.isClosed).length} closed positions</p>
+                                    <p className="truncate">Click to show {positions.filter((p) => p.isClosed).length} closed positions</p>
                                     <IconWrapper id={IconIds.FILTER_ADD} className="size-3" />
                                 </>
                             )}
@@ -631,7 +631,7 @@ export function LPPositionsTable({ className }: LPPositionsTableProps) {
                         onClick={handleShowRebalances}
                         className="flex items-center gap-1 text-xs text-default/40 transition-colors hover:text-primary"
                     >
-                        <p>Click to see rebalances</p>
+                        <p className="truncate">Click to see rebalances</p>
                         <IconWrapper id={IconIds.LIST} className="size-3" />
                     </button>
                 </div>

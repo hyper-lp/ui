@@ -35,8 +35,8 @@ export default function Footer(props: { className?: string }) {
                         closeDelay={500}
                         content={
                             <div className="flex flex-col gap-1">
-                                <span>Last deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</span>
-                                <span className="text-default/50">1st commit deployed on {dayjs.utc('2025-08-04').format('D MMM. YYYY')}</span>
+                                <span>Last commit deployed on {dayjs.utc(commitDate).format('D MMM. YYYY HH:mm A')} UTC</span>
+                                <span className="text-default/50">1st commit pushed on {dayjs.utc('2025-08-04').format('D MMM. YYYY')}</span>
                             </div>
                         }
                     >

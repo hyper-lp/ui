@@ -15,6 +15,7 @@ import type { AccountSnapshotMetrics, AccountSnapshot } from '@/interfaces/accou
 import { DEMO_ACCOUNTS } from '@/config/app.config'
 import { SECTION_CONFIG, SectionType } from '@/config/sections.config'
 import { SectionCard } from '../layout/Cards'
+// import AllTransactionsModal from '@/components/modals/AllTransactionsModal'
 
 interface AccountHeaderProps {
     accountFromUrl: string
@@ -28,6 +29,10 @@ interface AccountHeaderProps {
 
 export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpdateIn, isFetching, refetch, metrics, timings }: AccountHeaderProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    // const [showTransactionsModal, setShowTransactionsModal] = useState(false)
+    // const handleShowTransactions = () => setShowTransactionsModal(true)
+    // const handleCloseTransactions = () => setShowTransactionsModal(false)
+
     const dropdownRef = useRef<HTMLDivElement>(null)
 
     // Get precomputed portfolio metrics
@@ -138,22 +143,35 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                                 </div>
                             )}
                         </div>
-
+                        {/* <div>
+                            <StyledTooltip content={<p>View all transactions</p>}>
+                                <button
+                                    onClick={handleShowTransactions}
+                                    className="flex cursor-pointer items-center gap-0.5 pl-2 text-default/50 hover:text-default hover:underline"
+                                >
+                                    <p>tx</p>
+                                    <IconWrapper id={IconIds.LIST} className="size-3.5" />
+                                </button>
+                            </StyledTooltip>
+                        </div> */}
                         {[
                             {
                                 name: 'evm',
                                 description: 'HyperEVM explorer',
                                 url: `https://hyperevmscan.io/address/${accountFromUrl}`,
+                                isExternal: true,
                             },
                             {
                                 name: 'core',
                                 description: 'HyperLiquid explorer',
                                 url: `https://app.hyperliquid.xyz/explorer/address/${accountFromUrl}`,
+                                isExternal: true,
                             },
                             {
                                 name: 'debank',
                                 description: 'DeBank profile',
                                 url: `https://debank.com/profile/${accountFromUrl}`,
+                                isExternal: true,
                             },
                         ].map((link) => (
                             <div key={link.name}>
@@ -592,6 +610,9 @@ export default function AccountHeader({ accountFromUrl, lastRefreshTime, nextUpd
                     )}
                 </div>
             </div>
+
+            {/* All Transactions Modal */}
+            {/* <AllTransactionsModal isOpen={showTransactionsModal} onClose={handleCloseTransactions} address={accountFromUrl} /> */}
         </div>
     )
 }

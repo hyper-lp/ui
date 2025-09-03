@@ -364,7 +364,7 @@ export function getProtocolByName(protocolName: string): ProtocolConfig | null {
     if (protocolNameLower.includes('hybra')) return HYPEREVM_PROTOCOLS[ProtocolType.HYBRA]
     if (protocolNameLower.includes('brick')) return HYPEREVM_PROTOCOLS[ProtocolType.HYPERBRICK]
     if (protocolNameLower.includes('hyperswap')) return HYPEREVM_PROTOCOLS[ProtocolType.HYPERSWAP]
-    if (protocolNameLower.includes('prjtx')) return HYPEREVM_PROTOCOLS[ProtocolType.PRJTX]
+    if (protocolNameLower.includes('prjtx') || protocolNameLower.includes('project')) return HYPEREVM_PROTOCOLS[ProtocolType.PRJTX]
     if (protocolNameLower.includes('hyperdrive')) return HYPEREVM_PROTOCOLS[ProtocolType.HYPERDRIVE]
     return null
 }

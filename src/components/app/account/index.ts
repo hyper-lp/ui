@@ -1,6 +1,5 @@
-export { TransactionHistory } from './TransactionHistory'
-export { HyperCoreTransactionHistory } from './HyperCoreTransactionHistory'
+export { CollapsibleCard } from './CollapsibleCard'
 export { CombinedActivity } from './CombinedActivity'
-
-// Table components are exported from ./tables
+export { HyperCoreTransactionHistory } from './HyperCoreTransactionHistory'
+export { TransactionHistory } from './TransactionHistory'
 export * from './tables'

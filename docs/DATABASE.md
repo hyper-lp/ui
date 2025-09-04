@@ -8,17 +8,16 @@ The current data schema is defined in TypeScript interfaces:
 - **AccountSnapshot**: Single source of truth for account data
 - **Real-time fetching**: Direct from blockchain, no database persistence yet
 
-### Active: Referrals Database
-- **Connection**: `DATABASE_URL_REFERRALS`
-- **Schema**: `prisma/referrals/schema.prisma`
-- **Client**: `prismaReferrals` from `@/lib/prisma-referrals`
-- **Generated**: `src/generated/prisma-referrals`
-- **Purpose**: Waitlist, user management, referrals
-
 ### Future: Monitoring Database (Not Active)
 - **Connection**: `DATABASE_URL_MONITORING`
 - **Schema**: `prisma/monitoring/schema.prisma`
 - **Purpose**: Will store position snapshots and analytics
+- **Status**: Schema defined but not yet integrated
+
+### Future: Keeper Database (Not Active)
+- **Connection**: `DATABASE_URL_KEEPER`
+- **Schema**: `prisma/keeper/schema.prisma`
+- **Purpose**: Keeper configurations and strategies
 - **Status**: Schema defined but not yet integrated
 
 ## Setup
@@ -26,7 +25,7 @@ The current data schema is defined in TypeScript interfaces:
 ### Environment Variables
 ```env
 DATABASE_URL_MONITORING="postgresql://..."
-DATABASE_URL_REFERRALS="postgresql://..."
+DATABASE_URL_KEEPER="postgresql://..."
 ```
 
 ### Commands
@@ -35,13 +34,13 @@ DATABASE_URL_REFERRALS="postgresql://..."
 pnpm prisma:generate
 
 # Migrations
-pnpm prisma:referrals:migrate    # Dev migration for referrals
 pnpm prisma:monitoring:migrate   # Dev migration for monitoring
+pnpm prisma:keeper:migrate       # Dev migration for keeper
 pnpm prisma:deploy               # Deploy both to production
 
 # Studio (GUI)
-pnpm prisma:referrals:studio    # Port 5555
 pnpm prisma:monitoring:studio   # Port 5556
+pnpm prisma:keeper:studio       # Port 5557
 ```
 
 ## Migration Management
@@ -78,13 +77,13 @@ pnpm prisma:monitoring:studio   # Port 5556
 ### Import Clients
 ```typescript
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
-import { prismaReferrals } from '@/lib/prisma-referrals'
+import { prismaKeeper } from '@/lib/prisma-keeper'
 ```
 
 ### Import Types
 ```typescript
 import type { MonitoredAccount } from '@/generated/prisma-monitoring'
-import type { Waitlist } from '@/generated/prisma-referrals'
+import type { KeeperConfig } from '@/generated/prisma-keeper'
 ```
 
 ## Troubleshooting

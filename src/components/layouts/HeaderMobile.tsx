@@ -1,6 +1,6 @@
 'use client'
 
-import { APP_PAGES, SHOW_WAITLIST } from '@/config/app.config'
+import { APP_PAGES } from '@/config/app.config'
 import { useAppStore } from '@/stores/app.store'
 import { cn } from '@/utils'
 import { useRef, useEffect } from 'react'
@@ -11,15 +11,11 @@ import LinkWrapper from '../common/LinkWrapper'
 import FileMapper from '../common/FileMapper'
 import StyledTooltip from '../common/StyledTooltip'
 import { AnimatePresence, motion } from 'framer-motion'
-import { WaitlistButton } from '../app/waitlist/WaitlistButton'
-import { WaitlistForm } from '../app/waitlist/WaitlistForm'
-import { usePrivy } from '@privy-io/react-auth'
 import ThemeSwitcher from '../common/ThemeSwitcher'
 import HeaderLogo from './HeaderLogo'
 
 export default function HeaderMobile() {
     const { showMobileMenu, setShowMobileMenu } = useAppStore()
-    const { authenticated, ready } = usePrivy()
 
     // menu
     const menuDropdown = useRef<HTMLButtonElement>(null)
@@ -100,28 +96,6 @@ export default function HeaderMobile() {
                                     <IconWrapper id={IconIds.ARROW_UP_RIGHT} className="size-4" />
                                 </LinkWrapper>
                             </motion.div>
-                            {SHOW_WAITLIST && (
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.3, ease: 'easeOut', delay: 0.05 * (APP_PAGES.length + 1) }}
-                                    className="mt-10"
-                                >
-                                    {!ready ? (
-                                        <div className="skeleton-loading h-10 w-40" />
-                                    ) : authenticated ? (
-                                        <WaitlistForm />
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-1">
-                                            <WaitlistButton />
-                                            <LinkWrapper href={AppUrls.PRIVY}>
-                                                <p className="text-xs italic">Powered by Privy</p>
-                                            </LinkWrapper>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            )}
                             <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}

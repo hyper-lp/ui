@@ -9,8 +9,8 @@
 
 import { execSync } from 'child_process'
 import * as readline from 'readline'
-import { prismaReferrals } from '@/lib/prisma-referrals'
-// import { prismaMonitoring } from '@/lib/prisma-monitoring' // Disabled for now
+import { prismaMonitoring } from '@/lib/prisma-monitoring'
+import { prismaKeeper } from '@/lib/prisma-keeper'
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -30,8 +30,8 @@ async function main() {
     console.log('2. Re-apply all migrations')
     console.log('3. Seed with initial data (if configured)')
     console.log('')
-    console.log(`Referrals DB: ${process.env.DATABASE_URL_REFERRALS?.split('@')[1]?.split('/')[0] || 'Unknown'}`)
     console.log(`Monitoring DB: ${process.env.DATABASE_URL_MONITORING?.split('@')[1]?.split('/')[0] || 'Unknown'}`)
+    console.log(`Keeper DB: ${process.env.DATABASE_URL_KEEPER?.split('@')[1]?.split('/')[0] || 'Unknown'}`)
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
     console.log('')
 
@@ -44,26 +44,26 @@ async function main() {
 
     try {
         console.log('\n📦 Step 1: Disconnecting from databases...')
-        await prismaReferrals.$disconnect()
-        // await prismaMonitoring.$disconnect() // Disabled for now
+        await prismaMonitoring.$disconnect()
+        await prismaKeeper.$disconnect()
 
         console.log('🗑️  Step 2: Resetting databases...')
-        console.log('   Resetting Referrals DB...')
-        execSync('pnpm prisma:referrals:reset --force --skip-seed', {
-            stdio: 'inherit',
-        })
         console.log('   Resetting Monitoring DB...')
         execSync('pnpm prisma:monitoring:reset --force --skip-seed', {
             stdio: 'inherit',
         })
-
-        console.log('🔄 Step 3: Applying migrations...')
-        console.log('   Deploying Referrals DB migrations...')
-        execSync('pnpm prisma:referrals:deploy', {
+        console.log('   Resetting Keeper DB...')
+        execSync('pnpm prisma:keeper:reset --force --skip-seed', {
             stdio: 'inherit',
         })
+
+        console.log('🔄 Step 3: Applying migrations...')
         console.log('   Deploying Monitoring DB migrations...')
         execSync('pnpm prisma:monitoring:deploy', {
+            stdio: 'inherit',
+        })
+        console.log('   Deploying Keeper DB migrations...')
+        execSync('pnpm prisma:keeper:deploy', {
             stdio: 'inherit',
         })
 
@@ -87,8 +87,8 @@ async function main() {
         process.exit(1)
     } finally {
         rl.close()
-        await prismaReferrals.$disconnect()
-        // await prismaMonitoring.$disconnect() // Disabled for now
+        await prismaMonitoring.$disconnect()
+        await prismaKeeper.$disconnect()
     }
 }
 

@@ -17,7 +17,6 @@ HyperLP is a delta-neutral liquidity vault on Hyperliquid that:
 - **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Database**: PostgreSQL with Prisma ORM (dual database architecture)
-- **Authentication**: Privy (Twitter OAuth)
 - **State**: Zustand with persistence
 - **Charts**: ECharts
 - **Styling**: Tailwind CSS
@@ -33,8 +32,8 @@ HyperLP is a delta-neutral liquidity vault on Hyperliquid that:
 ### 2. Data Architecture
 - **Current Schema**: TypeScript interfaces in `src/interfaces/account.interface.ts`
 - **AccountSnapshot**: Main interface containing positions, metrics, prices
-- **Referrals DB** (`DATABASE_URL_REFERRALS`): Active - waitlist and user management
-- **Monitoring DB**: Defined but not yet active (will store historical snapshots)
+- **Monitoring DB** (`DATABASE_URL_MONITORING`): Defined but not yet active (will store historical snapshots)
+- **Keeper DB** (`DATABASE_URL_KEEPER`): Defined but not yet active (will store keeper configurations)
 
 ### 3. Data Flow
 
@@ -53,7 +52,6 @@ Page Request → Read from DB (fast cached data)
 
 **Active**
 - `/api/positions/[account]` - Real-time account positions and metrics
-- `/api/waitlist/*` - Waitlist management
 
 **Future** (When monitoring DB is active)
 - `/api/internal/sync/*` - Position synchronization for cron jobs
@@ -88,15 +86,15 @@ Page Request → Read from DB (fast cached data)
 ### Adding API Endpoints
 Create route handlers in `src/app/api/[endpoint]/route.ts`
 
-### Protected Routes
+### Component State Management
 ```tsx
-const { authenticated, user } = usePrivy()
+const { state, setState } = useStore()
 ```
 
 ### Database Queries
 ```typescript
 import { prismaMonitoring } from '@/lib/prisma-monitoring'
-import { prismaReferrals } from '@/lib/prisma-referrals'
+import { prismaKeeper } from '@/lib/prisma-keeper'
 ```
 
 ### Theme-Aware Components

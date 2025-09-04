@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMonitoringPool } from '@/lib/database-pools'
+import { logger } from '@/utils'
 
 export async function POST(request: NextRequest) {
     try {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
             client.release()
         }
     } catch (error) {
-        console.warn('Failed to track API user:', error)
+        logger.debug('Failed to track API user:', error)
         // Don't fail the request, just return success
         return NextResponse.json({ success: true, warning: 'Tracking failed but request processed' })
     }

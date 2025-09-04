@@ -15,7 +15,6 @@ import { AppThemes, AppUrls } from '@/enums'
 import { ReactQueryProvider } from '@/providers/react-query.providers'
 import PWAProvider from '@/providers/pwa.provider'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
-import { PrivyProvider } from '@/providers/privy.provider'
 import { Analytics } from '@vercel/analytics/next'
 import { ChunkErrorHandler } from '@/components/common/ChunkErrorHandler'
 
@@ -110,13 +109,11 @@ export const metadata: Metadata = {
 }
 
 const Providers = ({ children }: { children: React.ReactNode }) => (
-    <PrivyProvider>
-        <ThemeProvider attribute="class" defaultTheme={AppThemes.LIGHT} disableTransitionOnChange themes={Object.values(AppThemes)}>
-            <ReactQueryProvider>
-                <NuqsAdapter>{children}</NuqsAdapter>
-            </ReactQueryProvider>
-        </ThemeProvider>
-    </PrivyProvider>
+    <ThemeProvider attribute="class" defaultTheme={AppThemes.LIGHT} disableTransitionOnChange themes={Object.values(AppThemes)}>
+        <ReactQueryProvider>
+            <NuqsAdapter>{children}</NuqsAdapter>
+        </ReactQueryProvider>
+    </ThemeProvider>
 )
 
 export default async function RootLayout({

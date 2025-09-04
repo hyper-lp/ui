@@ -32,6 +32,38 @@ module.exports = {
                 'tailwindcss/no-custom-classname': 'warn',
                 'tailwindcss/no-contradicting-classname': 'error',
                 'tailwindcss/classnames-order': 'error',
+                // Import consistency rules
+                'no-restricted-imports': [
+                    'warn',
+                    {
+                        patterns: [
+                            {
+                                group: ['@/config/*', '!@/config'],
+                                message: 'Use barrel import from @/config instead of direct file imports',
+                            },
+                            {
+                                group: ['@/enums/*', '!@/enums'],
+                                message: 'Use barrel import from @/enums instead of direct file imports',
+                            },
+                            {
+                                group: ['@/utils/*', '!@/utils'],
+                                message: 'Use barrel import from @/utils instead of direct file imports',
+                            },
+                            {
+                                group: ['@/interfaces/*', '!@/interfaces'],
+                                message: 'Use barrel import from @/interfaces instead of direct file imports',
+                            },
+                            {
+                                group: ['@/services/core/*', '!@/services/core', '!@/services'],
+                                message: 'Use barrel import from @/services or @/services/core instead of direct file imports',
+                            },
+                            {
+                                group: ['@/services/explorers/*', '!@/services/explorers', '!@/services'],
+                                message: 'Use barrel import from @/services or @/services/explorers instead of direct file imports',
+                            },
+                        ],
+                    },
+                ],
             },
             files: ['src/**/*.ts', 'src/**/*.tsx', 'scripts/**/*.ts', './tailwind.config.ts', './src/app/global.css'],
         },

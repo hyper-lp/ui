@@ -2,6 +2,9 @@ import { type Address, formatEther } from 'viem'
 import { AccountLensABI } from '@/contracts/account-lens-abi'
 import { ACCOUNT_LENS_ADDRESS } from '@/config/constants.config'
 import { getViemClient } from '@/lib/viem'
+import { createLogger } from '@/utils'
+
+const logger = createLogger('HyperEVM')
 
 /**
  * HyperEVM RPC service for interacting with the blockchain
@@ -35,21 +38,21 @@ class HyperEvmRpcService {
             })
 
             if (!response.ok) {
-                console.error(`RPC request failed: ${response.status}`)
+                logger.debug(`RPC request failed: ${response.status}`)
                 return 0
             }
 
             const data = await response.json()
 
             if (data.error) {
-                console.error('RPC error:', data.error)
+                logger.debug('RPC error:', data.error)
                 return 0
             }
 
             // Convert hex nonce to number
             return parseInt(data.result, 16)
         } catch (error) {
-            console.error('Failed to fetch nonce:', error)
+            logger.debug('Failed to fetch nonce:', error)
             return 0
         }
     }
@@ -74,21 +77,21 @@ class HyperEvmRpcService {
             })
 
             if (!response.ok) {
-                console.error(`RPC request failed: ${response.status}`)
+                logger.debug(`RPC request failed: ${response.status}`)
                 return 0
             }
 
             const data = await response.json()
 
             if (data.error) {
-                console.error('RPC error:', data.error)
+                logger.debug('RPC error:', data.error)
                 return 0
             }
 
             // Convert hex block number to number
             return parseInt(data.result, 16)
         } catch (error) {
-            console.error('Failed to fetch block number:', error)
+            logger.debug('Failed to fetch block number:', error)
             return 0
         }
     }
@@ -112,20 +115,6 @@ class HyperEvmRpcService {
             })
 
             // Log raw result in development
-            if (process.env.NODE_ENV === 'development') {
-                console.log('[HyperDrive] AccountLens raw result:', {
-                    account: result.account,
-                    marketsCount: result.markets?.length || 0,
-                    markets: result.markets?.map((m: unknown) => {
-                        const market = m as { marketId?: bigint; shares?: bigint; assets?: bigint }
-                        return {
-                            marketId: market.marketId?.toString(),
-                            shares: market.shares?.toString(),
-                            assets: market.assets?.toString(),
-                        }
-                    }),
-                })
-            }
 
             // Transform the raw data into a more usable format
             type MarketData = {
@@ -174,24 +163,12 @@ class HyperEvmRpcService {
             }
         } catch (error) {
             // Log more details about the error
-            if (process.env.NODE_ENV === 'development') {
-                console.log('[HyperDrive] AccountLens call failed')
-                console.log('- Contract:', ACCOUNT_LENS_ADDRESS)
-                console.log('- Account:', account)
-                console.log('- Market IDs:', marketIds)
-                console.log(
-                    '- Market IDs as array:',
-                    marketIds.map((id) => id.toString()),
-                )
-
-                // Check if it's a revert error
-                const errorObj = error as { shortMessage?: string }
-                if (errorObj?.shortMessage?.includes('reverted')) {
-                    console.log('- Contract reverted, markets might not be initialized yet')
-                } else {
-                    console.log('- Error:', errorObj?.shortMessage || error)
-                }
-            }
+            logger.debug('AccountLens call failed', {
+                contract: ACCOUNT_LENS_ADDRESS,
+                account,
+                marketIds: marketIds.map((id) => id.toString()),
+                error: error instanceof Error ? error.message : error,
+            })
             return { account, markets: [] }
         }
     }

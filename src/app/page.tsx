@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import PageWrapper from '@/components/common/PageWrapper'
-import ReferralModal from '@/components/modals/ReferralModal'
 import dynamic from 'next/dynamic'
 import FileMapper from '@/components/common/FileMapper'
 import LinkWrapper from '@/components/common/LinkWrapper'
@@ -26,7 +25,6 @@ const HeatmapAprChart = dynamic(
 export default function HomePage() {
     return (
         <PageWrapper>
-            <ReferralModal />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -47,15 +45,6 @@ export default function HomePage() {
                     <p>Gross Delta-neutral APR</p>
                     <p>= ⅔ × LP Fees + ⅓ × Short Perp Funding</p>
                 </motion.div>
-                {/* <motion.div
-                    className="flex flex-col gap-1 md:flex-row md:gap-2 items-center text-sm"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                    <p>Delta-neutral APR</p>
-                    <p>= ⅔ × LP Fees (HyperEVM) + ⅓ × Short Perp Funding (HyperCore)</p>
-                </motion.div> */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}

@@ -1,20 +1,36 @@
-# Next.js 15 Boilerplate with Privy Twitter Waitlist
+# HyperLP - Delta-Neutral LP Vault on Hyperliquid
 
-A modern, production-ready boilerplate for building web applications with Next.js 15, TypeScript, Tailwind CSS, and Prisma. Includes Twitter authentication via Privy for waitlist functionality.
+A Next.js application for managing delta-neutral liquidity positions on Hyperliquid's HyperEVM ecosystem.
+
+## Overview
+
+HyperLP is a delta-neutral LP vault that allows users to deposit assets (HYPE or USDT0) and earn yield from:
+- LP fees on HyperEVM DEXs (e.g., Hyperswap)
+- Perpetual funding rates (when positive)
+- Protocol incentives and points
+
+The vault maintains delta neutrality by hedging volatile positions with short perpetuals on HyperCore.
 
 ## Features
 
-- ⚡️ **Next.js 15** with App Router
-- 🎨 **Tailwind CSS** for styling
-- 📝 **TypeScript** for type safety
-- 🗄️ **Prisma** ORM with PostgreSQL
-- 🔄 **TanStack Query** for data fetching
-- 🐻 **Zustand** for state management
-- 🔐 **Privy** authentication with Twitter
-- 📋 **Waitlist** system with Twitter verification
-- 🌙 **Dark mode** support
-- 📱 **Responsive** design
-- 🚀 **Production ready**
+- 📊 **APR Heatmap**: Interactive visualization of potential yields
+- 📈 **Performance Tracking**: Real-time delta tracking and rebalance monitoring
+- 💼 **Portfolio Dashboard**: Comprehensive view of LP positions, perps, and wallet balances
+- 🔐 **Secure Authentication**: Twitter-based waitlist via Privy
+- 🌙 **Dark Mode**: Full theme support with system preference detection
+- 📱 **Responsive Design**: Optimized for desktop and mobile
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL with Prisma ORM
+- **State Management**: Zustand
+- **Data Fetching**: TanStack Query
+- **Charts**: ECharts
+- **Authentication**: Privy
+- **Web3**: Viem
 
 ## Getting Started
 
@@ -22,13 +38,13 @@ A modern, production-ready boilerplate for building web applications with Next.j
 
 - Node.js 18+
 - pnpm
-- PostgreSQL database
+- PostgreSQL databases (3 instances for referrals, monitoring, and keeper)
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone <repository-url>
 cd hyper-lp/ui
 ```
 
@@ -42,27 +58,28 @@ pnpm install
 cp .env.example .env
 ```
 
-Update the `.env` file with your database URL and other configuration:
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-NEXT_PUBLIC_PRIVY_APP_ID="your-privy-app-id"
-```
+Update the `.env` file with your configuration:
+- Database URLs for referrals, monitoring, and keeper databases
+- Privy app credentials
+- Explorer API keys
+- Other service credentials
 
-**Note**: For testing, you can use Privy's test App ID: `clpispdty00ycl80fpueukbhl`
-
-4. Set up the database:
+4. Generate Prisma clients:
 ```bash
-pnpm prisma generate
-pnpm prisma migrate dev
+pnpm prisma:generate
 ```
 
-5. Start the development server:
+5. Run database migrations:
+```bash
+pnpm prisma:deploy
+```
+
+6. Start the development server:
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your application.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## Project Structure
 
@@ -70,17 +87,23 @@ Open [http://localhost:3000](http://localhost:3000) to see your application.
 src/
 ├── app/              # Next.js App Router pages and API routes
 ├── components/       # React components
+│   ├── app/         # Application-specific components
+│   ├── charts/      # Chart components
+│   ├── common/      # Shared UI components
+│   └── modals/      # Modal components
 ├── config/          # Configuration files
-├── enums/           # TypeScript enums
-├── hooks/           # Custom React hooks
-├── interfaces/      # TypeScript interfaces
-├── lib/             # External library configurations
-├── providers/       # React context providers
-├── queries/         # Data fetching functions
-├── services/        # Business logic
-├── stores/          # State management
-├── types/           # TypeScript types
-└── utils/           # Utility functions
+├── contracts/       # Smart contract ABIs
+├── crons/          # Scheduled tasks (Inngest)
+├── enums/          # TypeScript enums
+├── hooks/          # Custom React hooks
+├── interfaces/     # TypeScript interfaces
+├── lib/            # External library configurations
+├── middleware/     # API middleware
+├── providers/      # React context providers
+├── services/       # Business logic and API services
+├── stores/         # Zustand state stores
+├── types/          # TypeScript type definitions
+└── utils/          # Utility functions
 ```
 
 ## Available Scripts
@@ -90,61 +113,69 @@ pnpm dev              # Start development server
 pnpm build           # Build for production
 pnpm start           # Start production server
 pnpm lint            # Run ESLint
-pnpm format          # Format code with Prettier
-pnpm prisma generate # Generate Prisma client
-pnpm prisma migrate  # Run database migrations
-pnpm prisma studio   # Open Prisma Studio
+pnpm lint:fix        # Fix linting issues
+pnpm prisma:generate # Generate Prisma clients
+pnpm prisma:studio   # Open Prisma Studio
+pnpm db:setup        # Initial database setup
 ```
 
-## Technologies
+## Environment Variables
 
-- [Next.js](https://nextjs.org/) - React framework
-- [TypeScript](https://www.typescriptlang.org/) - Type safety
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
-- [Prisma](https://www.prisma.io/) - Database ORM
-- [TanStack Query](https://tanstack.com/query) - Data fetching
-- [Zustand](https://zustand-demo.pmnd.rs/) - State management
-- [nuqs](https://nuqs.47ng.com/) - URL state management
-- [Privy](https://www.privy.io/) - Web3 and social authentication
+Key environment variables required:
 
-## Customization
+- `DATABASE_URL_REFERRALS`: PostgreSQL URL for waitlist/users
+- `DATABASE_URL_MONITORING`: PostgreSQL URL for position tracking
+- `DATABASE_URL_KEEPER`: PostgreSQL URL for keeper operations
+- `NEXT_PUBLIC_PRIVY_APP_ID`: Privy application ID
+- `PRIVY_APP_SECRET`: Privy secret key
+- `HYPEREVM_SCAN_API_KEY`: HyperEVM explorer API key
 
-### Colors
+See `.env.example` for the complete list.
 
-Edit the color palette in `tailwind.config.ts` and `src/app/globals.css`:
+## Development
 
-- `primary` - Main brand color
-- `accent` - Secondary color
-- `milk` - Neutral colors
-- `background` - Background color
+### Code Quality
 
-### Database Schema
+The project uses:
+- TypeScript for type safety
+- ESLint for code linting
+- Prettier for code formatting
+- Husky for pre-commit hooks (if configured)
 
-Modify the Prisma schema in `prisma/schema.prisma` to add your own models.
+Run `pnpm lint:fix` to automatically fix formatting issues.
 
-### Components
+### Database Management
 
-The boilerplate includes basic components:
-- `Header` - Navigation header
-- `Footer` - Page footer
-- `Dashboard` - Example dashboard component
-- `WaitlistButton` - Twitter authentication button
-- `WaitlistForm` - Waitlist submission form
+The project uses three separate Prisma schemas:
+- `prisma/referrals`: User and waitlist management
+- `prisma/monitoring`: Position and snapshot tracking
+- `prisma/keeper`: Automated keeper operations
 
-### Privy Configuration
+Use `pnpm prisma:studio` to browse database contents.
 
-To set up your own Privy app:
+## Production Deployment
 
-1. Create an account at [privy.io](https://privy.io)
-2. Create a new app in the Privy dashboard
-3. Enable Twitter as a login method
-4. Copy your App ID and add it to `.env`
-5. Configure allowed redirect URLs for your domain
+1. Build the application:
+```bash
+pnpm build
+```
+
+2. The build output will be optimized and ready for deployment
+3. Deploy to Vercel, Railway, or any Node.js hosting platform
+4. Ensure all environment variables are properly configured
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-This project is open source and available under the MIT License.
+[License Type] - See LICENSE file for details
+
+## Support
+
+For issues and questions, please open an issue on GitHub or contact the team.

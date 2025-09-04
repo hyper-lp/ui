@@ -2,7 +2,6 @@ import { AppDemoAccountAddresses, AppUrls, FileIds } from '@/enums'
 import { env } from '@/env/t3-env'
 import { InterfaceAppLink, UseCase } from '@/interfaces'
 
-// Re-export from constants for backward compatibility
 export {
     DEFAULT_TRANSACTION_LIMIT,
     DELTA_THRESHOLDS,
@@ -13,11 +12,6 @@ export {
     API_TIMEOUT,
     API_RETRY_MAX_DELAY,
 } from './constants.config'
-
-/**
- * meta
- * https://github.com/propeller-heads/tycho-x/blob/main/TAP-5.md
- */
 
 export const SITE_NAME = 'HyperLP'
 export const IS_DEV = process.env.NODE_ENV === 'development'
@@ -45,11 +39,6 @@ export const APP_METADATA = {
         },
     },
 }
-export const SHOW_WAITLIST = false
-
-/**
- * pages
- */
 
 export const APP_PAGES: InterfaceAppLink[] = [
     {
@@ -57,10 +46,6 @@ export const APP_PAGES: InterfaceAppLink[] = [
         path: AppUrls.HOME,
     },
 ] as const
-
-/**
- * DEMO ACCOUNTS
- */
 
 export const DEMO_ACCOUNTS: Record<
     AppDemoAccountAddresses,

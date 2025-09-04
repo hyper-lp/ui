@@ -9,12 +9,8 @@ export const env = createEnv({
 
     server: {
         // Databases
-        DATABASE_URL_REFERRALS: z.string().url(),
         DATABASE_URL_MONITORING: z.string().url(),
-        DATABASE_URL: z.string().url().optional(), // Legacy - for backward compatibility
-
-        // Privy Server-side
-        PRIVY_APP_SECRET: z.string().optional(),
+        DATABASE_URL_KEEPER: z.string().url(),
 
         // API Security
         API_SECRET_KEY: z.string().optional(),
@@ -44,7 +40,6 @@ export const env = createEnv({
         NEXT_PUBLIC_APP_URL: z.string().min(1),
         NEXT_PUBLIC_COMMIT_TIMESTAMP: z.string().optional(),
         NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: z.string().optional(),
-        NEXT_PUBLIC_PRIVY_APP_ID: z.string().min(1),
     },
 
     /**
@@ -53,10 +48,8 @@ export const env = createEnv({
 
     runtimeEnv: {
         // Server
-        DATABASE_URL_REFERRALS: process.env.DATABASE_URL_REFERRALS,
         DATABASE_URL_MONITORING: process.env.DATABASE_URL_MONITORING,
-        DATABASE_URL: process.env.DATABASE_URL,
-        PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET,
+        DATABASE_URL_KEEPER: process.env.DATABASE_URL_KEEPER,
         API_SECRET_KEY: process.env.API_SECRET_KEY,
         INTERNAL_API_KEY: process.env.INTERNAL_API_KEY,
         RATE_LIMIT_ENABLED: process.env.RATE_LIMIT_ENABLED,
@@ -72,7 +65,6 @@ export const env = createEnv({
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
         NEXT_PUBLIC_COMMIT_TIMESTAMP: process.env.NEXT_PUBLIC_COMMIT_TIMESTAMP,
         NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID,
-        NEXT_PUBLIC_PRIVY_APP_ID: process.env.NEXT_PUBLIC_PRIVY_APP_ID,
     },
 
     emptyStringAsUndefined: true,

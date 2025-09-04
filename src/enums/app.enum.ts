@@ -13,15 +13,9 @@ export enum AppUrls {
     // API routes - Pools
     API_POOLS_TVL = '/api/pools/tvl',
 
-    // API routes - Waitlist
-    API_WAITLIST_JOIN = '/api/waitlist/join',
-    API_WAITLIST_STATUS = '/api/waitlist/status',
-    API_WAITLIST_USERS = '/api/waitlist/users',
-
     // External links
     TAIKAI = 'https://taikai.network/hl-hackathon-organizers/hackathons/hl-hackathon/projects/cmdnbxv990721dcc359icaqvr/idea',
     GITHUB = 'https://github.com/hyperlp',
-    PRIVY = 'https://www.privy.io/',
     DOCS = 'https://en.wikipedia.org/wiki/PnL_explained',
     DOCS_NOTION = 'https://www.notion.so/HyperLP-Docs-254bbbfcdd3780fb9d0cd5bfbab131f2',
     HYPERLP_X = 'https://x.com/HyperLPxyz',

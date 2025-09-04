@@ -8,6 +8,9 @@ import { keccak256, encodePacked, getAddress } from 'viem'
 import type { PoolState, LPPosition, SpotBalance, PerpPosition, HyperEvmBalance } from '@/interfaces'
 import { NATIVE_HYPE_ADDRESS, WRAPPED_HYPE_ADDRESS, USDT0_ADDRESS } from '@/config/hyperevm-tokens.config'
 import { priceAggregator } from '@/services/price/price-aggregator.service'
+import { createLogger } from '@/utils'
+
+const logger = createLogger('PositionFetcher')
 
 export class PositionFetcher {
     private poolStateCache = new Map<string, PoolState>()
@@ -963,14 +966,14 @@ export class PositionFetcher {
 
             // Always ensure HYPE price is fetched
             if (!this.tokenPriceCache.has('HYPE') || this.tokenPriceCache.get('HYPE') === 0) {
-                console.log('[PositionFetcher] Fetching HYPE price from aggregator...')
+                logger.debug('Fetching HYPE price from aggregator...')
                 const hypePrice = await priceAggregator.getTokenPrice('HYPE')
                 if (hypePrice !== null && hypePrice > 0) {
-                    console.log(`[PositionFetcher] HYPE price fetched: $${hypePrice}`)
+                    logger.debug(`HYPE price fetched: $${hypePrice}`)
                     this.tokenPriceCache.set('HYPE', hypePrice)
                     this.tokenPriceCache.set('WHYPE', hypePrice)
                 } else {
-                    console.warn('[PositionFetcher] Failed to fetch HYPE price from aggregator')
+                    logger.warn('Failed to fetch HYPE price from aggregator')
                 }
             }
             if (!this.tokenPriceCache.has('BTC')) {
@@ -982,7 +985,7 @@ export class PositionFetcher {
 
             // Token prices fetched and cached
         } catch (error) {
-            console.error('Error fetching token prices:', error)
+            logger.error('Error fetching token prices:', error)
             // Use price aggregator for fallback prices
             const fallbackPrices = await priceAggregator.getTokenPrices(['HYPE', 'USDT0', 'USDC', 'BTC'])
             for (const [symbol, price] of fallbackPrices) {
@@ -1061,7 +1064,7 @@ export class PositionFetcher {
 
         // For HYPE/WHYPE, try to fetch from price aggregator
         if (symbol === 'HYPE' || symbol === 'WHYPE') {
-            console.log(`[PositionFetcher] Fetching ${symbol} price from aggregator...`)
+            logger.debug(`Fetching ${symbol} price from aggregator...`)
             const price = await priceAggregator.getTokenPrice(symbol === 'WHYPE' ? 'HYPE' : symbol)
             if (price !== null && price > 0) {
                 this.tokenPriceCache.set(symbol, price)
@@ -1080,7 +1083,7 @@ export class PositionFetcher {
         if (newCached !== undefined) return newCached
 
         // If still no price found, return 0
-        console.warn(`[PositionFetcher] No price found for token: ${symbol}`)
+        logger.warn(`No price found for token: ${symbol}`)
         return 0
     }
 

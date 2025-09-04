@@ -1,4 +1,5 @@
 import { createPublicClient, http, type PublicClient, defineChain, fallback } from 'viem'
+import { createLogger } from '@/utils'
 
 // HyperEVM public RPC endpoints with fallbacks
 const HYPEREVM_RPC_URLS = [
@@ -59,8 +60,9 @@ export function getViemClient(chainId: number = HYPEREVM_CHAIN_ID): PublicClient
                     }
                 },
                 onFetchResponse: (response) => {
-                    if (!response.ok && process.env.NODE_ENV === 'development') {
-                        console.error(`❌ RPC Error from ${url}:`, response.status, response.statusText)
+                    if (!response.ok) {
+                        const logger = createLogger('RPC')
+                        logger.debug(`Error from ${url}:`, response.status, response.statusText)
                     }
                 },
             }),
@@ -81,11 +83,6 @@ export function getViemClient(chainId: number = HYPEREVM_CHAIN_ID): PublicClient
                 },
             }),
         })
-
-        // Log initialization (simplified)
-        // if (process.env.NODE_ENV === 'development') {
-        //     console.log('🔗 Initialized Viem client with fallback RPCs')
-        // }
     }
 
     return client
@@ -122,7 +119,7 @@ export async function checkRpcHealth(): Promise<{
 
     const healthy = Object.values(results).some((latency) => latency !== null)
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_RPC === 'true') {
         console.log('🏥 RPC Health Check Results:')
         for (const [url, latency] of Object.entries(results)) {
             if (latency !== null) {

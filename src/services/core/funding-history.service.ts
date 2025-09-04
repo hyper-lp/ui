@@ -1,3 +1,7 @@
+import { createLogger } from '@/utils'
+
+const logger = createLogger('Funding')
+
 /**
  * Service for fetching historical funding rates from Hyperliquid
  */
@@ -90,13 +94,11 @@ class FundingHistoryService {
                 apr30d: calculateAPR(history30d),
             }
 
-            console.log(
-                `[Funding] ${asset} APRs - 24h: ${result.apr24h?.toFixed(2)}%, 7d: ${result.apr7d?.toFixed(2)}%, 30d: ${result.apr30d?.toFixed(2)}%`,
-            )
+            logger.info(`${asset} APRs - 24h: ${result.apr24h?.toFixed(2)}%, 7d: ${result.apr7d?.toFixed(2)}%, 30d: ${result.apr30d?.toFixed(2)}%`)
 
             return result
         } catch (error) {
-            console.error('Error calculating historical funding APRs:', error)
+            logger.error('Error calculating historical funding APRs:', error)
             return { apr24h: null, apr7d: null, apr30d: null }
         }
     }

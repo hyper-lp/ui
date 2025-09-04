@@ -45,6 +45,7 @@ node_modules/.prisma/
 
 # specs
 /specs
+/docs
 
 # claude
 CLAUDE.md

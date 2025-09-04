@@ -1,7 +1,7 @@
 # HyperLP - Delta-Neutral LP Vault on Hyperliquid
 
 > **⚠️ VISION DOCUMENT**  
-> Iterating since HyperLiquid Hackathon (Aug 2024)
+> Iterating since HyperLiquid Hackathon (Aug 2025)
 
 ## The Problem
 
@@ -24,7 +24,7 @@ Managing yield strategies on HyperEVM requires 7+ manual steps:
 HyperLP handles:
 
 - Automated LP deployment across multiple HyperEVM DEXs
-- Real-time delta-neutral hedging via HyperCore perps
+- Real-time delta neutral hedging via HyperCore perps
 - Dynamic rebalancing based on market conditions
 - Gas optimization through batched operations
 - Position monitoring
@@ -54,7 +54,7 @@ HyperLP handles:
 ## Tech Stack
 
 - **Frontend**: Next.js 15, TypeScript, TailwindCSS
-- **Backend**: PostgreSQL, Prisma ORM, Inngest (cron jobs)
+- **Backend**: PostgreSQL, Prisma ORM, Inngest (cron jobs) + Rust keepers (private repos for now)
 - **Blockchain**: Viem, ERC-7540 vaults, HyperEVM
 - **Analytics**: ECharts, TanStack Query
 

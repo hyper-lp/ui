@@ -43,7 +43,7 @@ P2P lending replaces vault complexity:
 
 Result: instant, zero friction, profesionnal hedging
 
-Use-cases:
+## Use-cases:
 
 - Delta-neutral exposure to majors (HYPE/BTC/ETH)
 - HIP-3 strategies: equity perps, RWAs, pre-IPO markets
@@ -52,17 +52,18 @@ Use-cases:
 - Partnerships (points, liquidity bribes)
 - Institutional that needs to hedge their positions around economic calendar events
 
-### Technical Architecture
+## Technical Architecture
+
+### Backend with rust
 
 - **ERC-7540 Standard**: Tokenized vault interface
-- **Multi-DEX Integration**: Routes across HyperEVM DEXs
-- **Automated Keeper Network**: 24/7 position monitoring and rebalancing
+- **Keepers**: 24/7 position monitoring and rebalancing (private repos for now)
 - **Risk Management**: Limits on leverage, slippage, and position concentration
 
-## Tech Stack
+### frontend with Nextjs
 
 - **Frontend**: Next.js 15, TypeScript, TailwindCSS
-- **Backend**: PostgreSQL, Prisma ORM, Inngest (cron jobs) + Rust keepers (private repos for now)
+- **Databases**: PostgreSQL, Prisma ORM, Inngest (cron jobs)
 - **Blockchain**: Viem, ERC-7540 vaults, HyperEVM
 - **Analytics**: ECharts, TanStack Query
 

@@ -5,44 +5,52 @@
 
 ## The Problem
 
-Managing yield strategies on HyperEVM requires 7+ manual steps:
+Getting delta-neutral on HyperEVM yields (LP NFTs, stHYPE, lending markets, PTs) requires:
 
-1. Monitor multiple LP pool APRs across DEXs
-2. Calculate position sizes considering gas costs
-3. Bridge assets between chains/venues
-4. Deploy liquidity manually on each DEX
-5. Open corresponding short positions for hedging
-6. Monitor delta drift and funding rates
-7. Rebalance positions when markets move
+1. Source USDC as margin for 1x shorts
+2. Open Short
+3. Monitor funding flips
+4. Bridge PnL
+5. Rebalance
+6. Sketchy unwind
+7. Mainnet gwei spikes erasing yield
+
+Many steps. Manual hell. Max pain.
 
 **Result**: Gas costs and operational overhead eat into profits. Small positions become unviable.
 
 ## The Solution
 
-**1-click deposit → Automated hedging → Higher yield**
+**1-step to drag & drop your yield assets into HyperLP vault for instant hedge**
 
-HyperLP handles:
+## The Mechanism
 
-- Automated LP deployment across multiple HyperEVM DEXs
-- Real-time delta neutral hedging via HyperCore perps
-- Dynamic rebalancing based on market conditions
-- Gas optimization through batched operations
-- Position monitoring
+P2P lending replaces vault complexity:
 
-## How It Works
+- **HyperLP** sources USDC margin directly for depositors at current rate + spread
+- **Depositors** get instantly hedged
+- **Smart contract** opens shorts, compounds funding, ERC7540 with open source, offchain NAV computation
 
-### Core Mechanism
+## Economics
 
-1. **Users deposit** HYPE or USDT0 into the vault
-2. **Smart contracts automatically**:
-    - Deploy liquidity to high-yield pools (Hyperswap, ProjectX)
-    - Open corresponding short perpetuals on HyperCore for delta neutrality
-    - Maintain 2-5% spread over base lending rates
-3. **Yield sources**:
-    - LP trading fees (0.05-0.3% per trade)
-    - Positive funding rates from shorts
-    - DEX incentive programs and points
-    - Protocol revenue sharing
+- HyperLP lend USDC at current rate + spread (2-5%)
+- Depositors pay just the spread. Get yield on their evm leg and funding rate on the short leg.
+
+## Execution
+
+**Before:** Source margin → Short → Monitor → Bridge → Repeat → Manual → Error prone with multiple steps
+**After:** Deposit to hedge → 1 step
+
+Result: instant, zero friction, profesionnal hedging
+
+Use-cases:
+
+- Delta-neutral exposure to majors (HYPE/BTC/ETH)
+- HIP-3 strategies: equity perps, RWAs, pre-IPO markets
+- Cross assets: BTC hedged with NASDAQ perps
+- Clear P&L explanations
+- Partnerships (points, liquidity bribes)
+- Institutional that needs to hedge their positions around economic calendar events
 
 ### Technical Architecture
 

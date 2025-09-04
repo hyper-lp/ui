@@ -36,7 +36,7 @@
         "db:sync": "tsx scripts/db-sync-check.ts",
         "db:migrate:prod": "tsx scripts/db-migrate-prod.ts",
         "db:status": "prisma migrate status",
-        "vercel-build": "pnpm prisma:generate && pnpm prisma:monitoring:deploy && export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build",
+        "vercel-build": "pnpm prisma:generate && export NEXT_PUBLIC_COMMIT_TIMESTAMP=$(git log -1 --format=%ct) && next build",
         "postinstall": "pnpm prisma:generate",
         "postinstall:ci": "pnpm prisma:generate",
         "inngest": "pnpm dlx inngest-cli@latest dev"

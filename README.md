@@ -70,8 +70,8 @@ Use-cases:
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL (3 instances for different services)
+- Node.js v23.3.0
+- PostgreSQL
 - pnpm package manager
 
 ### Quick Start
